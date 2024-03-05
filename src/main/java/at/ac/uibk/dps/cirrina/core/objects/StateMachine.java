@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.core.objects;
 
-import at.ac.uibk.dps.cirrina.core.Event;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.actions.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
@@ -45,7 +44,7 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
   public List<String> getHandledEvents() {
     return edgeSet().stream()
         .filter(OnTransition.class::isInstance)
-        .map(onTransition -> ((OnTransition) onTransition).event)
+        .map(onTransition -> ((OnTransition) onTransition).eventName)
         .toList();
   }
 
@@ -110,5 +109,10 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
     stateMachine.actions = actions;
 
     return stateMachine;
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

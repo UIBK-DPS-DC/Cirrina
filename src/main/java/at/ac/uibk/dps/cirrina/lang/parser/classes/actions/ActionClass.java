@@ -17,35 +17,36 @@ public class ActionClass extends Construct implements ActionOrActionReferenceCla
 
   @NotNull
   public Type type;
+
   public Optional<String> name;
 
   public enum Type {
     @JsonProperty("invoke")
-    Invoke,
+    INVOKE,
 
     @JsonProperty("create")
-    Create,
+    CREATE,
 
     @JsonProperty("assign")
-    Assign,
+    ASSIGN,
 
     @JsonProperty("lock")
-    Lock,
+    LOCK,
 
     @JsonProperty("unlock")
-    Unlock,
+    UNLOCK,
 
     @JsonProperty("raise")
-    Raise,
+    RAISE,
 
     @JsonProperty("timeout")
-    Timeout,
+    TIMEOUT,
 
     @JsonProperty("timeoutReset")
-    TimeoutReset,
+    TIMEOUT_RESET,
 
     @JsonProperty("match")
-    Match
+    MATCH
   }
 
   static class ActionDeserializer extends JsonDeserializer<ActionClass> {

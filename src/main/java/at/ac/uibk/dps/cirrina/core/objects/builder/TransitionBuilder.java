@@ -26,11 +26,13 @@ public class TransitionBuilder {
 
   public Transition build()
       throws IllegalArgumentException {
+    // Resolve actions
     Function<Optional<List<ActionOrActionReferenceClass>>, List<Action>> resolveActions = (Optional<List<ActionOrActionReferenceClass>> actions) ->
         actions.orElse(new ArrayList<ActionOrActionReferenceClass>()).stream()
             .map(actionResolver::resolve)
             .toList();
 
+    // Create the appropriate transition
     switch (transitionClass) {
       case OnTransitionClass onTransitionClass -> {
         return new OnTransition(onTransitionClass.target, resolveActions.apply(onTransitionClass.actions),

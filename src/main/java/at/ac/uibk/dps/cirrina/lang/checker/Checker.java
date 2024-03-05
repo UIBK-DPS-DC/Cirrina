@@ -12,8 +12,7 @@ public class Checker {
     this.options = options;
   }
 
-  public CollaborativeStateMachine check(CollaborativeStateMachineClass collaborativeStateMachineClass)
-      throws CheckerException {
+  public CollaborativeStateMachine check(CollaborativeStateMachineClass collaborativeStateMachineClass) throws CheckerException {
     try {
       return new CollaborativeStateMachineBuilder(collaborativeStateMachineClass).build();
     } catch (IllegalArgumentException e) {

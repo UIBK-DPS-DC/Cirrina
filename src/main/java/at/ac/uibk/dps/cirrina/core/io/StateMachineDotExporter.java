@@ -5,18 +5,19 @@ import at.ac.uibk.dps.cirrina.core.objects.State;
 import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
 import java.io.Writer;
 import org.jgrapht.nio.dot.DOTExporter;
+import org.jgrapht.nio.gml.GmlExporter;
+import org.jgrapht.nio.graphml.GraphMLExporter;
+
+import static org.jgrapht.nio.gml.GmlExporter.Parameter.EXPORT_EDGE_LABELS;
+import static org.jgrapht.nio.gml.GmlExporter.Parameter.EXPORT_VERTEX_LABELS;
 
 public class StateMachineDotExporter {
 
   public static void export(Writer out, StateMachine stateMachineObject) throws CoreException {
     try {
-      var exporter = new DOTExporter((vertex) -> {
-        if (!(vertex instanceof State state)) {
-          throw new IllegalArgumentException("expected a state object as the state machine graph vertex");
-        }
+      var exporter = new GraphMLExporter();
 
-        return state.name;
-      });
+      exporter.setExportEdgeLabels(true);
 
       exporter.exportGraph(stateMachineObject, out);
     } catch (IllegalArgumentException e) {

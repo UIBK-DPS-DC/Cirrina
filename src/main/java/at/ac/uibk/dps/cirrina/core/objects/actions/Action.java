@@ -6,7 +6,12 @@ public abstract class Action {
 
   public final Optional<String> name;
 
-  public Action(Optional<String> name) {
+  protected Action(Optional<String> name) {
     this.name = name;
+  }
+
+  @Override
+  public String toString() {
+    return name.orElse("Inline Action");
   }
 }

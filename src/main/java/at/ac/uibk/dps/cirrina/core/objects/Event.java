@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.core;
+package at.ac.uibk.dps.cirrina.core.objects;
 
 import at.ac.uibk.dps.cirrina.lang.parser.classes.EventChannel;
 import java.util.Map;
@@ -17,5 +17,10 @@ public class Event {
     this.name = name;
     this.channel = channel;
     this.data = data;
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

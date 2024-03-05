@@ -50,4 +50,9 @@ public class State {
         .flatMap(Collection::stream)
         .toList();
   }
+
+  @Override
+  public String toString() {
+    return name;
+  }
 }

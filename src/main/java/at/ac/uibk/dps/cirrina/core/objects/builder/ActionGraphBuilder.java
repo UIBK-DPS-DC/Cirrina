@@ -9,15 +9,16 @@ public class ActionGraphBuilder {
 
   private final List<Action> actions;
 
+  private final ActionGraph actionGraph;
+
   public ActionGraphBuilder(List<Action> actions) {
     this.actions = actions;
+
+    this.actionGraph = new ActionGraph();
   }
 
   public ActionGraph build() throws IllegalArgumentException {
     Objects.requireNonNull(actions);
-
-    // Create this action graph
-    var actionGraph = new ActionGraph();
 
     // Build the action graph
     var it = actions.iterator();

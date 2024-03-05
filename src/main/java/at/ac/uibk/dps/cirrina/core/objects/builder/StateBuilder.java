@@ -28,7 +28,7 @@ public class StateBuilder {
   public State build() throws IllegalArgumentException {
     // Resolve actions
     Function<Optional<List<ActionOrActionReferenceClass>>, List<Action>> resolveActions = (Optional<List<ActionOrActionReferenceClass>> actions) ->
-        actions.orElse(new ArrayList<ActionOrActionReferenceClass>()).stream()
+        actions.orElse(new ArrayList<>()).stream()
             .map(actionResolver::resolve)
             .toList();
 
@@ -36,12 +36,9 @@ public class StateBuilder {
     var exitActions = resolveActions.apply(stateClass.exit);
     var whileActions = resolveActions.apply(stateClass.whilee);
 
-    // Create this state
-    State state = inheritedState
+    return inheritedState
         .map(State::new)
         .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions, stateClass.isAbstract,
             stateClass.isVirtual));
-
-    return state;
   }
 }

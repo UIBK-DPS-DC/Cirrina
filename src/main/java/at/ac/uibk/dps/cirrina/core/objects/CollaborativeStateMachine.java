@@ -2,17 +2,17 @@ package at.ac.uibk.dps.cirrina.core.objects;
 
 import at.ac.uibk.dps.cirrina.lang.parser.keywords.MemoryMode;
 import java.util.Optional;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DirectedMultigraph;
 
-public class CollaborativeStateMachine extends DirectedMultigraph<StateMachine, DefaultEdge> {
+import org.jgrapht.graph.DirectedPseudograph;
+
+public class CollaborativeStateMachine extends DirectedPseudograph<StateMachine, Event> {
 
   public final String name;
 
   public final MemoryMode memoryMode;
 
   public CollaborativeStateMachine(String name, MemoryMode memoryMode) {
-    super(DefaultEdge.class);
+    super(Event.class);
 
     this.name = name;
     this.memoryMode = memoryMode;
@@ -36,5 +36,10 @@ public class CollaborativeStateMachine extends DirectedMultigraph<StateMachine, 
       return Optional.empty();
     }
     return Optional.ofNullable(states.getFirst());
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

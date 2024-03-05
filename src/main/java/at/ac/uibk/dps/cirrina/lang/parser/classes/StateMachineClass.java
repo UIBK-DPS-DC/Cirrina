@@ -50,7 +50,7 @@ public class StateMachineClass extends Construct implements StateOrStateMachineC
    * The name.
    */
   @NotNull
-  public String name;
+  public String name = "";
 
   /**
    * The states.

@@ -5,11 +5,16 @@ import java.util.List;
 
 public class OnTransition extends Transition {
 
-  public final String event;
+  public final String eventName;
 
-  public OnTransition(String target, List<Action> actions, String event) {
+  public OnTransition(String target, List<Action> actions, String eventName) {
     super(target, actions);
 
-    this.event = event;
+    this.eventName = eventName;
+  }
+
+  @Override
+  public String toString() {
+    return eventName;
   }
 }

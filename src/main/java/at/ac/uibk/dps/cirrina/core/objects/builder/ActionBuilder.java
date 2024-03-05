@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.objects.builder;
 
-import at.ac.uibk.dps.cirrina.core.Event;
+import at.ac.uibk.dps.cirrina.core.objects.Event;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.actions.AssignAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.CreateAction;
