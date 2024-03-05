@@ -33,7 +33,7 @@ public class ActionBuilder {
   public Action build() throws IllegalArgumentException {
     switch (actionClass) {
       case AssignActionClass assign -> {
-        return new AssignAction(assign.name);
+        return new AssignAction(assign.name, assign.variable, assign.value);
       }
       case CreateActionClass create -> {
         return new CreateAction(create.name);

@@ -18,6 +18,8 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
+    implementation("dev.cel:cel:0.3.1")
+
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
