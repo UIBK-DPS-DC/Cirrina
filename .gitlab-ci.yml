@@ -1,0 +1,18 @@
+image: gradle:8.6.0-jdk21
+
+stages:
+  - build
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+build:
+  stage: build
+  script:
+    - gradle clean build
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 week
