@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "ac.at.uibk.dps.nexa"
+group = "ac.at.uibk.dps.cirrina"
 version = "1.0-SNAPSHOT"
 
 repositories {
