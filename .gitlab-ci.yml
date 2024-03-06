@@ -2,6 +2,7 @@ image: gradle:8.6.0-jdk21
 
 stages:
   - build
+  - test
 
 cache:
   paths:
