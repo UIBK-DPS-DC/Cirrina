@@ -20,4 +20,9 @@ build:
 
 test:
   stage: test
-  script: gradle check
+  script:
+   - gradle check
+  artifacts:
+    when: always
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
