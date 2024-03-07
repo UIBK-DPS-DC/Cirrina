@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Base context, containing context variables.
+ * <p>
+ * TODO: Make thread-safe.
  */
 public abstract class Context {
 
@@ -34,7 +36,7 @@ public abstract class Context {
      * @param variable Variable to synchronize.
      * @throws CoreException In case synchronization fails.
      */
-    abstract void sync(ContextVariable variable) throws CoreException;
+    protected abstract void sync(ContextVariable variable) throws CoreException;
 
     /**
      * Returns all context variables.

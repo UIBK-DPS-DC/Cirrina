@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class InMemoryContext extends Context {
 
-    private final Map<String, ContextVariable> variables;
+    protected final Map<String, ContextVariable> variables;
 
     /**
      * Initializes an empty in-memory context.
@@ -61,7 +61,7 @@ public class InMemoryContext extends Context {
      * @throws CoreException In case synchronization fails.
      */
     @Override
-    void sync(ContextVariable variable) throws CoreException {
+    protected void sync(ContextVariable variable) throws CoreException {
     }
 
     /**

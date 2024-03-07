@@ -20,6 +20,8 @@ dependencies {
 
     implementation("dev.cel:cel:0.3.1")
 
+    implementation("io.nats:jnats:2.17.3")
+
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
