@@ -1,39 +1,76 @@
 package at.ac.uibk.dps.cirrina.core.objects.context;
 
 import at.ac.uibk.dps.cirrina.core.CoreException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An in-memory context, where context variables are contained in a hash map.
+ */
 public class InMemoryContext extends Context {
 
-  private Map<String, ContextVariable> variables;
+    private final Map<String, ContextVariable> variables;
 
-  public InMemoryContext() {
-    variables = new HashMap<>();
-  }
-
-  @Override
-  public ContextVariable get(String name) throws CoreException {
-    if (!variables.containsKey(name)) {
-      throw new CoreException(String.format("A variable with the name '%s' does not exist", name));
+    /**
+     * Initializes an empty in-memory context.
+     */
+    public InMemoryContext() {
+        variables = new HashMap<>();
     }
 
-    return variables.get(name);
-  }
+    /**
+     * Retrieve a context variable.
+     *
+     * @param name Name of the context variable.
+     * @return The retrieved context variable.
+     * @throws CoreException If the context variable could not be retrieved.
+     */
+    @Override
+    public ContextVariable get(String name) throws CoreException {
+        if (!variables.containsKey(name)) {
+            throw new CoreException(String.format("A variable with the name '%s' does not exist", name));
+        }
 
-  @Override
-  public ContextVariable create(String name, Object value) throws CoreException {
-    if (variables.containsKey(name)) {
-      throw new CoreException(String.format("A variable with the name '%s' already exists", name));
+        return variables.get(name);
     }
 
-    return variables.put(name, new ContextVariable(name, value, this));
-  }
+    /**
+     * Creates a context variable.
+     *
+     * @param name  Name of the context variable.
+     * @param value Value of the context variable.
+     * @return The created context variable.
+     * @throws CoreException If the variable could not be created.
+     */
+    @Override
+    public ContextVariable create(String name, Object value) throws CoreException {
+        if (variables.containsKey(name)) {
+            throw new CoreException(String.format("A variable with the name '%s' already exists", name));
+        }
 
-  @Override
-  public List<ContextVariable> getAll() {
-    return Collections.unmodifiableList(variables.values().stream().toList());
-  }
+        return variables.put(name, new ContextVariable(name, value, this));
+    }
+
+    /**
+     * Synchronize a variable in the context.
+     *
+     * @param variable Variable to synchronize.
+     * @throws CoreException In case synchronization fails.
+     */
+    @Override
+    void sync(ContextVariable variable) throws CoreException {
+    }
+
+    /**
+     * Returns all context variables.
+     *
+     * @return Context variables.
+     */
+    @Override
+    public List<ContextVariable> getAll() {
+        return Collections.unmodifiableList(variables.values().stream().toList());
+    }
 }
