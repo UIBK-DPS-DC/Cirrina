@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.lang.parser.classes.actions;
 
+import at.ac.uibk.dps.cirrina.lang.parser.classes.context.ContextVariableReference;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotNull;
@@ -8,5 +9,5 @@ import jakarta.validation.constraints.NotNull;
 public class UnlockActionClass extends ActionClass {
 
   @NotNull
-  public String variable;
+  public ContextVariableReference variable;
 }

@@ -2,13 +2,15 @@ package at.ac.uibk.dps.cirrina.lang.parser.classes;
 
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.RaiseActionClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.helper.StateOrStateMachineClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.OnTransitionClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.TransitionClass;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -43,15 +45,9 @@ import java.util.Optional;
  *      while: [...],
  *      after: [...],
  *      on: [...],
- *      localContext: {
- *        variable: 'value'
- *      },
- *      persistentContext: {
- *        variable: 'value'
- *      },
- *      staticContext: {
- *        variable: 'value'
- *      }
+ *      localContext: [...],
+ *      persistentContext: [...],
+ *      staticContext: [...],
  *    }
  * </pre>
  * </p>
@@ -72,48 +68,49 @@ public class StateClass extends Construct implements StateOrStateMachineClass {
   public String name;
 
   /**
-   * The is initial flag. Indicating if this is the intial state of the state machine. Exactly one state must be the
-   * initial state of a state machine. If omitted, the state is not initial.
+   * The is initial flag. Indicating if this is the intial state of the state machine. Exactly one
+   * state must be the initial state of a state machine. If omitted, the state is not initial.
    */
   @JsonSetter(nulls = Nulls.SKIP)
   public boolean isInitial = false;
 
   /**
-   * The is terminal flag. Indicating if this is a terminal state of the state machine. If omitted, the state is not
-   * terminal.
+   * The is terminal flag. Indicating if this is a terminal state of the state machine. If omitted,
+   * the state is not terminal.
    */
   @JsonSetter(nulls = Nulls.SKIP)
   public boolean isTerminal = false;
 
   /**
-   * The optional entry actions. Can be provided as action references to previously declared actions, or inline
-   * actions.
+   * The optional entry actions. Can be provided as action references to previously declared
+   * actions, or inline actions.
    */
   public Optional<List<ActionOrActionReferenceClass>> entry = Optional.empty();
 
   /**
-   * The optional exit actions. Can be provided as action references to previously declared actions, or inline actions.
+   * The optional exit actions. Can be provided as action references to previously declared actions,
+   * or inline actions.
    */
   public Optional<List<ActionOrActionReferenceClass>> exit = Optional.empty();
 
   /**
-   * The optional while actions. Can be provided as action references to previously declared actions, or inline
-   * actions.
+   * The optional while actions. Can be provided as action references to previously declared
+   * actions, or inline actions.
    */
   @JsonProperty("while")
   public Optional<List<ActionOrActionReferenceClass>> whilee = Optional.empty();
 
   /**
-   * The optional after (timeout) actions. Can be provided as action references to previously declared actions, or
-   * inline actions. Actions provided must be raise event actions.
+   * The optional after (timeout) actions. Can be provided as action references to previously
+   * declared actions, or inline actions. Actions provided must be raise event actions.
    *
    * @see RaiseActionClass
    */
   public Optional<List<ActionOrActionReferenceClass>> after = Optional.empty();
 
   /**
-   * The optional on transitions. On transitions are taken upon event receiving an event that matches the 'event'
-   * keyword of the on transition.
+   * The optional on transitions. On transitions are taken upon event receiving an event that
+   * matches the 'event' keyword of the on transition.
    */
   public Optional<List<OnTransitionClass>> on = Optional.empty();
 
@@ -125,27 +122,28 @@ public class StateClass extends Construct implements StateOrStateMachineClass {
   /**
    * The optional lexical declaration of local context variables.
    */
-  public Optional<Map<String, String>> localContext = Optional.empty();
+  public Optional<ContextClass> localContext = Optional.empty();
 
   /**
    * The optional lexical declaration of persistent context variables.
    */
-  public Optional<Map<String, String>> persistentContext = Optional.empty();
+  public Optional<ContextClass> persistentContext = Optional.empty();
 
   /**
    * The optional lexical declaration of static context variables.
    */
-  public Optional<Map<String, String>> staticContext = Optional.empty();
+  public Optional<ContextClass> staticContext = Optional.empty();
 
   /**
-   * The optional virtual modifier. If a state is defined as virtual, inherited state machines may override the state.
+   * The optional virtual modifier. If a state is defined as virtual, inherited state machines may
+   * override the state.
    */
   @JsonSetter(nulls = Nulls.SKIP)
   public boolean isVirtual = false;
 
   /**
-   * The optional abstract modifier. If a state is defined as abstract, inherited state machines must override the
-   * state.
+   * The optional abstract modifier. If a state is defined as abstract, inherited state machines
+   * must override the state.
    */
   @JsonSetter(nulls = Nulls.SKIP)
   public boolean isAbstract = false;

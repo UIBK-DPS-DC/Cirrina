@@ -15,7 +15,8 @@ public class ActionResolver {
     this.stateMachine = stateMachine;
   }
 
-  public Action resolve(ActionOrActionReferenceClass actionOrActionReferenceClass) throws IllegalStateException {
+  public Action resolve(ActionOrActionReferenceClass actionOrActionReferenceClass)
+      throws IllegalStateException {
     switch (actionOrActionReferenceClass) {
       // An inline action is provided as an action class, since this action is inline it needs to be constructed
       case ActionClass actionClass -> {
@@ -25,7 +26,8 @@ public class ActionResolver {
       case ActionReferenceClass actionReferenceClass -> {
         return this.stateMachine.getActionByName(actionReferenceClass.reference);
       }
-      default -> throw new IllegalStateException("Unexpected value: " + actionOrActionReferenceClass);
+      default ->
+          throw new IllegalStateException("Unexpected value: " + actionOrActionReferenceClass);
     }
   }
 }

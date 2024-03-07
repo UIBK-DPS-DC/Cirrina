@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.lang.parser.classes.actions;
 
+import at.ac.uibk.dps.cirrina.lang.parser.classes.context.ContextVariableClass;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -10,10 +11,7 @@ import jakarta.validation.constraints.NotNull;
 public class CreateActionClass extends ActionClass {
 
   @NotNull
-  public String variable;
-
-  @NotNull
-  public String value;
+  public ContextVariableClass variable;
 
   @JsonSetter(nulls = Nulls.SKIP)
   public boolean isPersistent = false;

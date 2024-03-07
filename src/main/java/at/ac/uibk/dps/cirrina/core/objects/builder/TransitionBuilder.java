@@ -4,10 +4,9 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
-import at.ac.uibk.dps.cirrina.lang.parser.classes.OnTransitionClass;
-import at.ac.uibk.dps.cirrina.lang.parser.classes.TransitionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionOrActionReferenceClass;
-
+import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.OnTransitionClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.TransitionClass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,11 +34,13 @@ public class TransitionBuilder {
     // Create the appropriate transition
     switch (transitionClass) {
       case OnTransitionClass onTransitionClass -> {
-        return new OnTransition(onTransitionClass.target, resolveActions.apply(onTransitionClass.actions),
+        return new OnTransition(onTransitionClass.target,
+            resolveActions.apply(onTransitionClass.actions),
             onTransitionClass.event);
       }
       default -> {
-        return new Transition(transitionClass.target, resolveActions.apply(transitionClass.actions));
+        return new Transition(transitionClass.target,
+            resolveActions.apply(transitionClass.actions));
       }
     }
   }

@@ -1,5 +1,7 @@
-package at.ac.uibk.dps.cirrina.lang.parser.classes;
+package at.ac.uibk.dps.cirrina.lang.parser.classes.guards;
 
+import at.ac.uibk.dps.cirrina.lang.parser.classes.Construct;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.helper.GuardOrGuardReferenceClass;
 import jakarta.validation.constraints.NotNull;
 
@@ -27,7 +29,8 @@ public class GuardReferenceClass extends Construct implements GuardOrGuardRefere
   /**
    * The guard name reference.
    * <p>
-   * Must be the name of an existing guard. Guard references may be declared as part of a state machine.
+   * Must be the name of an existing guard. Guard references may be declared as part of a state
+   * machine.
    * </p>
    *
    * @see StateMachineClass

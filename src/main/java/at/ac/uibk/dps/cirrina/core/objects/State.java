@@ -21,7 +21,8 @@ public class State {
 
   private final ActionGraph whilee;
 
-  public State(String name, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions,
+  public State(String name, List<Action> entryActions, List<Action> exitActions,
+      List<Action> whileActions,
       boolean isAbstract, boolean isVirtual) {
     this.name = name;
 

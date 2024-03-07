@@ -2,8 +2,8 @@ package at.ac.uibk.dps.cirrina.lang.checker;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import at.ac.uibk.dps.cirrina.lang.parser.Parser;
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
+import at.ac.uibk.dps.cirrina.lang.parser.Parser;
 import org.junit.jupiter.api.Test;
 
 public class CheckerTest {

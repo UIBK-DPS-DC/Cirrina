@@ -39,13 +39,17 @@ public class DefaultDescriptions {
                 entry: [
                   {
                     type: 'assign',
-                    variable: 'v',
-                    value: 'v+1'
+                    variable: {
+                      name: 'v',
+                      value: 'v+1'
+                    }
                   },
                   {
                     type: 'assign',
-                    variable: 'v',
-                    value: 'v+1'
+                    variable: {
+                      name: 'v',
+                      value: 'v+1'
+                     }
                   },
                   {
                     type: 'raise',
@@ -67,8 +71,10 @@ public class DefaultDescriptions {
               {
                 name: 'action1',
                 type: 'create',
-                variable: 'v',
-                value: '5'
+                variable: {
+                  name: 'v',
+                  value: '5'
+                }
               }
             ]
           }

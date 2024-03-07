@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.core.objects;
 
 import at.ac.uibk.dps.cirrina.lang.parser.keywords.MemoryMode;
 import java.util.Optional;
-
 import org.jgrapht.graph.DirectedPseudograph;
 
 public class CollaborativeStateMachine extends DirectedPseudograph<StateMachine, Event> {
@@ -20,7 +19,8 @@ public class CollaborativeStateMachine extends DirectedPseudograph<StateMachine,
 
 
   /**
-   * Returns a state machine by its name. If no state machine is known with the supplied name, empty is returned.
+   * Returns a state machine by its name. If no state machine is known with the supplied name, empty
+   * is returned.
    *
    * @param name Name of the state machine to return.
    * @return The state machine with the supplied name or empty.

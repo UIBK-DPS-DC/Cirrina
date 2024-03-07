@@ -5,7 +5,6 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionOrActionReferenceClass;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +18,8 @@ public class StateBuilder {
 
   private final Optional<State> inheritedState;
 
-  public StateBuilder(StateClass stateClass, ActionResolver actionResolver, Optional<State> inheritedState) {
+  public StateBuilder(StateClass stateClass, ActionResolver actionResolver,
+      Optional<State> inheritedState) {
     this.stateClass = stateClass;
     this.actionResolver = actionResolver;
     this.inheritedState = inheritedState;
@@ -38,7 +38,8 @@ public class StateBuilder {
 
     return inheritedState
         .map(State::new)
-        .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions, stateClass.isAbstract,
+        .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions,
+            stateClass.isAbstract,
             stateClass.isVirtual));
   }
 }

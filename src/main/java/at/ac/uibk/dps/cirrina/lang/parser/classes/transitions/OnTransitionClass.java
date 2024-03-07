@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.lang.parser.classes;
+package at.ac.uibk.dps.cirrina.lang.parser.classes.transitions;
 
 import javax.validation.constraints.NotNull;
 

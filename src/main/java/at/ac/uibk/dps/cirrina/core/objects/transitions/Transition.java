@@ -5,7 +5,6 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.ActionGraph;
 import at.ac.uibk.dps.cirrina.core.objects.builder.ActionGraphBuilder;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.jgrapht.graph.DefaultEdge;
 
 public class Transition extends DefaultEdge {

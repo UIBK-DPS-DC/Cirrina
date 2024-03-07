@@ -5,12 +5,10 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import org.jgrapht.graph.DirectedPseudograph;
 
 public class StateMachine extends DirectedPseudograph<State, Transition> {
@@ -57,7 +55,8 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
   }
 
   /**
-   * Returns a state by its name. If not one state is known with the supplied name, empty is returned.
+   * Returns a state by its name. If not one state is known with the supplied name, empty is
+   * returned.
    *
    * @param stateName Name of the state to return.
    * @return The state with the supplied name or empty.
@@ -71,15 +70,18 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
 
     // Expect precisely one state with the provided name
     if (states.isEmpty()) {
-      throw new IllegalArgumentException(new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName));
+      throw new IllegalArgumentException(
+          new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName));
     } else if (states.size() != 1) {
-      throw new IllegalArgumentException(new CheckerException(CheckerException.Message.STATE_NAME_IS_NOT_UNIQUE, stateName));
+      throw new IllegalArgumentException(
+          new CheckerException(CheckerException.Message.STATE_NAME_IS_NOT_UNIQUE, stateName));
     }
     return states.getFirst();
   }
 
   /**
-   * Returns an action by its name. If not one action is known with the supplied name, empty is returned.
+   * Returns an action by its name. If not one action is known with the supplied name, empty is
+   * returned.
    *
    * @param actionName Name of the action to return.
    * @return The action with the supplied name or empty.
@@ -88,16 +90,22 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
   public Action getActionByName(String actionName) throws IllegalArgumentException {
     // Ensure that named actions are declared and an action with the provided name exists
     var actionsWithName = actions.orElseThrow(
-            () -> new IllegalArgumentException(new CheckerException(CheckerException.Message.STATE_MACHINE_HAS_NO_NAMED_ACTIONS, name)))
+            () -> new IllegalArgumentException(
+                new CheckerException(CheckerException.Message.STATE_MACHINE_HAS_NO_NAMED_ACTIONS,
+                    name)))
         .stream()
         .filter(action -> action.name.equals(Optional.of(actionName)))
         .toList();
 
     // Ensure that precisely one action is known with this name
     if (actionsWithName.isEmpty()) {
-      throw new IllegalArgumentException(new CheckerException(CheckerException.Message.NAMED_ACTION_DOES_NOT_EXIST, name, actionName));
+      throw new IllegalArgumentException(
+          new CheckerException(CheckerException.Message.NAMED_ACTION_DOES_NOT_EXIST, name,
+              actionName));
     } else if (actionsWithName.size() != 1) {
-      throw new IllegalArgumentException(new CheckerException(CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE, name, actionName));
+      throw new IllegalArgumentException(
+          new CheckerException(CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE, name,
+              actionName));
     }
     return actionsWithName.getFirst();
   }

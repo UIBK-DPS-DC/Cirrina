@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.objects.actions;
 
 import at.ac.uibk.dps.cirrina.core.objects.Expression;
-
 import java.util.Optional;
 
 public class AssignAction extends Action {

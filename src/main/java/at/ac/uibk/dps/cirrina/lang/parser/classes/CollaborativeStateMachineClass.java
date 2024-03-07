@@ -1,11 +1,11 @@
 package at.ac.uibk.dps.cirrina.lang.parser.classes;
 
+import at.ac.uibk.dps.cirrina.lang.parser.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.lang.parser.keywords.MemoryMode;
 import at.ac.uibk.dps.cirrina.lang.parser.keywords.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -30,12 +30,8 @@ import java.util.Optional;
  *      version: '0.1',
  *      memoryMode: 'distributed',
  *      stateMachines: [...],
- *      localContext: {
- *        variable: 'value'
- *      },
- *      persistentContext: {
- *        variable: 'value'
- *      }
+ *      localContext: [...],
+ *      persistentContext: [...]
  *    }
  *  </pre>
  * </p>
@@ -90,10 +86,10 @@ public class CollaborativeStateMachineClass extends Construct {
   /**
    * The optional lexical declaration of local context variables.
    */
-  public Optional<Map<String, String>> localContext = Optional.empty();
+  public Optional<ContextClass> localContext = Optional.empty();
 
   /**
    * The optional lexical declaration of persistent context variables.
    */
-  public Optional<Map<String, String>> persistentContext = Optional.empty();
+  public Optional<ContextClass> persistentContext = Optional.empty();
 }

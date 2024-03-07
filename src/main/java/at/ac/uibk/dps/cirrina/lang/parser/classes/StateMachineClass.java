@@ -2,13 +2,15 @@ package at.ac.uibk.dps.cirrina.lang.parser.classes;
 
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionReferenceClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.context.ContextClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.guards.GuardClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.guards.GuardReferenceClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.helper.StateOrStateMachineClass;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -30,12 +32,8 @@ import java.util.Optional;
  *    {
  *      name: 'Collaborative State Machine Name',
  *      states: [...],
- *      localContext: {
- *        variable: 'value'
- *      },
- *      persistentContext: {
- *        variable: 'value'
- *      },
+ *      localContext: [...],
+ *      persistentContext: [...],
  *      guards: [],
  *      actions: []
  *    }
@@ -65,12 +63,12 @@ public class StateMachineClass extends Construct implements StateOrStateMachineC
   /**
    * The optional lexical declaration of local context variables.
    */
-  public Optional<Map<String, String>> localContext = Optional.empty();
+  public Optional<ContextClass> localContext = Optional.empty();
 
   /**
    * The optional lexical declaration of persistent context variables.
    */
-  public Optional<Map<String, String>> persistentContext = Optional.empty();
+  public Optional<ContextClass> persistentContext = Optional.empty();
 
   /**
    * The optional named guards.
@@ -97,8 +95,8 @@ public class StateMachineClass extends Construct implements StateOrStateMachineC
   /**
    * The optional inherited state machine name.
    * <p>
-   * The state machine inherits from this state machine, copies all its properties and allows them to be overwritten.
-   * States can only be overridden if they are defined as virtual or abstract.
+   * The state machine inherits from this state machine, copies all its properties and allows them
+   * to be overwritten. States can only be overridden if they are defined as virtual or abstract.
    * </p>
    *
    * @see StateClass
@@ -108,8 +106,8 @@ public class StateMachineClass extends Construct implements StateOrStateMachineC
   /**
    * The optional abstract modifier.
    * <p>
-   * If a state machine is defined as abstract, it cannot be instantiated and is never executed by nested state
-   * machines. Abstract state machines can be inherited and can have abstract states.
+   * If a state machine is defined as abstract, it cannot be instantiated and is never executed by
+   * nested state machines. Abstract state machines can be inherited and can have abstract states.
    * </p>
    *
    * @see StateClass

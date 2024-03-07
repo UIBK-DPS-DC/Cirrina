@@ -1,13 +1,14 @@
-package at.ac.uibk.dps.cirrina.lang.parser.classes;
+package at.ac.uibk.dps.cirrina.lang.parser.classes.guards;
 
+import at.ac.uibk.dps.cirrina.lang.parser.classes.Construct;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.helper.GuardOrGuardReferenceClass;
 import jakarta.validation.constraints.NotNull;
-
 import java.util.Optional;
 
 /**
- * Guard construct. Represents a conditional (if) that determines if a transition can be taken. Guards can be declared
- * and referenced as part of a state machine, or be declared inline.
+ * Guard construct. Represents a conditional (if) that determines if a transition can be taken.
+ * Guards can be declared and referenced as part of a state machine, or be declared inline.
  * <p>
  * Keywords:
  * <table border="1">
@@ -42,8 +43,8 @@ public class GuardClass extends Construct implements GuardOrGuardReferenceClass 
   /**
    * The optional name.
    * <p>
-   * If present, can be referenced from within a state machine component when declared as part of the
-   * state machine's guards.
+   * If present, can be referenced from within a state machine component when declared as part of
+   * the state machine's guards.
    *
    * @see StateMachineClass
    * @see GuardReferenceClass

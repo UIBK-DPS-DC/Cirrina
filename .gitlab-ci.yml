@@ -21,7 +21,7 @@ build:
 test:
   stage: test
   script:
-   - gradle check
+    - gradle check
   artifacts:
     when: always
     reports:

@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.objects;
 
-import at.ac.uibk.dps.cirrina.lang.parser.classes.EventChannel;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.events.EventChannel;
 import java.util.Map;
 import java.util.Optional;
 

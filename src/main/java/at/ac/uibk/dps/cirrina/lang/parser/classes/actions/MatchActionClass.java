@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.lang.parser.classes.actions;
 
+import at.ac.uibk.dps.cirrina.lang.parser.classes.ExpressionClass;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,8 +11,8 @@ import java.util.Map;
 public class MatchActionClass extends ActionClass {
 
   @NotNull
-  public String value;
+  public ExpressionClass value;
 
   @JsonProperty("case")
-  public Map<String, ActionOrActionReferenceClass> casee;
+  public Map<ExpressionClass, ActionOrActionReferenceClass> casee;
 }

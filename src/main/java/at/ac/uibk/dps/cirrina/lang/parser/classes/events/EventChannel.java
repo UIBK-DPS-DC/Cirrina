@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.lang.parser.classes;
+package at.ac.uibk.dps.cirrina.lang.parser.classes.events;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

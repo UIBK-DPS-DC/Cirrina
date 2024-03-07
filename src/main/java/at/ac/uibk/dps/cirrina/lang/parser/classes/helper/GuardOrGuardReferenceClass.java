@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.lang.parser.classes.helper;
 
-import at.ac.uibk.dps.cirrina.lang.parser.classes.GuardClass;
-import at.ac.uibk.dps.cirrina.lang.parser.classes.GuardReferenceClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.guards.GuardClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.guards.GuardReferenceClass;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 

@@ -33,7 +33,8 @@ public class ActionBuilder {
   public Action build() throws IllegalArgumentException {
     switch (actionClass) {
       case AssignActionClass assign -> {
-        return new AssignAction(assign.name, assign.variable, assign.value);
+        return new AssignAction(assign.name, assign.variable.name,
+            assign.variable.value.expression);
       }
       case CreateActionClass create -> {
         return new CreateAction(create.name);
@@ -48,7 +49,8 @@ public class ActionBuilder {
         return new MatchAction(match.name);
       }
       case RaiseActionClass raise -> {
-        return new RaiseAction(raise.name, new Event(raise.event.name, raise.event.channel, raise.event.data));
+        return new RaiseAction(raise.name,
+            new Event(raise.event.name, raise.event.channel, raise.event.data));
       }
       case TimeoutActionClass timeout -> {
         return new TimeoutAction(timeout.name);
