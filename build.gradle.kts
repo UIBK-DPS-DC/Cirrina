@@ -38,6 +38,9 @@ tasks {
     javadoc {
         options {
             (this as CoreJavadocOptions).addStringOption("Xdoclint:none", "-quiet")
+            overview = "src/main/javadoc/overview.html" // Relative to source root
+            addBooleanOption("-allow-script-in-comments", true)
+            header = "<script type=\"text/javascript\" async src=\"https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML\"></script>"
         }
     }
 }
