@@ -11,81 +11,80 @@ import dev.cel.parser.CelStandardMacro;
 import dev.cel.runtime.CelEvaluationException;
 import dev.cel.runtime.CelRuntime;
 import dev.cel.runtime.CelRuntimeFactory;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Expression {
 
-    private final CelAbstractSyntaxTree ast;
+  private final CelAbstractSyntaxTree ast;
 
-    public Expression(String source) throws IllegalArgumentException {
-        // Attempt to parse the expression into an abstract syntax tree
-        var celCompiler = getCelCompiler(Optional.empty());
+  public Expression(String source) throws IllegalArgumentException {
+    // Attempt to parse the expression into an abstract syntax tree
+    var celCompiler = getCelCompiler(Optional.empty());
 
-        // Parse the expression
-        var parseResult = celCompiler.parse(source);
+    // Parse the expression
+    var parseResult = celCompiler.parse(source);
 
-        // Check if parsing succeeded
-        if (parseResult.hasError()) {
-            throw new IllegalArgumentException(
-                    String.format("Failed to compile expression: %s", parseResult.getErrorString()));
-        }
-
-        // Attempt to acquire the abstract syntax tree
-        try {
-            ast = parseResult.getAst();
-        } catch (CelValidationException e) {
-            throw new IllegalArgumentException(
-                    String.format("Failed to compile expression: %s", e.getMessage()));
-        }
+    // Check if parsing succeeded
+    if (parseResult.hasError()) {
+      throw new IllegalArgumentException(
+          String.format("Failed to compile expression: %s", parseResult.getErrorString()));
     }
 
-    private CelCompiler getCelCompiler(Optional<Context> context) throws IllegalArgumentException {
-        var builder = CelCompilerFactory.standardCelCompilerBuilder();
+    // Attempt to acquire the abstract syntax tree
+    try {
+      ast = parseResult.getAst();
+    } catch (CelValidationException e) {
+      throw new IllegalArgumentException(
+          String.format("Failed to compile expression: %s", e.getMessage()));
+    }
+  }
 
-        builder.setStandardMacros(CelStandardMacro.ALL);
-        builder.setStandardEnvironmentEnabled(true);
+  private CelCompiler getCelCompiler(Optional<Context> context) throws IllegalArgumentException {
+    var builder = CelCompilerFactory.standardCelCompilerBuilder();
 
-        context.ifPresent(c -> getVariables(c).keySet()
-                .forEach(name -> builder.addVar(name, CelTypes.DYN)));
+    builder.setStandardMacros(CelStandardMacro.ALL);
+    builder.setStandardEnvironmentEnabled(true);
 
-        return builder.build();
+    context.ifPresent(c -> getVariables(c).keySet()
+        .forEach(name -> builder.addVar(name, CelTypes.DYN)));
+
+    return builder.build();
+  }
+
+  private CelRuntime getCelRuntime() {
+    var builder = CelRuntimeFactory.standardCelRuntimeBuilder();
+
+    builder.setStandardEnvironmentEnabled(true);
+
+    return builder.build();
+  }
+
+  private Map<String, Object> getVariables(Context context) {
+    return context.getAll().stream()
+        .collect(Collectors.toMap(variable -> variable.name, Context.ContextVariable::getValue));
+  }
+
+  public Object execute(Context context) throws CoreException {
+    var celCompiler = getCelCompiler(Optional.of(context));
+
+    // Perform checking
+    var checkResult = celCompiler.check(ast);
+
+    // Check if parsing succeeded
+    if (checkResult.hasError()) {
+      throw new IllegalArgumentException(
+          String.format("Failed to execute expression: %s", checkResult.getErrorString()));
     }
 
-    private CelRuntime getCelRuntime() {
-        var builder = CelRuntimeFactory.standardCelRuntimeBuilder();
+    try {
+      var celRuntime = CelRuntimeFactory.standardCelRuntimeBuilder().build();
+      var program = celRuntime.createProgram(checkResult.getAst());
 
-        builder.setStandardEnvironmentEnabled(true);
-
-        return builder.build();
+      return program.eval(getVariables(context));
+    } catch (CelValidationException | CelEvaluationException e) {
+      throw new CoreException(String.format("Failed to execute expression: %s", e.getMessage()));
     }
-
-    private Map<String, Object> getVariables(Context context) {
-        return context.getAll().stream()
-                .collect(Collectors.toMap(variable -> variable.name, Context.ContextVariable::getValue));
-    }
-
-    public Object execute(Context context) throws CoreException {
-        var celCompiler = getCelCompiler(Optional.of(context));
-
-        // Perform checking
-        var checkResult = celCompiler.check(ast);
-
-        // Check if parsing succeeded
-        if (checkResult.hasError()) {
-            throw new IllegalArgumentException(
-                    String.format("Failed to execute expression: %s", checkResult.getErrorString()));
-        }
-
-        try {
-            var celRuntime = CelRuntimeFactory.standardCelRuntimeBuilder().build();
-            var program = celRuntime.createProgram(checkResult.getAst());
-
-            return program.eval(getVariables(context));
-        } catch (CelValidationException | CelEvaluationException e) {
-            throw new CoreException(String.format("Failed to execute expression: %s", e.getMessage()));
-        }
-    }
+  }
 }

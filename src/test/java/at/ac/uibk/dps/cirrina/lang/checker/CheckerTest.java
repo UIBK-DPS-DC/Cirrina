@@ -1,19 +1,19 @@
 package at.ac.uibk.dps.cirrina.lang.checker;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.actions.AssignAction;
-import at.ac.uibk.dps.cirrina.lang.parser.Parser;
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
-
-import org.junit.jupiter.api.Test;
-
+import at.ac.uibk.dps.cirrina.lang.parser.Parser;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class CheckerTest {
 
@@ -55,8 +55,6 @@ public class CheckerTest {
       Action action2 = stateMachine1.getActionByName("action2");
       assertInstanceOf(AssignAction.class, action1);
       assertInstanceOf(AssignAction.class, action2);
-      //assertEquals("0", ((AssignAction)action1).value.source);
-      //assertEquals("1", ((AssignAction)action2).value.source);
     });
 
     StateMachine stateMachine2 = csmChecked.getStateMachineByName("stateMachine2")
@@ -68,8 +66,6 @@ public class CheckerTest {
       Action action2 = stateMachine2.getActionByName("action2");
       assertInstanceOf(AssignAction.class, action1);
       assertInstanceOf(AssignAction.class, action2);
-      //assertEquals("0", ((AssignAction)action1).value.source);
-      //assertEquals("2", ((AssignAction)action2).value.source);
     });
   }
 }

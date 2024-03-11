@@ -38,7 +38,8 @@ public class StateBuilder {
 
     // Create this state
     return parentState
-        .map(parentState -> new State(parentState, entryActions, exitActions, whileActions, stateClass.isAbstract))
+        .map(parentState -> new State(parentState, entryActions, exitActions, whileActions,
+            stateClass.isAbstract))
         .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions,
             stateClass.isAbstract,
             stateClass.isVirtual));

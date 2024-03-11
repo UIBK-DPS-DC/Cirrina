@@ -5,12 +5,11 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
 import org.jgrapht.graph.DirectedPseudograph;
 
 public class StateMachine extends DirectedPseudograph<State, Transition> {
@@ -69,16 +68,18 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
    *
    * @param stateName Name of the state to return.
    * @return The state with the supplied name.
-   * @throws IllegalArgumentException In case not one state is known with the supplied name or multiple states were
-   * found.
+   * @throws IllegalArgumentException In case not one state is known with the supplied name or
+   *                                  multiple states were found.
    */
   public State getStateByName(String stateName) {
     return findStateByName(stateName)
-        .orElseThrow(() -> new IllegalArgumentException(new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName)));
+        .orElseThrow(() -> new IllegalArgumentException(
+            new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName)));
   }
 
   /**
-   * Returns a state by its name. If not one state is known with the supplied name, empty is returned.
+   * Returns a state by its name. If not one state is known with the supplied name, empty is
+   * returned.
    *
    * @param stateName Name of the state to return.
    * @return The state with the supplied name or empty.
@@ -130,7 +131,8 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
     return actionsWithName.getFirst();
   }
 
-  public StateMachine cloneWithStateMachineClass(StateMachineClass stateMachineClass, Optional<List<Action>> actions) {
+  public StateMachine cloneWithStateMachineClass(StateMachineClass stateMachineClass,
+      Optional<List<Action>> actions) {
     // Create a shallow copy (no vertices or edges)
     var stateMachine = (StateMachine) clone();
 

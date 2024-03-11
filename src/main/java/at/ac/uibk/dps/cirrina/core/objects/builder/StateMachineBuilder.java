@@ -1,12 +1,9 @@
 package at.ac.uibk.dps.cirrina.core.objects.builder;
 
 import at.ac.uibk.dps.cirrina.core.Common;
-import at.ac.uibk.dps.cirrina.core.objects.State;
 import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
-import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
@@ -18,8 +15,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * State machine builder. Builds a state machine based on a state machine class. To resolve inheritance keeps a list
- * of known state machines.
+ * State machine builder. Builds a state machine based on a state machine class. To resolve
+ * inheritance keeps a list of known state machines.
  */
 public class StateMachineBuilder {
 
@@ -38,8 +35,8 @@ public class StateMachineBuilder {
   }
 
   /**
-   * Constructs the list of named actions of this state machine if named actions are declared. Also ensures that no
-   * duplicate entries exist.
+   * Constructs the list of named actions of this state machine if named actions are declared. Also
+   * ensures that no duplicate entries exist.
    *
    * @return The list of named actions or empty.
    * @throws IllegalArgumentException When at least one duplicate entry exists.
@@ -92,8 +89,8 @@ public class StateMachineBuilder {
    *
    * @param inheritName The name of the state machine to inherit from.
    * @return The state machine.
-   * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name
-   * is not known.
+   * @throws IllegalArgumentException In case the state machine could not be built or the provided
+   *                                  state machine name is not known.
    * @see ChildStateMachineBuilder
    */
   private StateMachine buildChild(String inheritName)

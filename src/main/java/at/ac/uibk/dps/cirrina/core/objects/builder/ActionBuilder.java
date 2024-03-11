@@ -5,22 +5,18 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.actions.AssignAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.CreateAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.InvokeAction;
-import at.ac.uibk.dps.cirrina.core.objects.actions.LockAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.MatchAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.TimeoutAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.TimeoutResetAction;
-import at.ac.uibk.dps.cirrina.core.objects.actions.UnlockAction;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.AssignActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.CreateActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.InvokeActionClass;
-import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.LockActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.MatchActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.RaiseActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.TimeoutActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.TimeoutResetActionClass;
-import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.UnlockActionClass;
 
 public class ActionBuilder {
 
@@ -42,9 +38,6 @@ public class ActionBuilder {
       case InvokeActionClass invoke -> {
         return new InvokeAction(invoke.name);
       }
-      case LockActionClass lock -> {
-        return new LockAction(lock.name);
-      }
       case MatchActionClass match -> {
         return new MatchAction(match.name);
       }
@@ -57,9 +50,6 @@ public class ActionBuilder {
       }
       case TimeoutResetActionClass timeoutReset -> {
         return new TimeoutResetAction(timeoutReset.name);
-      }
-      case UnlockActionClass unlock -> {
-        return new UnlockAction(unlock.name);
       }
       default -> throw new IllegalStateException("Unexpected value: " + actionClass.type);
     }

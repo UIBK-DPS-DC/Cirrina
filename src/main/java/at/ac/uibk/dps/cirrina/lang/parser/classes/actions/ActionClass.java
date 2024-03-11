@@ -62,7 +62,6 @@ public class ActionClass extends Construct implements ActionOrActionReferenceCla
           "assign", AssignActionClass.class,
           "create", CreateActionClass.class,
           "invoke", InvokeActionClass.class,
-          "lock", LockActionClass.class,
           "match", MatchActionClass.class,
           "raise", RaiseActionClass.class,
           "timeout", TimeoutActionClass.class,

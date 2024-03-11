@@ -3,7 +3,6 @@ package at.ac.uibk.dps.cirrina.core.objects.builder;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.actions.ActionGraph;
 import com.google.common.collect.Iterables;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -35,8 +34,7 @@ public class ActionGraphBuilder {
       // If the action graph is not empty, connect to its last vertex
       if (!actionGraph.vertexSet().isEmpty()) {
         previous = Iterables.getLast(actionGraph.vertexSet());
-      }
-      else {
+      } else {
         previous = it.next();
 
         // Add the first vertex
