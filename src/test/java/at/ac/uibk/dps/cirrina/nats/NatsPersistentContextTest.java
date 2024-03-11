@@ -14,6 +14,6 @@ public class NatsPersistentContextTest extends ContextTest {
 
     Assumptions.assumeFalse(natsServerURL == null, "Skipping NATS persistent context test");
 
-    return assertDoesNotThrow(() -> new NatsPersistentContext(natsServerURL));
+    return assertDoesNotThrow(() -> new NatsPersistentContext(natsServerURL, "persistent"));
   }
 }

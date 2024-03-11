@@ -6,6 +6,7 @@ import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.KeyValue;
 import io.nats.client.Nats;
+import io.nats.client.api.KeyValueConfiguration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,16 +15,15 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A persistent context containing within a NATS bucket.
  */
-public final class NatsPersistentContext extends Context {
+public final class NatsPersistentContext extends Context implements AutoCloseable {
 
-  /**
-   * The persistent context bucket name.
-   */
-  public final String PERSISTENT_CONTEXT_BUCKET_NAME = "persistent";
+  private static final Logger logger = LogManager.getLogger();
   private final Connection connection;
   private final KeyValue keyValue;
   private final Vector<String> knownKeys = new Vector<>();
@@ -33,7 +33,7 @@ public final class NatsPersistentContext extends Context {
    *
    * @param natsUrl NATS server URL.
    */
-  public NatsPersistentContext(String natsUrl) throws CoreException {
+  public NatsPersistentContext(String natsUrl, String bucketName) throws CoreException {
     // Attempt to connect to the NATS server
     try {
       connection = Nats.connect(natsUrl);
@@ -47,10 +47,24 @@ public final class NatsPersistentContext extends Context {
     // Attempt to retrieve the bucket, which is expected to be pre-created. We do not manage the creation/deletion of
     // buckets
     try {
-      keyValue = connection.keyValue(PERSISTENT_CONTEXT_BUCKET_NAME);
-    } catch (IOException e) {
+      var keyValueManagement = connection.keyValueManagement();
+
+      // Bucket should not exist yet
+      if (keyValueManagement.getBucketNames().contains(bucketName)) {
+        logger.warn("A bucket with the name '{}' already exists, deleting the existing bucket",
+            bucketName);
+
+        keyValueManagement.delete(bucketName);
+      }
+
+      // Create the bucket
+      keyValueManagement.create(new KeyValueConfiguration.Builder().name(bucketName).build());
+
+      // Retrieve the bucket
+      keyValue = connection.keyValue(bucketName);
+    } catch (IOException | JetStreamApiException e) {
       throw new CoreException(
-          "Failed to retrieve the persistent context bucket, make sure that it has been created");
+          "Failed to create the persistent context bucket, make sure that it has been created");
     }
   }
 
@@ -198,6 +212,21 @@ public final class NatsPersistentContext extends Context {
     } catch (IOException | ClassNotFoundException e) {
       throw new CoreException(
           String.format("Failed to convert binary data to object: %s", e.getMessage()));
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    try {
+      var keyValueManagement = connection.keyValueManagement();
+
+      // Delete the bucket
+      keyValueManagement.delete(keyValue.getBucketName());
+
+      connection.close();
+    } catch (IOException | JetStreamApiException | InterruptedException e) {
+      throw new CoreException(
+          String.format("Failed to close NATS persistent context: %s", e.getMessage()));
     }
   }
 }

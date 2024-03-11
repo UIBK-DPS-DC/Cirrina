@@ -96,4 +96,9 @@ public class InMemoryContext extends Context {
         .map(entry -> new ContextVariable(entry.getKey(), entry.getValue()))
         .toList();
   }
+
+  @Override
+  public void close() throws Exception {
+
+  }
 }

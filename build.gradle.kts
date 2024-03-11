@@ -22,6 +22,8 @@ dependencies {
 
     implementation("io.nats:jnats:2.17.3")
 
+    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
@@ -33,7 +35,7 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    testImplementation("org.glassfish:jakarta.el:3.0.3")
+    testImplementation("org.glassfish:jakarta.el:4.0.2")
 }
 
 tasks {

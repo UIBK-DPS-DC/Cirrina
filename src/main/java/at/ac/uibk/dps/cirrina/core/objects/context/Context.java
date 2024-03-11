@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Base context, containing context variables.
  */
-public abstract class Context {
+public abstract class Context implements AutoCloseable {
 
   /**
    * Retrieve a context variable.
