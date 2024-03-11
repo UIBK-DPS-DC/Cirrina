@@ -25,4 +25,8 @@ public class Transition extends DefaultEdge {
         .flatMap(s -> s.stream())
         .toList();
   }
+
+  public List<Action> allActions() {
+    return actions.vertexSet().stream().toList();
+  }
 }

@@ -30,4 +30,14 @@ public class JsonParserTest {
       System.out.println(csm);
     });
   }
+
+  @Test
+  public void testInheritance() {
+    var json = DefaultDescriptions.completeInheritance;
+
+    var parser = new Parser(new Options());
+    assertDoesNotThrow(() -> {
+      var csm = parser.parse(json);
+    });
+  }
 }

@@ -9,15 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
 import org.jgrapht.graph.DirectedPseudograph;
 
 public class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public final List<StateMachine> nestedStateMachines;
 
-  public final boolean isAbstract;
-
   private String name;
+
+  private boolean isAbstract;
 
   private Optional<List<Action>> actions;
 
@@ -32,6 +34,14 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public String getName() {
     return name;
+  }
+
+  public boolean isAbstract() {
+    return isAbstract;
+  }
+
+  public Optional<List<Action>> getActions() {
+    return actions;
   }
 
   /**
@@ -55,28 +65,38 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
   }
 
   /**
-   * Returns a state by its name. If not one state is known with the supplied name, empty is
-   * returned.
+   * Returns a state by its name. If not one state is known with the supplied name, throw an error.
+   *
+   * @param stateName Name of the state to return.
+   * @return The state with the supplied name.
+   * @throws IllegalArgumentException In case not one state is known with the supplied name or multiple states were
+   * found.
+   */
+  public State getStateByName(String stateName) {
+    return findStateByName(stateName)
+        .orElseThrow(() -> new IllegalArgumentException(new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName)));
+  }
+
+  /**
+   * Returns a state by its name. If not one state is known with the supplied name, empty is returned.
    *
    * @param stateName Name of the state to return.
    * @return The state with the supplied name or empty.
-   * @throws IllegalArgumentException In case not one state is known with the supplied name.
+   * @throws IllegalArgumentException In case multiple states were found for the supplied name.
    */
-  public State getStateByName(String stateName) {
+  public Optional<State> findStateByName(String stateName) {
     // Attempt to match the provided name to a known state
     var states = vertexSet().stream()
         .filter(state -> state.name.equals(stateName))
         .toList();
 
-    // Expect precisely one state with the provided name
     if (states.isEmpty()) {
-      throw new IllegalArgumentException(
-          new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName));
+      return Optional.empty();
     } else if (states.size() != 1) {
       throw new IllegalArgumentException(
           new CheckerException(CheckerException.Message.STATE_NAME_IS_NOT_UNIQUE, stateName));
     }
-    return states.getFirst();
+    return Optional.of(states.getFirst());
   }
 
   /**
@@ -110,10 +130,13 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
     return actionsWithName.getFirst();
   }
 
-  public StateMachine cloneWithNameAndActions(String name, Optional<List<Action>> actions) {
+  public StateMachine cloneWithStateMachineClass(StateMachineClass stateMachineClass, Optional<List<Action>> actions) {
+    // Create a shallow copy (no vertices or edges)
     var stateMachine = (StateMachine) clone();
 
-    stateMachine.name = name;
+    stateMachine.name = stateMachineClass.name;
+    stateMachine.isAbstract = stateMachineClass.isAbstract;
+
     stateMachine.actions = actions;
 
     return stateMachine;

@@ -16,13 +16,13 @@ public class StateBuilder {
 
   private final ActionResolver actionResolver;
 
-  private final Optional<State> inheritedState;
+  private final Optional<State> parentState;
 
   public StateBuilder(StateClass stateClass, ActionResolver actionResolver,
-      Optional<State> inheritedState) {
+      Optional<State> parentState) {
     this.stateClass = stateClass;
     this.actionResolver = actionResolver;
-    this.inheritedState = inheritedState;
+    this.parentState = parentState;
   }
 
   public State build() throws IllegalArgumentException {
@@ -36,8 +36,9 @@ public class StateBuilder {
     var exitActions = resolveActions.apply(stateClass.exit);
     var whileActions = resolveActions.apply(stateClass.whilee);
 
-    return inheritedState
-        .map(State::new)
+    // Create this state
+    return parentState
+        .map(parentState -> new State(parentState, entryActions, exitActions, whileActions, stateClass.isAbstract))
         .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions,
             stateClass.isAbstract,
             stateClass.isVirtual));

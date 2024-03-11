@@ -2,6 +2,8 @@ package at.ac.uibk.dps.cirrina.core.objects.builder;
 
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.actions.ActionGraph;
+import com.google.common.collect.Iterables;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -12,9 +14,12 @@ public class ActionGraphBuilder {
   private final ActionGraph actionGraph;
 
   public ActionGraphBuilder(List<Action> actions) {
-    this.actions = actions;
+    this(actions, new ActionGraph());
+  }
 
-    this.actionGraph = new ActionGraph();
+  public ActionGraphBuilder(List<Action> actions, ActionGraph actionGraph) {
+    this.actions = actions;
+    this.actionGraph = actionGraph;
   }
 
   public ActionGraph build() throws IllegalArgumentException {
@@ -24,23 +29,32 @@ public class ActionGraphBuilder {
     var it = actions.iterator();
 
     if (it.hasNext()) {
-      var previous = new Object() {
-        Action value = it.next();
-      };
 
-      // Add the first vertex
-      actionGraph.addVertex(previous.value);
+      Action previous;
 
-      it.forEachRemaining(current -> {
+      // If the action graph is not empty, connect to its last vertex
+      if (!actionGraph.vertexSet().isEmpty()) {
+        previous = Iterables.getLast(actionGraph.vertexSet());
+      }
+      else {
+        previous = it.next();
+
+        // Add the first vertex
+        actionGraph.addVertex(previous);
+      }
+
+      while (it.hasNext()) {
+        Action current = it.next();
+
         // Add next vertex
         actionGraph.addVertex(current);
 
         // Add edge from previous to next
-        actionGraph.addEdge(previous.value, current);
+        actionGraph.addEdge(previous, current);
 
         // Make current previous
-        previous.value = current;
-      });
+        previous = current;
+      }
     }
 
     return actionGraph;

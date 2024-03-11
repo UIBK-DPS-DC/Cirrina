@@ -39,8 +39,9 @@ public class CollaborativeStateMachineBuilder {
    * Builds the collaborative state machine graph vertices.
    */
   private void buildVertices() {
+    List<StateMachine> knownStateMachines = new ArrayList<>();
     collaborativeStateMachineClass.stateMachines.stream()
-        .map(stateMachineClass -> new StateMachineBuilder(stateMachineClass).build())
+        .map(stateMachineClass -> new StateMachineBuilder(stateMachineClass, knownStateMachines).build())
         .forEach(collaborativeStateMachine::addVertex);
   }
 

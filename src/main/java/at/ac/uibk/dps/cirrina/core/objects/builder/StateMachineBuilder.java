@@ -5,6 +5,8 @@ import at.ac.uibk.dps.cirrina.core.objects.State;
 import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.helper.ActionResolver;
+import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
+import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
@@ -15,11 +17,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * State machine builder. Builds a state machine based on a state machine class. To resolve inheritance keeps a list
+ * of known state machines.
+ */
 public class StateMachineBuilder {
 
   private final StateMachineClass stateMachineClass;
 
-  private final List<StateMachine> knownStateMachines = new ArrayList<>();
+  private final List<StateMachine> knownStateMachines;
 
   public StateMachineBuilder(StateMachineClass stateMachineClass) {
     this(stateMachineClass, new ArrayList<>());
@@ -28,14 +34,22 @@ public class StateMachineBuilder {
   public StateMachineBuilder(StateMachineClass stateMachineClass,
       List<StateMachine> knownStateMachines) {
     this.stateMachineClass = stateMachineClass;
+    this.knownStateMachines = knownStateMachines;
   }
 
-  private Optional<List<Action>> buildActions(StateMachineClass stateMachineClass)
+  /**
+   * Constructs the list of named actions of this state machine if named actions are declared. Also ensures that no
+   * duplicate entries exist.
+   *
+   * @return The list of named actions or empty.
+   * @throws IllegalArgumentException When at least one duplicate entry exists.
+   */
+  private Optional<List<Action>> buildActions()
       throws IllegalArgumentException {
     // Construct the list of named actions of this state machine, or leave empty if no named actions are declared
     var actions = stateMachineClass.actions.map(actionClasses -> actionClasses.stream()
         .map(actionClass -> new ActionBuilder(actionClass).build())
-        .toList());
+        .collect(Collectors.toList()));
 
     // Ensure that no duplicate entries exist
     actions.ifPresent(a -> Common.getListDuplicates(a)
@@ -48,9 +62,15 @@ public class StateMachineBuilder {
     return actions;
   }
 
-  private StateMachine buildBase(StateMachineClass stateMachineClass)
+  /**
+   * Builds a state machine which does not inherit from another state machine.
+   *
+   * @return The state machine.
+   * @throws IllegalArgumentException In case the state machine could not be built.
+   */
+  private StateMachine buildBase()
       throws IllegalArgumentException {
-    Optional<List<Action>> actions = buildActions(stateMachineClass);
+    Optional<List<Action>> actions = buildActions();
 
     var stateMachine = new StateMachine(stateMachineClass.name, actions,
         stateMachineClass.isAbstract);
@@ -67,74 +87,42 @@ public class StateMachineBuilder {
     return stateMachine;
   }
 
-  private StateMachine buildInherited(StateMachineClass stateMachineClass, String inheritName)
+  /**
+   * Builds a state machine which inherits from another state machine given by its name.
+   *
+   * @param inheritName The name of the state machine to inherit from.
+   * @return The state machine.
+   * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name
+   * is not known.
+   * @see ChildStateMachineBuilder
+   */
+  private StateMachine buildChild(String inheritName)
       throws IllegalArgumentException {
     // Get the state machine to inherit from and throw an error if it does not exist
-    StateMachine inherited = knownStateMachines.stream()
-        .filter(builtStateMachine -> builtStateMachine.getName().equals(inheritName))
+    StateMachine parentStateMachine = knownStateMachines.stream()
+        .filter(knownStateMachine -> knownStateMachine.getName().equals(inheritName))
         .findFirst().orElseThrow(() -> new IllegalArgumentException(
             new CheckerException(CheckerException.Message.STATE_MACHINE_INHERITS_FROM_INVALID,
                 stateMachineClass.name, inheritName)));
 
-    // Clone the state machine
-    var stateMachine = inherited.cloneWithNameAndActions(stateMachineClass.name, Optional.of(
-        new ArrayList<Action>())); // TODO: Merge actions from base, override or extend inherited named actions
-
-    // Checks for overridden states
-    List<StateClass> stateClasses = stateMachineClass.states.stream()
-        .filter(StateClass.class::isInstance)
-        .map(StateClass.class::cast)
-        .toList();
-
-    // Ensure that the overridden state can in fact be overridden
-    var canOverrideState = stateClasses.stream()
-        .anyMatch(stateClass -> stateMachine.vertexSet().stream()
-            .anyMatch(state -> !state.isVirtual && !state.isAbstract && state.name.equals(
-                stateClass.name)));
-
-    if (canOverrideState) {
-      throw new IllegalArgumentException(
-          new CheckerException(CheckerException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES,
-              stateMachineClass.name));
-    }
-
-    // Checks for abstract states
-    List<State> abstractStates = stateMachine.vertexSet().stream()
-        .filter(state -> state.isAbstract).toList();
-
-    // Ensure that everything that is abstract is overridden
-    var isComplete = inherited.isAbstract && abstractStates.stream()
-        .anyMatch(state -> stateClasses.stream()
-            .noneMatch(stateClass -> state.name.equals(stateClass.name)));
-
-    if (isComplete) {
-      throw new IllegalArgumentException(
-          new CheckerException(
-              CheckerException.Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES,
-              stateMachineClass.name, inheritName));
-    }
-
-    // After checking abstract states for validity, remove all abstract states, so they can be re-added
-    abstractStates.forEach(stateMachine::removeVertex);
-
-    var actionResolver = new ActionResolver(stateMachine);
-
-    // Attempt to add vertices
-    stateClasses.stream()
-        .map(stateClass -> new StateBuilder(stateClass, actionResolver,
-            Optional.ofNullable(inherited.getStateByName(stateClass.name))).build())
-        .forEach(stateMachine::addVertex);
-
-    return stateMachine;
+    // Create the child state machine
+    var actions = buildActions();
+    return new ChildStateMachineBuilder(stateMachineClass, parentStateMachine, actions).build();
   }
 
+  /**
+   * Builds the state machine.
+   *
+   * @return The state machine.
+   * @throws IllegalArgumentException In case the state machine could not be built.
+   */
   public StateMachine build() throws IllegalArgumentException {
     StateMachine stateMachine = stateMachineClass.inherit
-        .map(inheritName -> buildInherited(stateMachineClass, inheritName))
-        .orElseGet(() -> buildBase(stateMachineClass));
+        .map(this::buildChild)
+        .orElseGet(this::buildBase);
 
     // If the state machine is not abstract but has abstract states, throw an error
-    if (!stateMachine.isAbstract && stateMachine.vertexSet().stream()
+    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream()
         .anyMatch(state -> state.isAbstract)) {
       throw new IllegalArgumentException(
           new CheckerException(
@@ -188,10 +176,10 @@ public class StateMachineBuilder {
           );
 
           // Attempt to add edges corresponding to the "always" transitions, these transitions are optional
-          stateClass.always.ifPresent(always -> processTransitions.accept(always));
+          stateClass.always.ifPresent(processTransitions);
         });
 
-    // Add the created state machine as a known state machine in this builder, we keep known state machines to resolve inheritance
+    // Add the created state machine as a known state machine in this builder
     knownStateMachines.add(stateMachine);
 
     // Gather the nested state machines

@@ -81,4 +81,86 @@ public class DefaultDescriptions {
         ]
       }
       """;
+
+  public static final String completeInheritance = """
+      {
+        name: 'collaborativeStateMachine',
+        version: '0.1',
+        memoryMode: 'distributed',
+        stateMachines: [
+          {
+            name: 'stateMachine1',
+            isAbstract: true,
+            states: [
+              {
+                name: 'state1',
+                isVirtual: true,
+                on: [
+                  {
+                    target: 'state2',
+                    event: 'e1'
+                  }
+                ]
+              },
+              {
+                name: 'state2',
+                isAbstract: true
+              }
+            ],
+            actions: [
+              {
+                name: 'action1',
+                type: 'assign',
+                variable: {
+                  name: 'v1',
+                  value: '0'
+                }
+              },
+              {
+                name: 'action2',
+                type: 'assign',
+                variable: {
+                  name: 'v2',
+                  value: '1'
+                }
+              }
+            ]
+          },
+          {
+            name: 'stateMachine2',
+            inherit: 'stateMachine1',
+            states: [
+              {
+                name: 'state1',
+                on: [
+                  {
+                    target: 'state2',
+                    event: 'e2'
+                  }
+                ]
+              },
+              {
+                name: 'state2',
+                on: [
+                  {
+                    target: 'state2',
+                    event: 'e3'
+                  }
+                ]
+              }
+            ],
+            actions: [
+              {
+                name: 'action2',
+                type: 'assign',
+                variable: {
+                  name: 'v2',
+                  value: '2'
+                }
+              }
+            ]
+          }
+        ]
+      }
+      """;
 }

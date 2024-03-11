@@ -21,9 +21,8 @@ public class State {
 
   private final ActionGraph whilee;
 
-  public State(String name, List<Action> entryActions, List<Action> exitActions,
-      List<Action> whileActions,
-      boolean isAbstract, boolean isVirtual) {
+  public State(String name, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions,
+               boolean isAbstract, boolean isVirtual) {
     this.name = name;
 
     this.entry = new ActionGraphBuilder(entryActions).build();
@@ -34,15 +33,16 @@ public class State {
     this.isVirtual = isVirtual;
   }
 
-  public State(State state) {
-    this.name = state.name;
+  public State(State parentState, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions,
+               boolean isAbstract) {
+    this.name = parentState.name;
 
-    this.entry = state.entry;
-    this.exit = state.exit;
-    this.whilee = state.whilee;
+    this.entry = new ActionGraphBuilder(entryActions, parentState.entry).build();
+    this.exit = new ActionGraphBuilder(exitActions, parentState.exit).build();
+    this.whilee = new ActionGraphBuilder(whileActions, parentState.whilee).build();
 
-    this.isAbstract = state.isAbstract;
-    this.isVirtual = state.isVirtual;
+    this.isAbstract = isAbstract;
+    this.isVirtual = parentState.isVirtual;
   }
 
   public <T> List<T> getActionsOfType(Class<T> type) {
