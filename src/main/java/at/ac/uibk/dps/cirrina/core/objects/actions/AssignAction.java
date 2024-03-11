@@ -9,7 +9,8 @@ public class AssignAction extends Action {
 
   public final Expression value;
 
-  public AssignAction(Optional<String> name, String variable, String value) {
+  public AssignAction(Optional<String> name, String variable, String value)
+      throws IllegalArgumentException {
     super(name);
 
     this.variable = new Expression(variable);

@@ -1,39 +1,32 @@
 package at.ac.uibk.dps.cirrina.nats;
 
 import at.ac.uibk.dps.cirrina.core.CoreException;
-import at.ac.uibk.dps.cirrina.core.objects.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.core.objects.context.Context;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.KeyValue;
 import io.nats.client.Nats;
-import io.nats.client.api.KeyValueEntry;
-import io.nats.client.api.KeyValueWatcher;
-import io.nats.client.impl.NatsKeyValueWatchSubscription;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Vector;
 
 /**
- * An in-memory context, where context variables are contained in a hash map.
+ * A persistent context containing within a NATS bucket.
  */
-public final class NatsPersistentContext extends InMemoryContext implements KeyValueWatcher,
-    AutoCloseable {
+public final class NatsPersistentContext extends Context {
 
   /**
    * The persistent context bucket name.
    */
-  public final String PERSISTENT_CONTEXT_BUCKET_NAME = "persistentContext";
-
+  public final String PERSISTENT_CONTEXT_BUCKET_NAME = "persistent";
   private final Connection connection;
-
   private final KeyValue keyValue;
-
-  private final Map<String, NatsKeyValueWatchSubscription> watchSubscriptions;
+  private final Vector<String> knownKeys = new Vector<>();
 
   /**
    * Initializes an empty persistent context.
@@ -45,8 +38,10 @@ public final class NatsPersistentContext extends InMemoryContext implements KeyV
     try {
       connection = Nats.connect(natsUrl);
     } catch (InterruptedException | IOException e) {
+      Thread.currentThread().interrupt();
+
       throw new CoreException(
-          String.format("Could not connect to the NATS server: %s", e.getCause()));
+          String.format("Could not connect to the NATS server: %s", e.getMessage()));
     }
 
     // Attempt to retrieve the bucket, which is expected to be pre-created. We do not manage the creation/deletion of
@@ -57,8 +52,6 @@ public final class NatsPersistentContext extends InMemoryContext implements KeyV
       throw new CoreException(
           "Failed to retrieve the persistent context bucket, make sure that it has been created");
     }
-
-    watchSubscriptions = new HashMap<>();
   }
 
 
@@ -70,8 +63,20 @@ public final class NatsPersistentContext extends InMemoryContext implements KeyV
    * @throws CoreException If the context variable could not be retrieved.
    */
   @Override
-  public ContextVariable get(String name) throws CoreException {
-    return super.get(name);
+  public Object get(String name) throws CoreException {
+    try {
+      if (!knownKeys.contains(name)) {
+        throw new CoreException(
+            String.format("A variable with the name '%s' does not exist", name));
+      }
+
+      var entry = keyValue.get(name);
+
+      return fromBytes(entry.getValue());
+    } catch (IOException | JetStreamApiException e) {
+      throw new CoreException(
+          String.format("Failed to retrieve the variable '%s': %s", name, e.getMessage()));
+    }
   }
 
   /**
@@ -79,116 +84,118 @@ public final class NatsPersistentContext extends InMemoryContext implements KeyV
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
-   * @return The created context variable.
    * @throws CoreException If the variable could not be created.
    */
   @Override
-  public ContextVariable create(String name, Object value) throws CoreException {
-    try (var bs = new ByteArrayOutputStream(); var os = new ObjectOutputStream(bs)) {
-      var variable = super.create(name, value);
+  public void create(String name, Object value) throws CoreException {
+    try {
+      if (knownKeys.contains(name)) {
+        throw new CoreException(
+            String.format("A variable with the name '%s' already exists", name));
+      }
 
-      // Acquire serialize to bytes
-      os.writeObject(variable.getValue());
-
-      var bytes = bs.toByteArray();
-
-      // Create the key
-      keyValue.create(variable.name, bytes);
-
-      // Watch the newly created key
-      watchSubscriptions.put(variable.name, keyValue.watch(variable.name, this));
-
-      return variable;
-    } catch (IOException | JetStreamApiException | InterruptedException e) {
+      keyValue.create(name, toBytes(value));
+    } catch (IOException | JetStreamApiException e) {
       throw new CoreException(
-          String.format("Failed to create variable '%s': %s", name, e.getCause()));
+          String.format("Failed to create variable '%s': %s", name, e.getMessage()));
     }
   }
 
   /**
-   * Synchronize a variable in the context.
+   * Assigns to a context variable.
    *
-   * @param variable Variable to synchronize.
-   * @throws CoreException In case synchronization fails.
+   * @param name  Name of the context variable.
+   * @param value New value of the context variable.
+   * @throws CoreException If the variable could not be assigned to.
    */
   @Override
-  protected void sync(ContextVariable variable) throws CoreException {
-    super.sync(variable);
+  public void assign(String name, Object value) throws CoreException {
+    try {
+      if (!knownKeys.contains(name)) {
+        throw new CoreException(
+            String.format("A variable with the name '%s' does not exist", name));
+      }
+
+      keyValue.put(name, toBytes(value));
+    } catch (IOException | JetStreamApiException e) {
+      Thread.currentThread().interrupt();
+
+      throw new CoreException(
+          String.format("Failed to assign to the variable '%s': %s", name, e.getMessage()));
+    }
+  }
+
+  /**
+   * Deletes a context variable.
+   *
+   * @param name Name of the context variable.
+   * @throws CoreException If the variable could not be deleted.
+   */
+  @Override
+  public void delete(String name, Object value) throws CoreException {
+    try {
+      if (!keyValue.keys().contains(name)) {
+        throw new CoreException(
+            String.format("A variable with the name '%s' does not exist", name));
+      }
+
+      keyValue.delete(name);
+    } catch (IOException | JetStreamApiException | InterruptedException e) {
+      Thread.currentThread().interrupt();
+
+      throw new CoreException(
+          String.format("Failed to delete the variable '%s': %s", name, e.getMessage()));
+    }
   }
 
   /**
    * Returns all context variables.
    *
    * @return Context variables.
+   * @throws CoreException If the variables could not be retrieved.
    */
   @Override
-  public List<ContextVariable> getAll() {
-    return super.getAll();
-  }
+  public List<ContextVariable> getAll() throws CoreException {
+    var ret = new ArrayList<ContextVariable>();
 
-  /**
-   * Called when an object has been updated.
-   *
-   * @param keyValueEntry The watched object.
-   */
-  @Override
-  public void watch(KeyValueEntry keyValueEntry) {
-    var variableName = keyValueEntry.getKey();
-
-    if (variables.containsKey(variableName)) {
-      // Acquire the variable
-      var variable = variables.get(variableName);
-
-      // Acquire the byte data
-      var bytes = keyValueEntry.getValue();
-
-      // Deserialize the byte data and attempt to update the variable
-      try (ByteArrayInputStream bis = new ByteArrayInputStream(
-          bytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
-        var object = ois.readObject();
-        variable.setValue(object);
-      } catch (IOException | CoreException | ClassNotFoundException e) {
-        throw new RuntimeException(
-            String.format("Failed to update variable '%s': %s", variable.name, e.getCause()));
-      }
-    }
-  }
-
-  /**
-   * Called once if there is no data when the watch is created or if there is data, the first time
-   * the watch exhausts all existing data.
-   */
-  @Override
-  public void endOfData() {
-  }
-
-  /**
-   * Clean up the persistent context. The creates keys will be deleted.
-   *
-   * @throws CoreException If an error occurred during cleaning up.
-   */
-  @Override
-  public void close() throws Exception {
-    // Remove the created variables
-    for (var variable : getAll()) {
-      try {
-        // Unsubscribe and remove the watcher
-        watchSubscriptions.remove(variable.name).close();
-
-        // Remove the key
-        keyValue.delete(variable.name);
-      } catch (Exception e) {
-        throw new CoreException(
-            String.format("Failed to remove variable '%s': %s", variable.name, e.getCause()));
-      }
-    }
-
-    // Close the connection
     try {
-      connection.close();
-    } catch (InterruptedException e) {
+      for (var key : knownKeys) {
+        var entry = keyValue.get(key);
+
+        // This would be unexpected
+        if (entry == null) {
+          throw new CoreException(
+              String.format("Could not retrieve the value of the variable '%s'", key));
+        }
+
+        ret.add(new ContextVariable(entry.getKey(), entry.getValue()));
+      }
+    } catch (IOException | JetStreamApiException e) {
+      throw new RuntimeException(e);
+    }
+
+    return ret;
+  }
+
+  private byte[] toBytes(Object value) throws CoreException {
+    try (var bs = new ByteArrayOutputStream(); var os = new ObjectOutputStream(bs)) {
+      // Acquire serialize to bytes
+      os.writeObject(value);
+
+      return bs.toByteArray();
+    } catch (IOException e) {
       throw new CoreException(
-          String.format("Failed to close the connection to the NATS server: %s", e.getCause()));
+          String.format("Failed to convert object to binary data: %s", e.getMessage()));
+    }
+  }
+
+  private Object fromBytes(byte[] bytes) throws CoreException {
+    try (ByteArrayInputStream bis = new ByteArrayInputStream(
+        bytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
+      return ois.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new CoreException(
+          String.format("Failed to convert binary data to object", e.getMessage()));
     }
   }
 }

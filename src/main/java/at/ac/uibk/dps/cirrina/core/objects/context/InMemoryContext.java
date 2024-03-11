@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.objects.context;
 
 import at.ac.uibk.dps.cirrina.core.CoreException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,13 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class InMemoryContext extends Context {
 
-  protected final Map<String, ContextVariable> variables;
+  protected final Map<String, Object> values = new ConcurrentHashMap<>();
 
   /**
    * Initializes an empty in-memory context.
    */
   public InMemoryContext() {
-    variables = new ConcurrentHashMap<>();
   }
 
   /**
@@ -28,13 +26,13 @@ public class InMemoryContext extends Context {
    * @throws CoreException If the context variable could not be retrieved.
    */
   @Override
-  public ContextVariable get(String name) throws CoreException {
-    if (!variables.containsKey(name)) {
+  public Object get(String name) throws CoreException {
+    if (!values.containsKey(name)) {
       throw new CoreException(
           String.format("A variable with the name '%s' does not exist", name));
     }
 
-    return variables.get(name);
+    return values.get(name);
   }
 
   /**
@@ -42,29 +40,50 @@ public class InMemoryContext extends Context {
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
-   * @return The created context variable.
    * @throws CoreException If the variable could not be created.
    */
   @Override
-  public ContextVariable create(String name, Object value) throws CoreException {
-    if (variables.containsKey(name)) {
+  public void create(String name, Object value) throws CoreException {
+    if (values.containsKey(name)) {
       throw new CoreException(
           String.format("A variable with the name '%s' already exists", name));
     }
 
-    variables.put(name, new ContextVariable(name, value, this));
-
-    return variables.get(name);
+    values.put(name, value);
   }
 
   /**
-   * Synchronize a variable in the context.
+   * Assigns to a context variable.
    *
-   * @param variable Variable to synchronize.
-   * @throws CoreException In case synchronization fails.
+   * @param name  Name of the context variable.
+   * @param value New value of the context variable.
+   * @throws CoreException If the variable could not be assigned to.
    */
   @Override
-  protected void sync(ContextVariable variable) throws CoreException {
+  public void assign(String name, Object value) throws CoreException {
+    if (!values.containsKey(name)) {
+      throw new CoreException(
+          String.format("A variable with the name '%s' does not exist", name));
+    }
+
+    values.put(name, value);
+  }
+
+  /**
+   * Deletes a context variable.
+   *
+   * @param name  Name of the context variable.
+   * @param value
+   * @throws CoreException If the variable could not be deleted.
+   */
+  @Override
+  public void delete(String name, Object value) throws CoreException {
+    if (!values.containsKey(name)) {
+      throw new CoreException(
+          String.format("A variable with the name '%s' does not exist", name));
+    }
+
+    values.remove(name);
   }
 
   /**
@@ -73,7 +92,9 @@ public class InMemoryContext extends Context {
    * @return Context variables.
    */
   @Override
-  public List<ContextVariable> getAll() {
-    return Collections.unmodifiableList(variables.values().stream().toList());
+  public List<ContextVariable> getAll() throws CoreException {
+    return values.entrySet().stream()
+        .map(entry -> new ContextVariable(entry.getKey(), entry.getValue()))
+        .toList();
   }
 }
