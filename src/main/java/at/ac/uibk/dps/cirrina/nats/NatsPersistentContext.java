@@ -95,6 +95,8 @@ public final class NatsPersistentContext extends Context {
       }
 
       keyValue.create(name, toBytes(value));
+
+      knownKeys.add(name);
     } catch (IOException | JetStreamApiException e) {
       throw new CoreException(
           String.format("Failed to create variable '%s': %s", name, e.getMessage()));
@@ -132,17 +134,17 @@ public final class NatsPersistentContext extends Context {
    * @throws CoreException If the variable could not be deleted.
    */
   @Override
-  public void delete(String name, Object value) throws CoreException {
+  public void delete(String name) throws CoreException {
     try {
-      if (!keyValue.keys().contains(name)) {
+      if (!knownKeys.contains(name)) {
         throw new CoreException(
             String.format("A variable with the name '%s' does not exist", name));
       }
 
       keyValue.delete(name);
-    } catch (IOException | JetStreamApiException | InterruptedException e) {
-      Thread.currentThread().interrupt();
 
+      knownKeys.remove(name);
+    } catch (IOException | JetStreamApiException e) {
       throw new CoreException(
           String.format("Failed to delete the variable '%s': %s", name, e.getMessage()));
     }
@@ -195,7 +197,7 @@ public final class NatsPersistentContext extends Context {
       return ois.readObject();
     } catch (IOException | ClassNotFoundException e) {
       throw new CoreException(
-          String.format("Failed to convert binary data to object", e.getMessage()));
+          String.format("Failed to convert binary data to object: %s", e.getMessage()));
     }
   }
 }

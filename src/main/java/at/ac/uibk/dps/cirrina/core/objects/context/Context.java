@@ -41,7 +41,7 @@ public abstract class Context {
    * @param name Name of the context variable.
    * @throws CoreException If the variable could not be deleted.
    */
-  public abstract void delete(String name, Object value) throws CoreException;
+  public abstract void delete(String name) throws CoreException;
 
   /**
    * Returns all context variables.

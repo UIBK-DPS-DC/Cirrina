@@ -72,12 +72,11 @@ public class InMemoryContext extends Context {
   /**
    * Deletes a context variable.
    *
-   * @param name  Name of the context variable.
-   * @param value
+   * @param name Name of the context variable.
    * @throws CoreException If the variable could not be deleted.
    */
   @Override
-  public void delete(String name, Object value) throws CoreException {
+  public void delete(String name) throws CoreException {
     if (!values.containsKey(name)) {
       throw new CoreException(
           String.format("A variable with the name '%s' does not exist", name));
