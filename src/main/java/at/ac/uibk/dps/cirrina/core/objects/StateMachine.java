@@ -20,9 +20,9 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
 
   private boolean isAbstract;
 
-  private Optional<List<Action>> actions;
+  private List<Action> actions;
 
-  public StateMachine(String name, Optional<List<Action>> actions, boolean isAbstract) {
+  public StateMachine(String name, List<Action> actions, boolean isAbstract) {
     super(Transition.class);
 
     this.name = name;
@@ -39,7 +39,7 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
     return isAbstract;
   }
 
-  public Optional<List<Action>> getActions() {
+  public List<Action> getActions() {
     return actions;
   }
 
@@ -110,11 +110,7 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
    */
   public Action getActionByName(String actionName) throws IllegalArgumentException {
     // Ensure that named actions are declared and an action with the provided name exists
-    var actionsWithName = actions.orElseThrow(
-            () -> new IllegalArgumentException(
-                new CheckerException(CheckerException.Message.STATE_MACHINE_HAS_NO_NAMED_ACTIONS,
-                    name)))
-        .stream()
+    var actionsWithName = actions.stream()
         .filter(action -> action.name.equals(Optional.of(actionName)))
         .toList();
 
@@ -132,7 +128,7 @@ public class StateMachine extends DirectedPseudograph<State, Transition> {
   }
 
   public StateMachine cloneWithStateMachineClass(StateMachineClass stateMachineClass,
-      Optional<List<Action>> actions) {
+      List<Action> actions) {
     // Create a shallow copy (no vertices or edges)
     var stateMachine = (StateMachine) clone();
 

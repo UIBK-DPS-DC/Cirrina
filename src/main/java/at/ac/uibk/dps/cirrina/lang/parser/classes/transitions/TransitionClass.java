@@ -45,7 +45,7 @@ public class TransitionClass extends Construct {
    * @see StateMachineClass
    * @see GuardReferenceClass
    */
-  public Optional<List<GuardOrGuardReferenceClass>> guards = Optional.empty();
+  public List<GuardOrGuardReferenceClass> guards = List.of();
 
   /**
    * The optional actions. These actions are executed during the transition, if the transition is
@@ -54,7 +54,7 @@ public class TransitionClass extends Construct {
    * @see StateMachineClass
    * @see GuardReferenceClass
    */
-  public Optional<List<ActionOrActionReferenceClass>> actions = Optional.empty();
+  public List<ActionOrActionReferenceClass> actions = List.of();
 
   /**
    * The optional else target. If the guards evaluate to false, the state machine ends up in this

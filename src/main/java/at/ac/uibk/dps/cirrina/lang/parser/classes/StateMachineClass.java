@@ -79,7 +79,7 @@ public class StateMachineClass extends Construct implements StateOrStateMachineC
    * @see StateMachineClass
    * @see GuardReferenceClass
    */
-  public Optional<List<GuardClass>> guards = Optional.empty();
+  public List<GuardClass> guards = List.of();
 
   /**
    * The optional named actions.
@@ -90,7 +90,7 @@ public class StateMachineClass extends Construct implements StateOrStateMachineC
    * @see StateMachineClass
    * @see ActionReferenceClass
    */
-  public Optional<List<ActionClass>> actions = Optional.empty();
+  public List<ActionClass> actions = List.of();
 
   /**
    * The optional inherited state machine name.

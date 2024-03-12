@@ -5,7 +5,6 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import at.ac.uibk.dps.cirrina.core.objects.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionOrActionReferenceClass;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -27,8 +26,8 @@ public class StateBuilder {
 
   public State build() throws IllegalArgumentException {
     // Resolve actions
-    Function<Optional<List<ActionOrActionReferenceClass>>, List<Action>> resolveActions = (Optional<List<ActionOrActionReferenceClass>> actions) ->
-        actions.orElse(new ArrayList<>()).stream()
+    Function<List<ActionOrActionReferenceClass>, List<Action>> resolveActions = (List<ActionOrActionReferenceClass> actions) ->
+        actions.stream()
             .map(actionResolver::resolve)
             .toList();
 

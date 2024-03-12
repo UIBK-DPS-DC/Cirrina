@@ -21,7 +21,7 @@ public class InvokeActionClass extends ActionClass {
 
   public Optional<ContextVariableClass> input = Optional.empty();
 
-  public Optional<List<EventClass>> done = Optional.empty();
+  public List<EventClass> done = List.of();
 
   /**
    * The optional output variable.

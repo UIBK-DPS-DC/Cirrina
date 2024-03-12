@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.objects.builder;
 
-import at.ac.uibk.dps.cirrina.core.objects.Expression;
+import at.ac.uibk.dps.cirrina.core.objects.expression.CelExpression;
+import at.ac.uibk.dps.cirrina.core.objects.expression.Expression;
 import com.google.common.hash.Hashing;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import java.util.Map;
  */
 public class ExpressionBuilder {
 
-  private static Map<Integer, Expression> cache = new HashMap<Integer, Expression>();
+  private static Map<Integer, Expression> cache = new HashMap<>();
 
   /**
    * Builds the collaborative state machine.
@@ -21,13 +22,14 @@ public class ExpressionBuilder {
    * @return Built expression.
    * @throws IllegalArgumentException In case the expression could not be built.
    */
-  public Expression build(String source) throws IllegalArgumentException {
+  public static Expression build(String source)
+      throws IllegalArgumentException {
     // Compute source hash
     var hash = Hashing.sha256()
         .hashString(source, StandardCharsets.UTF_8).asInt();
 
     // Construct a new expression if it did not exist in the cache yet
-    cache.computeIfAbsent(hash, (key) -> new Expression(source));
+    cache.computeIfAbsent(hash, (h) -> new CelExpression(source));
 
     return cache.get(hash);
   }

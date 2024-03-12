@@ -68,7 +68,7 @@ public class StateClass extends Construct implements StateOrStateMachineClass {
   public String name;
 
   /**
-   * The is initial flag. Indicating if this is the intial state of the state machine. Exactly one
+   * The is initial flag. Indicating if this is the initial state of the state machine. Exactly one
    * state must be the initial state of a state machine. If omitted, the state is not initial.
    */
   @JsonSetter(nulls = Nulls.SKIP)
@@ -85,20 +85,20 @@ public class StateClass extends Construct implements StateOrStateMachineClass {
    * The optional entry actions. Can be provided as action references to previously declared
    * actions, or inline actions.
    */
-  public Optional<List<ActionOrActionReferenceClass>> entry = Optional.empty();
+  public List<ActionOrActionReferenceClass> entry = List.of();
 
   /**
    * The optional exit actions. Can be provided as action references to previously declared actions,
    * or inline actions.
    */
-  public Optional<List<ActionOrActionReferenceClass>> exit = Optional.empty();
+  public List<ActionOrActionReferenceClass> exit = List.of();
 
   /**
    * The optional while actions. Can be provided as action references to previously declared
    * actions, or inline actions.
    */
   @JsonProperty("while")
-  public Optional<List<ActionOrActionReferenceClass>> whilee = Optional.empty();
+  public List<ActionOrActionReferenceClass> whilee = List.of();
 
   /**
    * The optional after (timeout) actions. Can be provided as action references to previously
@@ -106,18 +106,18 @@ public class StateClass extends Construct implements StateOrStateMachineClass {
    *
    * @see RaiseActionClass
    */
-  public Optional<List<ActionOrActionReferenceClass>> after = Optional.empty();
+  public List<ActionOrActionReferenceClass> after = List.of();
 
   /**
    * The optional on transitions. On transitions are taken upon event receiving an event that
    * matches the 'event' keyword of the on transition.
    */
-  public Optional<List<OnTransitionClass>> on = Optional.empty();
+  public List<OnTransitionClass> on = List.of();
 
   /**
    * The optional always transitions. Always transitions are always taken upon entering a state.
    */
-  public Optional<List<TransitionClass>> always = Optional.empty();
+  public List<TransitionClass> always = List.of();
 
   /**
    * The optional lexical declaration of local context variables.

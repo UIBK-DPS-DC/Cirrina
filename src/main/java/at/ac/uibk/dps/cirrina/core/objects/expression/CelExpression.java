@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.core.objects;
+package at.ac.uibk.dps.cirrina.core.objects.expression;
 
 import at.ac.uibk.dps.cirrina.core.CoreException;
 import at.ac.uibk.dps.cirrina.core.objects.context.Context;
@@ -15,11 +15,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Expression {
+/**
+ * CEL expression, an expression using Google's CEL language.
+ *
+ * @see <a href="https://github.com/google/cel-spec">Google CEL specification</a>
+ */
+public class CelExpression extends Expression {
 
   private final CelAbstractSyntaxTree ast;
 
-  public Expression(String source) throws IllegalArgumentException {
+  /**
+   * Initializes a CEL expression. Parses the expression and reports an error in case parsing
+   * fails.
+   *
+   * @param source Source string.
+   * @throws IllegalArgumentException In case the expression could not be parsed.
+   */
+  public CelExpression(String source) throws IllegalArgumentException {
     // Attempt to parse the expression into an abstract syntax tree
     CelCompiler celCompiler = null;
 
@@ -48,6 +60,13 @@ public class Expression {
     }
   }
 
+  /**
+   * Returns the standard compiler.
+   *
+   * @param context Context for looking up variables, may be null.
+   * @return CEL compiler.
+   * @throws CoreException In case the compiler could not be acquired.
+   */
   private CelCompiler getCelCompiler(Optional<Context> context)
       throws IllegalArgumentException, CoreException {
     var builder = CelCompilerFactory.standardCelCompilerBuilder();
@@ -69,6 +88,11 @@ public class Expression {
     return builder.build();
   }
 
+  /**
+   * Returns the standard runtime.
+   *
+   * @return CEL runtime.
+   */
   private CelRuntime getCelRuntime() {
     var builder = CelRuntimeFactory.standardCelRuntimeBuilder();
 
@@ -77,11 +101,30 @@ public class Expression {
     return builder.build();
   }
 
+  /**
+   * Converts context variables to a map of name and value.
+   *
+   * @param context Context for retrieving variables.
+   * @return Map of names and values.
+   * @throws CoreException If the variables could not be retrieved.
+   */
   private Map<String, Object> getVariables(Context context) throws CoreException {
-    return context.getAll().stream()
-        .collect(Collectors.toMap(Context.ContextVariable::name, Context.ContextVariable::value));
+    try {
+      return context.getAll().stream()
+          .collect(Collectors.toMap(Context.ContextVariable::name, Context.ContextVariable::value));
+    } catch (CoreException e) {
+      throw new CoreException(
+          String.format("Failed to retrieve context variables: %s", e.getMessage()));
+    }
   }
 
+  /**
+   * Executes this expression, producing a value.
+   *
+   * @param context Context containing variables in scope.
+   * @return Result of the expression.
+   * @throws CoreException In case of an error while executing the expression.
+   */
   public Object execute(Context context) throws CoreException {
     var celCompiler = getCelCompiler(Optional.of(context));
 

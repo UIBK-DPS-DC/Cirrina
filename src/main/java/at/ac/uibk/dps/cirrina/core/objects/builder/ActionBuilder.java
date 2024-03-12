@@ -9,6 +9,7 @@ import at.ac.uibk.dps.cirrina.core.objects.actions.MatchAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.TimeoutAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.TimeoutResetAction;
+import at.ac.uibk.dps.cirrina.core.objects.expression.Expression;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.AssignActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.CreateActionClass;
@@ -17,6 +18,8 @@ import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.MatchActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.RaiseActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.TimeoutActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.TimeoutResetActionClass;
+import java.util.HashMap;
+import java.util.function.Function;
 
 public class ActionBuilder {
 
@@ -26,14 +29,19 @@ public class ActionBuilder {
     this.actionClass = actionClass;
   }
 
-  public Action build() throws IllegalArgumentException {
+  public ActionBuilder(ActionClass actionClass, Function<String, Expression> expressionSupplier) {
+    this.actionClass = actionClass;
+  }
+
+  public Action build()
+      throws IllegalArgumentException {
     switch (actionClass) {
       case AssignActionClass assign -> {
         return new AssignAction(assign.name, assign.variable.name,
             assign.variable.value.expression);
       }
       case CreateActionClass create -> {
-        return new CreateAction(create.name);
+        return new CreateAction(create.name, create.variable.name, create.isPersistent);
       }
       case InvokeActionClass invoke -> {
         return new InvokeAction(invoke.name);
@@ -43,7 +51,8 @@ public class ActionBuilder {
       }
       case RaiseActionClass raise -> {
         return new RaiseAction(raise.name,
-            new Event(raise.event.name, raise.event.channel, raise.event.data));
+            new Event(raise.event.name, raise.event.channel,
+                raise.event.data.orElse(new HashMap<>())));
       }
       case TimeoutActionClass timeout -> {
         return new TimeoutAction(timeout.name);

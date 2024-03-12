@@ -35,7 +35,7 @@ public class CollaborativeStateMachine extends DirectedPseudograph<StateMachine,
     if (states.size() != 1) {
       return Optional.empty();
     }
-    return Optional.ofNullable(states.getFirst());
+    return Optional.of(states.getFirst());
   }
 
   @Override

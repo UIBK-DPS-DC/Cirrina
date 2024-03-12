@@ -7,9 +7,7 @@ import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.TransitionClass;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
 public class TransitionBuilder {
@@ -26,8 +24,8 @@ public class TransitionBuilder {
   public Transition build()
       throws IllegalArgumentException {
     // Resolve actions
-    Function<Optional<List<ActionOrActionReferenceClass>>, List<Action>> resolveActions = (Optional<List<ActionOrActionReferenceClass>> actions) ->
-        actions.orElse(new ArrayList<ActionOrActionReferenceClass>()).stream()
+    Function<List<ActionOrActionReferenceClass>, List<Action>> resolveActions = (List<ActionOrActionReferenceClass> actions) ->
+        actions.stream()
             .map(actionResolver::resolve)
             .toList();
 

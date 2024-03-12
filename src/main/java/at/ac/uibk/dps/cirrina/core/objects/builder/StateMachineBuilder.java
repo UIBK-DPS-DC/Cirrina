@@ -8,7 +8,6 @@ import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.StateMachineClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.TransitionClass;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -25,7 +24,7 @@ public class StateMachineBuilder {
   private final List<StateMachine> knownStateMachines;
 
   public StateMachineBuilder(StateMachineClass stateMachineClass) {
-    this(stateMachineClass, new ArrayList<>());
+    this(stateMachineClass, List.of());
   }
 
   public StateMachineBuilder(StateMachineClass stateMachineClass,
@@ -41,20 +40,19 @@ public class StateMachineBuilder {
    * @return The list of named actions or empty.
    * @throws IllegalArgumentException When at least one duplicate entry exists.
    */
-  private Optional<List<Action>> buildActions()
-      throws IllegalArgumentException {
+  private List<Action> buildActions() throws IllegalArgumentException {
     // Construct the list of named actions of this state machine, or leave empty if no named actions are declared
-    var actions = stateMachineClass.actions.map(actionClasses -> actionClasses.stream()
+    var actions = stateMachineClass.actions.stream()
         .map(actionClass -> new ActionBuilder(actionClass).build())
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
 
     // Ensure that no duplicate entries exist
-    actions.ifPresent(a -> Common.getListDuplicates(a)
+    Common.getListDuplicates(actions)
         .forEach(action -> {
           throw new IllegalArgumentException(
               new CheckerException(CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE,
                   action.name));
-        }));
+        });
 
     return actions;
   }
@@ -65,9 +63,8 @@ public class StateMachineBuilder {
    * @return The state machine.
    * @throws IllegalArgumentException In case the state machine could not be built.
    */
-  private StateMachine buildBase()
-      throws IllegalArgumentException {
-    Optional<List<Action>> actions = buildActions();
+  private StateMachine buildBase() throws IllegalArgumentException {
+    var actions = buildActions();
 
     var stateMachine = new StateMachine(stateMachineClass.name, actions,
         stateMachineClass.isAbstract);
@@ -152,28 +149,23 @@ public class StateMachineBuilder {
             }
           };
 
-          // Attempt to add edges corresponding to the "on" transitions, these transitions are optional
-          stateClass.on.ifPresent(
-              on -> {
-                // Ensure that "on" transitions have distinct events
-                var hasDuplicateEdges = on.stream()
-                    .collect(Collectors.groupingBy(
-                        transitionClass -> transitionClass.event, Collectors.counting())
-                    ).entrySet().stream()
-                    .anyMatch(entry -> entry.getValue() > 1);
+          // Ensure that "on" transitions have distinct events
+          var hasDuplicateEdges = stateClass.on.stream()
+              .collect(Collectors.groupingBy(
+                  transitionClass -> transitionClass.event, Collectors.counting())
+              ).entrySet().stream()
+              .anyMatch(entry -> entry.getValue() > 1);
 
-                if (hasDuplicateEdges) {
-                  throw new IllegalArgumentException(
-                      new CheckerException(
-                          CheckerException.Message.MULTIPLE_TRANSITIONS_WITH_SAME_EVENT,
-                          stateClass.name));
-                }
-                processTransitions.accept(on);
-              }
-          );
+          if (hasDuplicateEdges) {
+            throw new IllegalArgumentException(
+                new CheckerException(
+                    CheckerException.Message.MULTIPLE_TRANSITIONS_WITH_SAME_EVENT,
+                    stateClass.name));
+          }
+          processTransitions.accept(stateClass.on);
 
           // Attempt to add edges corresponding to the "always" transitions, these transitions are optional
-          stateClass.always.ifPresent(processTransitions);
+          processTransitions.accept(stateClass.always);
         });
 
     // Add the created state machine as a known state machine in this builder

@@ -20,11 +20,11 @@ public class ChildStateMachineBuilder {
 
   private final StateMachineClass stateMachineClass;
   private final StateMachine parentStateMachine;
-  private Optional<List<Action>> actions;
+  private List<Action> actions;
 
   public ChildStateMachineBuilder(StateMachineClass stateMachineClass,
       StateMachine parentStateMachine,
-      Optional<List<Action>> actions) {
+      List<Action> actions) {
     this.stateMachineClass = stateMachineClass;
     this.parentStateMachine = parentStateMachine;
     this.actions = actions;
@@ -54,13 +54,13 @@ public class ChildStateMachineBuilder {
    * Adds missing actions from the parent state machine.
    */
   private void addParentActions() {
-    Optional<List<Action>> parentActions = parentStateMachine.getActions();
+    List<Action> parentActions = parentStateMachine.getActions();
 
-    if (actions.isEmpty() && parentActions.isPresent()) {
+    if (actions.isEmpty() && !parentActions.isEmpty()) {
       actions = parentActions;
-    } else if (actions.isPresent() && parentActions.isPresent()) {
-      final List<Action> finalActions = actions.get();
-      parentActions.get().stream()
+    } else if (!actions.isEmpty() && !parentActions.isEmpty()) {
+      final List<Action> finalActions = actions;
+      parentActions.stream()
           .filter(parentAction -> finalActions.stream()
               .noneMatch(action -> action.name.equals(parentAction.name)))
           .forEach(finalActions::add);
