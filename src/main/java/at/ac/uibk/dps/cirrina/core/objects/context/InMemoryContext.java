@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * An in-memory context, where context variables are contained in a hash map.
  */
-public class InMemoryContext extends Context {
+public final class InMemoryContext extends Context {
 
   protected final Map<String, Object> values = new ConcurrentHashMap<>();
 

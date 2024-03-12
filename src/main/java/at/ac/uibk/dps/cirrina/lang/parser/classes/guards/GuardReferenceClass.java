@@ -13,18 +13,17 @@ import jakarta.validation.constraints.NotNull;
  *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
  *  <tr><td>reference</td><td>Unique name</td><td>Yes</td></tr>
  * </table>
- * </p>
- *  Example:
- *  <pre>
- *    {
- *      reference: 'Guard Name'
- *    }
- *  </pre>
- * </p>
+ * <p>
+ * Example:
+ * <pre>
+ * {
+ *   reference: 'Guard Name'
+ * }
+ * </pre>
  *
  * @since CSML 0.1.
  */
-public class GuardReferenceClass extends Construct implements GuardOrGuardReferenceClass {
+public final class GuardReferenceClass extends Construct implements GuardOrGuardReferenceClass {
 
   /**
    * The guard name reference.

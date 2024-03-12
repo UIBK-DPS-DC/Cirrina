@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotNull;
 
 @JsonDeserialize(using = JsonDeserializer.None.class)
-public class RaiseActionClass extends ActionClass {
+public final class RaiseActionClass extends ActionClass {
 
   @NotNull
   public EventClass event;

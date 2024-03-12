@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * State machine builder. Builds a state machine based on a state machine class. To resolve
  * inheritance keeps a list of known state machines.
  */
-public class StateMachineBuilder {
+public final class StateMachineBuilder {
 
   private final StateMachineClass stateMachineClass;
 

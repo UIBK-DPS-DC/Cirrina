@@ -4,7 +4,7 @@ import at.ac.uibk.dps.cirrina.lang.parser.keywords.MemoryMode;
 import java.util.Optional;
 import org.jgrapht.graph.DirectedPseudograph;
 
-public class CollaborativeStateMachine extends DirectedPseudograph<StateMachine, Event> {
+public final class CollaborativeStateMachine extends DirectedPseudograph<StateMachine, Event> {
 
   public final String name;
 

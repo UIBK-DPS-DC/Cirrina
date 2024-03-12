@@ -10,7 +10,7 @@ import at.ac.uibk.dps.cirrina.lang.parser.classes.transitions.TransitionClass;
 import java.util.List;
 import java.util.function.Function;
 
-public class TransitionBuilder {
+public final class TransitionBuilder {
 
   private final TransitionClass transitionClass;
 

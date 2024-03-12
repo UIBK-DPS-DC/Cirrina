@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @JsonDeserialize(using = JsonDeserializer.None.class)
-public class TimeoutActionClass extends ActionClass {
+public final class TimeoutActionClass extends ActionClass {
 
   @NotNull
   public ExpressionClass delay;

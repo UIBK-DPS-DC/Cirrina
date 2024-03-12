@@ -21,24 +21,22 @@ import java.util.Optional;
  *  <tr><td>localContext</td><td>Lexical description of the local context</td><td>No</td></tr>
  *  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
  * </table>
- * </p>
  * <p>
- *  Example:
- *  <pre>
- *    {
- *      name: 'Collaborative State Machine Name',
- *      version: '0.1',
- *      memoryMode: 'distributed',
- *      stateMachines: [...],
- *      localContext: [...],
- *      persistentContext: [...]
- *    }
- *  </pre>
- * </p>
+ * Example:
+ * <pre>
+ * {
+ *   name: 'Collaborative State Machine Name',
+ *   version: '0.1',
+ *   memoryMode: 'distributed',
+ *   stateMachines: [...],
+ *   localContext: [...],
+ *   persistentContext: [...]
+ * }
+ * </pre>
  *
  * @since CSML 0.1.
  */
-public class CollaborativeStateMachineClass extends Construct {
+public final class CollaborativeStateMachineClass extends Construct {
 
   /**
    * The name.

@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Objects;
 
-public class ActionGraphBuilder {
+public final class ActionGraphBuilder {
 
   private final List<Action> actions;
 

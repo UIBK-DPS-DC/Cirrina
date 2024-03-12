@@ -5,7 +5,7 @@ import java.util.List;
 /**
  *
  */
-public class ContextClass {
+public final class ContextClass {
 
   /**
    *

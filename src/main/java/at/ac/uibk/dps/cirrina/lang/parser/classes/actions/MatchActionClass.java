@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 
 @JsonDeserialize(using = JsonDeserializer.None.class)
-public class MatchActionClass extends ActionClass {
+public final class MatchActionClass extends ActionClass {
 
   @NotNull
   public ExpressionClass value;

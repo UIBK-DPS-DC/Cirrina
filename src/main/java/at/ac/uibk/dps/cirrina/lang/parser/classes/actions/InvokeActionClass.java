@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @JsonDeserialize(using = JsonDeserializer.None.class)
-public class InvokeActionClass extends ActionClass {
+public final class InvokeActionClass extends ActionClass {
 
   @NotNull
   public String serviceType;
@@ -28,7 +28,6 @@ public class InvokeActionClass extends ActionClass {
    * <p>
    * Used to automatically store service output to a local context variable. The variable must exist
    * at runtime.
-   * </p>
    */
   public Optional<String> output = Optional.empty(); // TODO: Felix this should be a context variable, I just introduced ContextVariable
 }

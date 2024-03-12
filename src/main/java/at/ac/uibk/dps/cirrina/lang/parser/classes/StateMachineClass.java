@@ -25,24 +25,22 @@ import java.util.Optional;
  *  <tr><td>guards</td><td>Named guards</td><td>No</td></tr>
  *  <tr><td>actions</td><td>Named actions</td><td>No</td></tr>
  * </table>
- * </p>
  * <p>
- *  Example:
- *  <pre>
- *    {
- *      name: 'Collaborative State Machine Name',
- *      states: [...],
- *      localContext: [...],
- *      persistentContext: [...],
- *      guards: [],
- *      actions: []
- *    }
- *  </pre>
- * </p>
+ * Example:
+ * <pre>
+ * {
+ *   name: 'Collaborative State Machine Name',
+ *   states: [...],
+ *   localContext: [...],
+ *   persistentContext: [...],
+ *   guards: [],
+ *   actions: []
+ * }
+ * </pre>
  *
  * @since CSML 0.1.
  */
-public class StateMachineClass extends Construct implements StateOrStateMachineClass {
+public final class StateMachineClass extends Construct implements StateOrStateMachineClass {
 
   /**
    * The name.

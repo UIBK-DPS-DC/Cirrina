@@ -3,7 +3,7 @@ package at.ac.uibk.dps.cirrina.core.objects.actions;
 import at.ac.uibk.dps.cirrina.core.objects.Event;
 import java.util.Optional;
 
-public class RaiseAction extends Action {
+public final class RaiseAction extends Action {
 
   public final Event event;
 

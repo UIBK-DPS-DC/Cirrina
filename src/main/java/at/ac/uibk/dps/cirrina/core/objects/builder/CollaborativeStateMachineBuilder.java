@@ -14,7 +14,7 @@ import java.util.List;
  * Collaborative state machine builder, builds a collaborative state machine based on a
  * collaborative state machine class.
  */
-public class CollaborativeStateMachineBuilder {
+public final class CollaborativeStateMachineBuilder {
 
   private final CollaborativeStateMachineClass collaborativeStateMachineClass;
 

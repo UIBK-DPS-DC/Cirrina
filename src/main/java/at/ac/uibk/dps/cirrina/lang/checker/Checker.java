@@ -4,7 +4,7 @@ import at.ac.uibk.dps.cirrina.core.objects.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.objects.builder.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.CollaborativeStateMachineClass;
 
-public class Checker {
+public final class Checker {
 
   private final Options options;
 

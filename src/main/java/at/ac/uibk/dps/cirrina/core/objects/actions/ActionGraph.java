@@ -18,7 +18,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
  * The order direction of actions contained within an action graph represents the order of execution
  * of the action objects contained in it.
  */
-public class ActionGraph extends SimpleDirectedGraph<Action, DefaultEdge> {
+public final class ActionGraph extends SimpleDirectedGraph<Action, DefaultEdge> {
 
   /**
    * Initializes an empty action graph.

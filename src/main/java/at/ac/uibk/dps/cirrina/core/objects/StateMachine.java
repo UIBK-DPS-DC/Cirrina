@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.jgrapht.graph.DirectedPseudograph;
 
-public class StateMachine extends DirectedPseudograph<State, Transition> {
+public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public final List<StateMachine> nestedStateMachines;
 

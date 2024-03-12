@@ -16,7 +16,7 @@ import java.util.Optional;
  * Child state machine builder. Builds a child state machine based on a state machine class and a
  * parent state machine object.
  */
-public class ChildStateMachineBuilder {
+public final class ChildStateMachineBuilder {
 
   private final StateMachineClass stateMachineClass;
   private final StateMachine parentStateMachine;

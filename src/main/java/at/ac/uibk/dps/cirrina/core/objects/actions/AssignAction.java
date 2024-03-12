@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * Assign action, assigns a new value to a variable.
  */
-public class AssignAction extends Action {
+public final class AssignAction extends Action {
 
   /**
    * The variable to assign to, is an expression. The name of the variable will be retrieved through

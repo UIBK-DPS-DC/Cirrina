@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @see <a href="https://github.com/google/cel-spec">Google CEL specification</a>
  */
-public class CelExpression extends Expression {
+public final class CelExpression extends Expression {
 
   private final CelAbstractSyntaxTree ast;
 

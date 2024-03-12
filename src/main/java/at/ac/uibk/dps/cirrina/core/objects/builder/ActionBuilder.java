@@ -21,7 +21,7 @@ import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.TimeoutResetActionClas
 import java.util.HashMap;
 import java.util.function.Function;
 
-public class ActionBuilder {
+public final class ActionBuilder {
 
   private final ActionClass actionClass;
 

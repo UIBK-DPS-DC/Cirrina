@@ -16,20 +16,18 @@ import java.util.Optional;
  *  <tr><td>name</td><td>Unique name</td><td>Yes</td></tr>
  *  <tr><td>expression</td><td>Expression</td><td>Yes</td></tr>
  * </table>
- * </p>
  * <p>
  * Example:
  * <pre>
- *   {
- *     name: 'Guard Name',
- *     expression: 'a==5'
- *   }
+ * {
+ *   name: 'Guard Name',
+ *   expression: 'a==5'
+ * }
  * </pre>
- * </p>
  *
  * @since CSML 0.1.
  */
-public class GuardClass extends Construct implements GuardOrGuardReferenceClass {
+public final class GuardClass extends Construct implements GuardOrGuardReferenceClass {
 
   /**
    * An expression.

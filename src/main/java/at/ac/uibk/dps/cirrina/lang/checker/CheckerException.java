@@ -3,7 +3,7 @@ package at.ac.uibk.dps.cirrina.lang.checker;
 import at.ac.uibk.dps.cirrina.CirrinaException;
 
 
-public class CheckerException extends CirrinaException {
+public final class CheckerException extends CirrinaException {
 
   public CheckerException(Message message, Object... args) {
     super(String.format("%s (%d): ", message.error ? "Error" : "Warning", message.number)

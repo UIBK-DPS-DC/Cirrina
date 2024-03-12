@@ -20,16 +20,15 @@ import javax.validation.constraints.NotNull;
  *  <tr><td>guards</td><td>Guards</td><td>Yes</td></tr>
  *  <tr><td>actions</td><td>Actions</td><td>Yes</td></tr>
  * </table>
- * </p>
- *  Example:
- *  <pre>
- *    {
- *      target: 'State Name',
- *      guards: [...],
- *      actions: [...]
- *    }
- *  </pre>
- * </p>
+ * <p>
+ * Example:
+ * <pre>
+ * {
+ *   target: 'State Name',
+ *   guards: [...],
+ *   actions: [...]
+ * }
+ * </pre>
  *
  * @since CSML 0.1.
  */

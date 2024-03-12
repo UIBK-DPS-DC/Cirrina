@@ -10,21 +10,20 @@ import javax.validation.constraints.NotNull;
  *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
  *  <tr><td>event</td><td>Event</td><td>Yes</td></tr>
  * </table>
- * </p>
- *  Example:
- *  <pre>
- *    {
- *      target: 'State Name',
- *      guards: [...],
- *      actions: [...],
- *      event: 'Event Name'
- *    }
- *  </pre>
- * </p>
+ * <p>
+ * Example:
+ * <pre>
+ * {
+ *   target: 'State Name',
+ *   guards: [...],
+ *   actions: [...],
+ *   event: 'Event Name'
+ * }
+ * </pre>
  *
  * @since CSML 0.1.
  */
-public class OnTransitionClass extends TransitionClass {
+public final class OnTransitionClass extends TransitionClass {
 
   /**
    * The event that triggers this on transition.

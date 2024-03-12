@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class State {
+public final class State {
 
   public final String name;
 

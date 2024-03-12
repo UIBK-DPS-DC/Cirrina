@@ -3,7 +3,7 @@ package at.ac.uibk.dps.cirrina.core.objects;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.events.EventChannel;
 import java.util.Map;
 
-public class Event {
+public final class Event {
 
 
   public final String name;

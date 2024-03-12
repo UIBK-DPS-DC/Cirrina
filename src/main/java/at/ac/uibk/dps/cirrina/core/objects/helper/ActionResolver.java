@@ -7,7 +7,7 @@ import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.actions.ActionReferenceClass;
 
-public class ActionResolver {
+public final class ActionResolver {
 
   private final StateMachine stateMachine;
 

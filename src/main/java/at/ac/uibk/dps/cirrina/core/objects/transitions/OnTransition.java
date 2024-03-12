@@ -3,7 +3,7 @@ package at.ac.uibk.dps.cirrina.core.objects.transitions;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
 import java.util.List;
 
-public class OnTransition extends Transition {
+public final class OnTransition extends Transition {
 
   public final String eventName;
 

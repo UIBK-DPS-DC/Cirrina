@@ -32,29 +32,27 @@ import java.util.Optional;
  *  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
  *  <tr><td>staticContext</td><td>Lexical description of the static context</td><td>No</td></tr>
  * </table>
- * </p>
  * <p>
  * Example:
  * <pre>
- *    {
- *      name: 'State Name',
- *      isInitial: true,
- *      isTerminal: false,
- *      entry: [...],
- *      exit: [...],
- *      while: [...],
- *      after: [...],
- *      on: [...],
- *      localContext: [...],
- *      persistentContext: [...],
- *      staticContext: [...],
- *    }
+ * {
+ *   name: 'State Name',
+ *   isInitial: true,
+ *   isTerminal: false,
+ *   entry: [...],
+ *   exit: [...],
+ *   while: [...],
+ *   after: [...],
+ *   on: [...],
+ *   localContext: [...],
+ *   persistentContext: [...],
+ *   staticContext: [...],
+ * }
  * </pre>
- * </p>
  *
  * @since CSML 0.1.
  */
-public class StateClass extends Construct implements StateOrStateMachineClass {
+public final class StateClass extends Construct implements StateOrStateMachineClass {
 
   /**
    * The name.

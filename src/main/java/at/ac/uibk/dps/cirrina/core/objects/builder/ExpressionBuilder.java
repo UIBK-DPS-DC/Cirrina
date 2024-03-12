@@ -11,7 +11,7 @@ import java.util.Map;
  * Expression builder, builds an expression based on an expression source string. Built expressions
  * are cached, repeatedly building the same expression will return the same expression.
  */
-public class ExpressionBuilder {
+public final class ExpressionBuilder {
 
   private static Map<Integer, Expression> cache = new HashMap<>();
 

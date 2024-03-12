@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * Bean deserializer with validation. Provides additional bean validation after deserialization.
  */
-class BeanDeserializerWithValidation extends BeanDeserializer {
+final class BeanDeserializerWithValidation extends BeanDeserializer {
 
   private final Validator validator;
 
@@ -74,7 +74,7 @@ class BeanDeserializerWithValidation extends BeanDeserializer {
  * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a
  * bean deserializer.
  */
-class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
+final class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
 
   /**
    * Provides a bean deserializer with validation in the place of a bean deserializer.
@@ -100,7 +100,7 @@ class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
  * CSML parser. Provides parsing functionality for descriptions written in the CSML language. A
  * description is parsed into a structure consisting of CSML models.
  */
-public class Parser {
+public final class Parser {
 
   private final Options options;
   private final ObjectMapper mapper;

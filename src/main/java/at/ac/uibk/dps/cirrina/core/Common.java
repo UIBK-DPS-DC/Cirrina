@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Common {
+public final class Common {
 
   public static <T> Set<T> getListDuplicates(List<T> list) {
     var elements = new HashSet<>();

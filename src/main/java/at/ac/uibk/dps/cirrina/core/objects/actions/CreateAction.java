@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * Create action, creates a new variable.
  */
-public class CreateAction extends Action {
+public final class CreateAction extends Action {
 
   /**
    * The variable to create, is an expression. The name of the variable will be retrieved through
