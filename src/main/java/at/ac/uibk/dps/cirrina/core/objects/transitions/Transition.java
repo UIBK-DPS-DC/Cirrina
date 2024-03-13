@@ -16,7 +16,7 @@ public class Transition extends DefaultEdge {
   public Transition(String target, List<Action> actions) {
     this.target = target;
 
-    this.actions = new ActionGraphBuilder(actions).build();
+    this.actions = ActionGraphBuilder.from(actions).build();
   }
 
   public <T> List<T> getActionsOfType(Class<T> type) {

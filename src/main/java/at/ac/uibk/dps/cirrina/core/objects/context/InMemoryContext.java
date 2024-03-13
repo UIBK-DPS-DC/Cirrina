@@ -28,8 +28,7 @@ public final class InMemoryContext extends Context {
   @Override
   public Object get(String name) throws CoreException {
     if (!values.containsKey(name)) {
-      throw new CoreException(
-          String.format("A variable with the name '%s' does not exist", name));
+      throw CoreException.from("A variable with the name '%s' does not exist", name);
     }
 
     return values.get(name);
@@ -45,8 +44,7 @@ public final class InMemoryContext extends Context {
   @Override
   public void create(String name, Object value) throws CoreException {
     if (values.containsKey(name)) {
-      throw new CoreException(
-          String.format("A variable with the name '%s' already exists", name));
+      throw CoreException.from("A variable with the name '%s' already exists", name);
     }
 
     values.put(name, value);
@@ -62,8 +60,7 @@ public final class InMemoryContext extends Context {
   @Override
   public void assign(String name, Object value) throws CoreException {
     if (!values.containsKey(name)) {
-      throw new CoreException(
-          String.format("A variable with the name '%s' does not exist", name));
+      throw CoreException.from("A variable with the name '%s' does not exist", name);
     }
 
     values.put(name, value);
@@ -78,8 +75,7 @@ public final class InMemoryContext extends Context {
   @Override
   public void delete(String name) throws CoreException {
     if (!values.containsKey(name)) {
-      throw new CoreException(
-          String.format("A variable with the name '%s' does not exist", name));
+      throw CoreException.from("A variable with the name '%s' does not exist", name);
     }
 
     values.remove(name);

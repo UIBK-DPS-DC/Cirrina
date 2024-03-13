@@ -1,6 +1,11 @@
 package at.ac.uibk.dps.cirrina.core.objects;
 
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.NAMED_ACTION_DOES_NOT_EXIST;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_NAME_IS_NOT_UNIQUE;
+
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
+import at.ac.uibk.dps.cirrina.core.objects.actions.InvokeAction;
 import at.ac.uibk.dps.cirrina.core.objects.actions.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.OnTransition;
 import at.ac.uibk.dps.cirrina.core.objects.transitions.Transition;
@@ -57,10 +62,18 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public List<Event> getRaisedEvents() {
     return Stream.concat(
+        // Raise action events
+        Stream.concat(
             vertexSet().stream().flatMap(v -> v.getActionsOfType(RaiseAction.class).stream()),
-            edgeSet().stream().flatMap(e -> e.getActionsOfType(RaiseAction.class).stream()))
-        .map(raiseAction -> raiseAction.event)
-        .toList();
+            edgeSet().stream().flatMap(e -> e.getActionsOfType(RaiseAction.class).stream())
+        ).map(raiseAction -> raiseAction.event),
+
+        // Invoke action events
+        Stream.concat(
+            vertexSet().stream().flatMap(v -> v.getActionsOfType(InvokeAction.class).stream()),
+            edgeSet().stream().flatMap(e -> e.getActionsOfType(InvokeAction.class).stream())
+        ).flatMap(invokeAction -> invokeAction.done.stream())
+    ).toList();
   }
 
   /**
@@ -68,18 +81,16 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
    *
    * @param stateName Name of the state to return.
    * @return The state with the supplied name.
-   * @throws IllegalArgumentException In case not one state is known with the supplied name or
-   *                                  multiple states were found.
+   * @throws IllegalArgumentException In case not one state is known with the supplied name or multiple states were found.
    */
   public State getStateByName(String stateName) {
     return findStateByName(stateName)
         .orElseThrow(() -> new IllegalArgumentException(
-            new CheckerException(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName)));
+            CheckerException.from(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName)));
   }
 
   /**
-   * Returns a state by its name. If not one state is known with the supplied name, empty is
-   * returned.
+   * Returns a state by its name. If not one state is known with the supplied name, empty is returned.
    *
    * @param stateName Name of the state to return.
    * @return The state with the supplied name or empty.
@@ -94,15 +105,13 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
     if (states.isEmpty()) {
       return Optional.empty();
     } else if (states.size() != 1) {
-      throw new IllegalArgumentException(
-          new CheckerException(CheckerException.Message.STATE_NAME_IS_NOT_UNIQUE, stateName));
+      throw new IllegalArgumentException(CheckerException.from(STATE_NAME_IS_NOT_UNIQUE, stateName));
     }
     return Optional.of(states.getFirst());
   }
 
   /**
-   * Returns an action by its name. If not one action is known with the supplied name, empty is
-   * returned.
+   * Returns an action by its name. If not one action is known with the supplied name, empty is returned.
    *
    * @param actionName Name of the action to return.
    * @return The action with the supplied name or empty.
@@ -116,19 +125,14 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
     // Ensure that precisely one action is known with this name
     if (actionsWithName.isEmpty()) {
-      throw new IllegalArgumentException(
-          new CheckerException(CheckerException.Message.NAMED_ACTION_DOES_NOT_EXIST, name,
-              actionName));
+      throw new IllegalArgumentException(CheckerException.from(NAMED_ACTION_DOES_NOT_EXIST, name, actionName));
     } else if (actionsWithName.size() != 1) {
-      throw new IllegalArgumentException(
-          new CheckerException(CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE, name,
-              actionName));
+      throw new IllegalArgumentException(CheckerException.from(ACTION_NAME_IS_NOT_UNIQUE, name, actionName));
     }
     return actionsWithName.getFirst();
   }
 
-  public StateMachine cloneWithStateMachineClass(StateMachineClass stateMachineClass,
-      List<Action> actions) {
+  public StateMachine cloneWithStateMachineClass(StateMachineClass stateMachineClass, List<Action> actions) {
     // Create a shallow copy (no vertices or edges)
     var stateMachine = (StateMachine) clone();
 

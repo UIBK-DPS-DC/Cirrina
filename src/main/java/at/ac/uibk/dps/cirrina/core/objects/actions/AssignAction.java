@@ -10,14 +10,12 @@ import java.util.Optional;
 public final class AssignAction extends Action {
 
   /**
-   * The variable to assign to, is an expression. The name of the variable will be retrieved through
-   * evaluating the expression.
+   * The variable to assign to, is an expression. The name of the variable will be retrieved through evaluating the expression.
    */
   public final Expression variable;
 
   /**
-   * The value to assign, is an expression. The value will be retrieved through evaluating the
-   * expression.
+   * The value to assign, is an expression. The value will be retrieved through evaluating the expression.
    */
   public final Expression value;
 
@@ -29,11 +27,10 @@ public final class AssignAction extends Action {
    * @param value    Value expression source.
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  public AssignAction(Optional<String> name, String variable, String value)
-      throws IllegalArgumentException {
+  public AssignAction(Optional<String> name, String variable, String value) throws IllegalArgumentException {
     super(name);
 
-    this.variable = ExpressionBuilder.build(variable);
-    this.value = ExpressionBuilder.build(value);
+    this.variable = ExpressionBuilder.from(variable).build();
+    this.value = ExpressionBuilder.from(value).build();
   }
 }

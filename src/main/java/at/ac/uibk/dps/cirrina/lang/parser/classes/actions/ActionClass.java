@@ -52,8 +52,7 @@ public class ActionClass extends Construct implements ActionOrActionReferenceCla
   static class ActionDeserializer extends JsonDeserializer<ActionClass> {
 
     @Override
-    public ActionClass deserialize(JsonParser parser, DeserializationContext context)
-        throws IOException {
+    public ActionClass deserialize(JsonParser parser, DeserializationContext context) throws IOException {
       var codec = parser.getCodec();
       var treeNode = parser.readValueAsTree();
 

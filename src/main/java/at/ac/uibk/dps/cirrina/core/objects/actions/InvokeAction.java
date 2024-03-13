@@ -1,5 +1,8 @@
 package at.ac.uibk.dps.cirrina.core.objects.actions;
 
+import at.ac.uibk.dps.cirrina.core.objects.Event;
+import at.ac.uibk.dps.cirrina.core.objects.context.Context.ContextVariable;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -7,7 +10,20 @@ import java.util.Optional;
  */
 public final class InvokeAction extends Action {
 
-  public InvokeAction(Optional<String> name) {
+  public final String serviceType;
+
+  public final boolean isLocal;
+
+  public final List<ContextVariable> input;
+
+  public final List<Event> done;
+
+  public InvokeAction(Optional<String> name, String serviceType, boolean isLocal, List<ContextVariable> input, List<Event> done) {
     super(name);
+
+    this.serviceType = serviceType;
+    this.isLocal = isLocal;
+    this.input = input;
+    this.done = done;
   }
 }

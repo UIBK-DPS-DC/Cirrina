@@ -40,8 +40,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
     } catch (InterruptedException | IOException e) {
       Thread.currentThread().interrupt();
 
-      throw new CoreException(
-          String.format("Could not connect to the NATS server: %s", e.getMessage()));
+      throw CoreException.from("Could not connect to the NATS server: %s", e.getMessage());
     }
 
     // Attempt to retrieve the bucket, which is expected to be pre-created. We do not manage the creation/deletion of
@@ -51,8 +50,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
 
       // Bucket should not exist yet
       if (keyValueManagement.getBucketNames().contains(bucketName)) {
-        logger.warn("A bucket with the name '{}' already exists, deleting the existing bucket",
-            bucketName);
+        logger.warn("A bucket with the name '{}' already exists, deleting the existing bucket", bucketName);
 
         keyValueManagement.delete(bucketName);
       }
@@ -63,8 +61,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
       // Retrieve the bucket
       keyValue = connection.keyValue(bucketName);
     } catch (IOException | JetStreamApiException e) {
-      throw new CoreException(
-          "Failed to create the persistent context bucket, make sure that it has been created");
+      throw CoreException.from("Failed to create the persistent context bucket, make sure that it has been created");
     }
   }
 
@@ -80,16 +77,14 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
   public Object get(String name) throws CoreException {
     try {
       if (!knownKeys.contains(name)) {
-        throw new CoreException(
-            String.format("A variable with the name '%s' does not exist", name));
+        throw CoreException.from("A variable with the name '%s' does not exist", name);
       }
 
       var entry = keyValue.get(name);
 
       return fromBytes(entry.getValue());
     } catch (IOException | JetStreamApiException e) {
-      throw new CoreException(
-          String.format("Failed to retrieve the variable '%s': %s", name, e.getMessage()));
+      throw CoreException.from("Failed to retrieve the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -104,16 +99,14 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
   public void create(String name, Object value) throws CoreException {
     try {
       if (knownKeys.contains(name)) {
-        throw new CoreException(
-            String.format("A variable with the name '%s' already exists", name));
+        CoreException.from("A variable with the name '%s' already exists", name);
       }
 
       keyValue.create(name, toBytes(value));
 
       knownKeys.add(name);
     } catch (IOException | JetStreamApiException e) {
-      throw new CoreException(
-          String.format("Failed to create variable '%s': %s", name, e.getMessage()));
+      throw CoreException.from("Failed to create variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -128,16 +121,14 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
   public void assign(String name, Object value) throws CoreException {
     try {
       if (!knownKeys.contains(name)) {
-        throw new CoreException(
-            String.format("A variable with the name '%s' does not exist", name));
+        throw CoreException.from("A variable with the name '%s' does not exist", name);
       }
 
       keyValue.put(name, toBytes(value));
     } catch (IOException | JetStreamApiException e) {
       Thread.currentThread().interrupt();
 
-      throw new CoreException(
-          String.format("Failed to assign to the variable '%s': %s", name, e.getMessage()));
+      throw CoreException.from("Failed to assign to the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -151,16 +142,14 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
   public void delete(String name) throws CoreException {
     try {
       if (!knownKeys.contains(name)) {
-        throw new CoreException(
-            String.format("A variable with the name '%s' does not exist", name));
+        throw CoreException.from("A variable with the name '%s' does not exist", name);
       }
 
       keyValue.delete(name);
 
       knownKeys.remove(name);
     } catch (IOException | JetStreamApiException e) {
-      throw new CoreException(
-          String.format("Failed to delete the variable '%s': %s", name, e.getMessage()));
+      throw CoreException.from("Failed to delete the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -180,8 +169,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
 
         // This would be unexpected
         if (entry == null) {
-          throw new CoreException(
-              String.format("Could not retrieve the value of the variable '%s'", key));
+          throw CoreException.from("Could not retrieve the value of the variable '%s'", key);
         }
 
         ret.add(new ContextVariable(entry.getKey(), entry.getValue()));
@@ -200,18 +188,15 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
 
       return bs.toByteArray();
     } catch (IOException e) {
-      throw new CoreException(
-          String.format("Failed to convert object to binary data: %s", e.getMessage()));
+      throw CoreException.from("Failed to convert object to binary data: %s", e.getMessage());
     }
   }
 
   private Object fromBytes(byte[] bytes) throws CoreException {
-    try (ByteArrayInputStream bis = new ByteArrayInputStream(
-        bytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
+    try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
       return ois.readObject();
     } catch (IOException | ClassNotFoundException e) {
-      throw new CoreException(
-          String.format("Failed to convert binary data to object: %s", e.getMessage()));
+      throw CoreException.from("Failed to convert binary data to object: %s", e.getMessage());
     }
   }
 
@@ -225,8 +210,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
 
       connection.close();
     } catch (IOException | JetStreamApiException | InterruptedException e) {
-      throw new CoreException(
-          String.format("Failed to close NATS persistent context: %s", e.getMessage()));
+      throw CoreException.from("Failed to close NATS persistent context: %s", e.getMessage());
     }
   }
 }

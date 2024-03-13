@@ -4,9 +4,23 @@ import at.ac.uibk.dps.cirrina.core.CoreException;
 import at.ac.uibk.dps.cirrina.core.objects.context.Context;
 
 /**
- * Expression, re presents an executable expression that yields a return value.
+ * Expression, represents an executable expression that yields a return value.
  */
 public abstract class Expression {
+
+  /**
+   * The expression source string.
+   */
+  public final String source;
+
+  /**
+   * Initializes the base expression.
+   *
+   * @param source Source string.
+   */
+  public Expression(String source) {
+    this.source = source;
+  }
 
   /**
    * Executes this expression, producing a value.

@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.lang.parser.classes.actions;
 
-import at.ac.uibk.dps.cirrina.lang.parser.classes.EventClass;
 import at.ac.uibk.dps.cirrina.lang.parser.classes.context.ContextVariableClass;
+import at.ac.uibk.dps.cirrina.lang.parser.classes.events.EventClass;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -19,7 +19,7 @@ public final class InvokeActionClass extends ActionClass {
   @JsonSetter(nulls = Nulls.SKIP)
   public boolean isLocal = false;
 
-  public Optional<ContextVariableClass> input = Optional.empty();
+  public List<ContextVariableClass> input = List.of();
 
   public List<EventClass> done = List.of();
 

@@ -4,7 +4,11 @@ import at.ac.uibk.dps.cirrina.CirrinaException;
 
 public final class CoreException extends CirrinaException {
 
-  public CoreException(String message) {
-    super(message);
+  private CoreException(String message, Object... args) {
+    super(String.format(message, args));
+  }
+
+  public static CoreException from(String message, Object... args) {
+    return new CoreException(message, args);
   }
 }

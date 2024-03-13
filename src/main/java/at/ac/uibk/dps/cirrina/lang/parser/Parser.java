@@ -40,9 +40,8 @@ final class BeanDeserializerWithValidation extends BeanDeserializer {
   }
 
   /**
-   * Perform deserialization. Will perform default deserialization, with additional bean validation
-   * after deserialization. Any validation error will result in an IllegalArgumentException to be
-   * thrown.
+   * Perform deserialization. Will perform default deserialization, with additional bean validation after deserialization. Any validation
+   * error will result in an IllegalArgumentException to be thrown.
    *
    * @param parser  JSON parser.
    * @param context Deserialization context.
@@ -51,8 +50,7 @@ final class BeanDeserializerWithValidation extends BeanDeserializer {
    * @throws IllegalArgumentException In case of validation errors.
    */
   @Override
-  public Object deserialize(JsonParser parser, DeserializationContext context)
-      throws IOException {
+  public Object deserialize(JsonParser parser, DeserializationContext context) throws IOException {
     // Call the base deserialization
     Object instance = super.deserialize(parser, context);
 
@@ -61,8 +59,7 @@ final class BeanDeserializerWithValidation extends BeanDeserializer {
     var violations = validator.validate(instance);
     if (!violations.isEmpty()) {
       throw new IllegalArgumentException(violations.stream()
-          .map(
-              v -> v.getMessage())
+          .map(v -> v.getMessage())
           .collect(Collectors.joining(",")));
     }
 
@@ -71,8 +68,7 @@ final class BeanDeserializerWithValidation extends BeanDeserializer {
 }
 
 /**
- * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a
- * bean deserializer.
+ * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a bean deserializer.
  */
 final class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
 
@@ -85,8 +81,8 @@ final class BeanDeserializerModifierWithValidation extends BeanDeserializerModif
    * @return The deserializer or bean deserializer with validation instead of bean deserializer.
    */
   @Override
-  public JsonDeserializer<?> modifyDeserializer(DeserializationConfig configuration,
-      BeanDescription description, JsonDeserializer<?> deserializer) {
+  public JsonDeserializer<?> modifyDeserializer(DeserializationConfig configuration, BeanDescription description,
+      JsonDeserializer<?> deserializer) {
     // Provide the deserializer with validation
     if (deserializer instanceof BeanDeserializer) {
       return new BeanDeserializerWithValidation((BeanDeserializer) deserializer);
@@ -97,8 +93,8 @@ final class BeanDeserializerModifierWithValidation extends BeanDeserializerModif
 }
 
 /**
- * CSML parser. Provides parsing functionality for descriptions written in the CSML language. A
- * description is parsed into a structure consisting of CSML models.
+ * CSML parser. Provides parsing functionality for descriptions written in the CSML language. A description is parsed into a structure
+ * consisting of CSML models.
  */
 public final class Parser {
 
@@ -129,9 +125,9 @@ public final class Parser {
   }
 
   /**
-   * Parse a description in JSON. Returns a collaborative state machine (top-level) model. Any
-   * errors will result in a LanguageException being thrown. Errors could be the result of errors in
-   * the description such as syntax errors as well as validation errors such as missing fields.
+   * Parse a description in JSON. Returns a collaborative state machine (top-level) model. Any errors will result in a LanguageException
+   * being thrown. Errors could be the result of errors in the description such as syntax errors as well as validation errors such as
+   * missing fields.
    *
    * @param json JSON description.
    * @return Collaborative state machine model.
@@ -141,8 +137,7 @@ public final class Parser {
     try {
       return mapper.readValue(json, CollaborativeStateMachineClass.class);
     } catch (JsonProcessingException | IllegalArgumentException e) {
-      throw new ParserException(
-          String.format("Parsing error: %s", e.getMessage()));
+      throw ParserException.from("Parsing error: %s", e.getMessage());
     }
   }
 

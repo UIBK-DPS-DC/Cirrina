@@ -12,13 +12,21 @@ public final class ActionGraphBuilder {
 
   private final ActionGraph actionGraph;
 
-  public ActionGraphBuilder(List<Action> actions) {
+  private ActionGraphBuilder(List<Action> actions) {
     this(actions, new ActionGraph());
   }
 
-  public ActionGraphBuilder(List<Action> actions, ActionGraph actionGraph) {
+  private ActionGraphBuilder(List<Action> actions, ActionGraph actionGraph) {
     this.actions = actions;
     this.actionGraph = actionGraph;
+  }
+
+  public static ActionGraphBuilder from(List<Action> actions) {
+    return new ActionGraphBuilder(actions);
+  }
+
+  public static ActionGraphBuilder extend(ActionGraph actionGraph, List<Action> actions) {
+    return new ActionGraphBuilder(actions, actionGraph);
   }
 
   public ActionGraph build() throws IllegalArgumentException {
@@ -28,7 +36,6 @@ public final class ActionGraphBuilder {
     var it = actions.iterator();
 
     if (it.hasNext()) {
-
       Action previous;
 
       // If the action graph is not empty, connect to its last vertex

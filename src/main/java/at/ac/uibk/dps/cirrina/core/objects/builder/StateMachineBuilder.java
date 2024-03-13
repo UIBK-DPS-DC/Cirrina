@@ -1,5 +1,11 @@
 package at.ac.uibk.dps.cirrina.core.objects.builder;
 
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.ILLEGAL_STATE_MACHINE_GRAPH;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.MULTIPLE_TRANSITIONS_WITH_SAME_EVENT;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_MACHINE_INHERITS_FROM_INVALID;
+
 import at.ac.uibk.dps.cirrina.core.Common;
 import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
@@ -14,8 +20,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * State machine builder. Builds a state machine based on a state machine class. To resolve
- * inheritance keeps a list of known state machines.
+ * State machine builder. Builds a state machine based on a state machine class. To resolve inheritance keeps a list of known state
+ * machines.
  */
 public final class StateMachineBuilder {
 
@@ -23,19 +29,26 @@ public final class StateMachineBuilder {
 
   private final List<StateMachine> knownStateMachines;
 
-  public StateMachineBuilder(StateMachineClass stateMachineClass) {
+  private StateMachineBuilder(StateMachineClass stateMachineClass) {
     this(stateMachineClass, List.of());
   }
 
-  public StateMachineBuilder(StateMachineClass stateMachineClass,
-      List<StateMachine> knownStateMachines) {
+  private StateMachineBuilder(StateMachineClass stateMachineClass, List<StateMachine> knownStateMachines) {
     this.stateMachineClass = stateMachineClass;
     this.knownStateMachines = knownStateMachines;
   }
 
+  public static StateMachineBuilder from(StateMachineClass stateMachineClass) {
+    return new StateMachineBuilder(stateMachineClass);
+  }
+
+  public static StateMachineBuilder from(StateMachineClass stateMachineClass, List<StateMachine> knownStateMachines) {
+    return new StateMachineBuilder(stateMachineClass, knownStateMachines);
+  }
+
   /**
-   * Constructs the list of named actions of this state machine if named actions are declared. Also
-   * ensures that no duplicate entries exist.
+   * Constructs the list of named actions of this state machine if named actions are declared. Also ensures that no duplicate entries
+   * exist.
    *
    * @return The list of named actions or empty.
    * @throws IllegalArgumentException When at least one duplicate entry exists.
@@ -43,15 +56,13 @@ public final class StateMachineBuilder {
   private List<Action> buildActions() throws IllegalArgumentException {
     // Construct the list of named actions of this state machine, or leave empty if no named actions are declared
     var actions = stateMachineClass.actions.stream()
-        .map(actionClass -> new ActionBuilder(actionClass).build())
+        .map(actionClass -> ActionBuilder.from(actionClass).build())
         .collect(Collectors.toList());
 
     // Ensure that no duplicate entries exist
     Common.getListDuplicates(actions)
         .forEach(action -> {
-          throw new IllegalArgumentException(
-              new CheckerException(CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE,
-                  action.name));
+          throw new IllegalArgumentException(CheckerException.from(ACTION_NAME_IS_NOT_UNIQUE, action.name));
         });
 
     return actions;
@@ -66,15 +77,14 @@ public final class StateMachineBuilder {
   private StateMachine buildBase() throws IllegalArgumentException {
     var actions = buildActions();
 
-    var stateMachine = new StateMachine(stateMachineClass.name, actions,
-        stateMachineClass.isAbstract);
+    var stateMachine = new StateMachine(stateMachineClass.name, actions, stateMachineClass.isAbstract);
 
     var actionResolver = new ActionResolver(stateMachine);
 
     // Attempt to add vertices
     stateMachineClass.states.stream()
         .filter(StateClass.class::isInstance)
-        .map(stateClass -> new StateBuilder((StateClass) stateClass, actionResolver,
+        .map(stateClass -> StateBuilder.from((StateClass) stateClass, actionResolver,
             Optional.empty()).build())
         .forEach(stateMachine::addVertex);
 
@@ -86,22 +96,20 @@ public final class StateMachineBuilder {
    *
    * @param inheritName The name of the state machine to inherit from.
    * @return The state machine.
-   * @throws IllegalArgumentException In case the state machine could not be built or the provided
-   *                                  state machine name is not known.
+   * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name is not known.
    * @see ChildStateMachineBuilder
    */
   private StateMachine buildChild(String inheritName)
       throws IllegalArgumentException {
     // Get the state machine to inherit from and throw an error if it does not exist
+    // TODO: Felix, I think a better name is 'base'
     StateMachine parentStateMachine = knownStateMachines.stream()
         .filter(knownStateMachine -> knownStateMachine.getName().equals(inheritName))
         .findFirst().orElseThrow(() -> new IllegalArgumentException(
-            new CheckerException(CheckerException.Message.STATE_MACHINE_INHERITS_FROM_INVALID,
-                stateMachineClass.name, inheritName)));
+            CheckerException.from(STATE_MACHINE_INHERITS_FROM_INVALID, stateMachineClass.name, inheritName)));
 
     // Create the child state machine
-    var actions = buildActions();
-    return new ChildStateMachineBuilder(stateMachineClass, parentStateMachine, actions).build();
+    return ChildStateMachineBuilder.implement(stateMachineClass, parentStateMachine, buildActions()).build();
   }
 
   /**
@@ -116,12 +124,8 @@ public final class StateMachineBuilder {
         .orElseGet(this::buildBase);
 
     // If the state machine is not abstract but has abstract states, throw an error
-    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream()
-        .anyMatch(state -> state.isAbstract)) {
-      throw new IllegalArgumentException(
-          new CheckerException(
-              CheckerException.Message.NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES,
-              stateMachineClass.name));
+    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream().anyMatch(state -> state.isAbstract)) {
+      throw new IllegalArgumentException(CheckerException.from(NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES, stateMachineClass.name));
     }
 
     var actionResolver = new ActionResolver(stateMachine);
@@ -140,27 +144,19 @@ public final class StateMachineBuilder {
               var target = stateMachine.getStateByName(transitionClass.target);
 
               // Attempt to add an edge to the state machine graph that resembles the transition
-              if (!stateMachine.addEdge(source, target,
-                  new TransitionBuilder(transitionClass, actionResolver).build())) {
-                throw new IllegalArgumentException(
-                    new CheckerException(CheckerException.Message.ILLEGAL_STATE_MACHINE_GRAPH,
-                        source.name, target.name));
+              if (!stateMachine.addEdge(source, target, TransitionBuilder.from(transitionClass, actionResolver).build())) {
+                throw new IllegalArgumentException(CheckerException.from(ILLEGAL_STATE_MACHINE_GRAPH, source.name, target.name));
               }
             }
           };
 
           // Ensure that "on" transitions have distinct events
           var hasDuplicateEdges = stateClass.on.stream()
-              .collect(Collectors.groupingBy(
-                  transitionClass -> transitionClass.event, Collectors.counting())
-              ).entrySet().stream()
+              .collect(Collectors.groupingBy(transitionClass -> transitionClass.event, Collectors.counting())).entrySet().stream()
               .anyMatch(entry -> entry.getValue() > 1);
 
           if (hasDuplicateEdges) {
-            throw new IllegalArgumentException(
-                new CheckerException(
-                    CheckerException.Message.MULTIPLE_TRANSITIONS_WITH_SAME_EVENT,
-                    stateClass.name));
+            throw new IllegalArgumentException(CheckerException.from(MULTIPLE_TRANSITIONS_WITH_SAME_EVENT, stateClass.name));
           }
           processTransitions.accept(stateClass.on);
 
@@ -179,8 +175,7 @@ public final class StateMachineBuilder {
 
     // Add all nested state machines to the parent state machine
     stateMachine.nestedStateMachines.addAll(nestedStateMachines.stream()
-        .map(nestedStateMachineClass -> new StateMachineBuilder(nestedStateMachineClass,
-            knownStateMachines).build())
+        .map(nestedStateMachineClass -> new StateMachineBuilder(nestedStateMachineClass, knownStateMachines).build())
         .toList());
 
     return stateMachine;

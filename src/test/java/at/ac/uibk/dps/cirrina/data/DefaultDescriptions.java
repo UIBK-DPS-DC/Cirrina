@@ -25,6 +25,31 @@ public class DefaultDescriptions {
                       name: 'e1',
                       channel: 'internal'
                     }
+                  },
+                  {
+                    type: 'invoke',
+                    serviceType: 'serviceTypeName',
+                    isLocal: true,
+                    input: [
+                      {
+                        name: 'inV1',
+                        value: '5'
+                      },
+                      {
+                        name: 'inV2',
+                        value: '6'
+                      }
+                    ],
+                    done: [
+                      {
+                        name: 'e1',
+                        channel: 'internal'
+                      },
+                      {
+                        name: 'e2',
+                        channel: 'internal'
+                      }
+                    ]
                   }
                 ],
                 on: [

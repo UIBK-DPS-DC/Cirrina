@@ -17,11 +17,14 @@ public final class StateBuilder {
 
   private final Optional<State> parentState;
 
-  public StateBuilder(StateClass stateClass, ActionResolver actionResolver,
-      Optional<State> parentState) {
+  private StateBuilder(StateClass stateClass, ActionResolver actionResolver, Optional<State> parentState) {
     this.stateClass = stateClass;
     this.actionResolver = actionResolver;
     this.parentState = parentState;
+  }
+
+  public static StateBuilder from(StateClass stateClass, ActionResolver actionResolver, Optional<State> parentState) {
+    return new StateBuilder(stateClass, actionResolver, parentState);
   }
 
   public State build() throws IllegalArgumentException {
@@ -37,10 +40,7 @@ public final class StateBuilder {
 
     // Create this state
     return parentState
-        .map(parentState -> new State(parentState, entryActions, exitActions, whileActions,
-            stateClass.isAbstract))
-        .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions,
-            stateClass.isAbstract,
-            stateClass.isVirtual));
+        .map(parentState -> new State(parentState, entryActions, exitActions, whileActions, stateClass.isAbstract))
+        .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions, stateClass.isAbstract, stateClass.isVirtual));
   }
 }

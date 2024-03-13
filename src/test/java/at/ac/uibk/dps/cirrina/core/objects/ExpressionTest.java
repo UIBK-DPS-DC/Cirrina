@@ -14,7 +14,6 @@ public class ExpressionTest {
 
   @Test
   public void testExpressionPositive() {
-    var builder = new ExpressionBuilder();
     var context = new InMemoryContext();
 
     assertDoesNotThrow(() -> {
@@ -31,15 +30,16 @@ public class ExpressionTest {
       context.create("varBad1dBytes", bytes);
       context.create("varVariousList", list);
 
-      assertEquals(builder.build("varPlusOneInt+1").execute(context), 2L);
-      assertEquals(builder.build("varNegativeOneInt-1").execute(context), -2L);
-      assertEquals(builder.build("varPlusOneDouble+1.0").execute(context), 2.0);
-      assertEquals(builder.build("varNegativeOneDouble-1.0").execute(context), -2.0);
-      assertEquals(builder.build("!varTrueBool").execute(context), false);
-      assertEquals(builder.build("!varFalseBool").execute(context), true);
-      assertEquals(builder.build("varFoobarString").execute(context), "foobar");
-      assertEquals(builder.build("varBad1dBytes").execute(context), bytes);
-      assertEquals(builder.build("varVariousList").execute(context), list);
+      assertEquals(ExpressionBuilder.from("varPlusOneInt+1").build().execute(context), 2L);
+      assertEquals(ExpressionBuilder.from("varNegativeOneInt-1").build().execute(context), -2L);
+      assertEquals(ExpressionBuilder.from("varPlusOneDouble+1.0").build().execute(context), 2.0);
+      assertEquals(ExpressionBuilder.from("varNegativeOneDouble-1.0").build().execute(context),
+          -2.0);
+      assertEquals(ExpressionBuilder.from("!varTrueBool").build().execute(context), false);
+      assertEquals(ExpressionBuilder.from("!varFalseBool").build().execute(context), true);
+      assertEquals(ExpressionBuilder.from("varFoobarString").build().execute(context), "foobar");
+      assertEquals(ExpressionBuilder.from("varBad1dBytes").build().execute(context), bytes);
+      assertEquals(ExpressionBuilder.from("varVariousList").build().execute(context), list);
     });
   }
 }

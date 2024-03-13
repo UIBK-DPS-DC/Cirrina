@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.objects.builder;
 
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES;
+
 import at.ac.uibk.dps.cirrina.core.objects.State;
 import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
 import at.ac.uibk.dps.cirrina.core.objects.actions.Action;
@@ -13,21 +15,22 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Child state machine builder. Builds a child state machine based on a state machine class and a
- * parent state machine object.
+ * Child state machine builder. Builds a child state machine based on a state machine class and a parent state machine object.
  */
 public final class ChildStateMachineBuilder {
 
   private final StateMachineClass stateMachineClass;
-  private final StateMachine parentStateMachine;
+  private final StateMachine baseStateMachine;
   private List<Action> actions;
 
-  public ChildStateMachineBuilder(StateMachineClass stateMachineClass,
-      StateMachine parentStateMachine,
-      List<Action> actions) {
+  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine base, List<Action> actions) {
     this.stateMachineClass = stateMachineClass;
-    this.parentStateMachine = parentStateMachine;
+    this.baseStateMachine = base;
     this.actions = actions;
+  }
+
+  public static ChildStateMachineBuilder implement(StateMachineClass tthis, StateMachine base, List<Action> actions) {
+    return new ChildStateMachineBuilder(tthis, base, actions);
   }
 
   /**
@@ -41,8 +44,8 @@ public final class ChildStateMachineBuilder {
     checkOverriddenStates();
 
     addParentActions();
-    StateMachine stateMachine = parentStateMachine.cloneWithStateMachineClass(stateMachineClass,
-        actions);
+
+    StateMachine stateMachine = baseStateMachine.cloneWithStateMachineClass(stateMachineClass, actions);
 
     addStates(stateMachine);
     addParentEdges(stateMachine);
@@ -54,12 +57,13 @@ public final class ChildStateMachineBuilder {
    * Adds missing actions from the parent state machine.
    */
   private void addParentActions() {
-    List<Action> parentActions = parentStateMachine.getActions();
+    List<Action> parentActions = baseStateMachine.getActions();
 
     if (actions.isEmpty() && !parentActions.isEmpty()) {
       actions = parentActions;
     } else if (!actions.isEmpty() && !parentActions.isEmpty()) {
       final List<Action> finalActions = actions;
+
       parentActions.stream()
           .filter(parentAction -> finalActions.stream()
               .noneMatch(action -> action.name.equals(parentAction.name)))
@@ -70,21 +74,19 @@ public final class ChildStateMachineBuilder {
   /**
    * Ensures that the overridden state can in fact be overridden.
    *
-   * @throws IllegalArgumentException When at least one state is overridden but neither abstract nor
-   *                                  virtual.
+   * @throws IllegalArgumentException When at least one state is overridden but neither abstract nor virtual.
    */
   private void checkOverriddenStates() throws IllegalArgumentException {
     var stateClasses = getStateClasses();
 
     boolean cannotOverrideState = stateClasses.stream()
-        .anyMatch(stateClass -> parentStateMachine.vertexSet().stream()
+        .anyMatch(stateClass -> baseStateMachine.vertexSet().stream()
             .anyMatch(state -> !state.isVirtual && !state.isAbstract && state.name.equals(
                 stateClass.name)));
 
     if (cannotOverrideState) {
       throw new IllegalArgumentException(
-          new CheckerException(CheckerException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES,
-              stateMachineClass.name));
+          CheckerException.from(CheckerException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, stateMachineClass.name));
     }
   }
 
@@ -94,13 +96,12 @@ public final class ChildStateMachineBuilder {
    * @throws IllegalArgumentException When at least one abstract state is not overridden.
    */
   private void checkAbstractStates() throws IllegalArgumentException {
-
-    if (!parentStateMachine.isAbstract() || stateMachineClass.isAbstract) {
+    if (!baseStateMachine.isAbstract() || stateMachineClass.isAbstract) {
       return;
     }
 
     var stateClasses = getStateClasses();
-    List<State> abstractStates = parentStateMachine.vertexSet().stream()
+    var abstractStates = baseStateMachine.vertexSet().stream()
         .filter(state -> state.isAbstract).toList();
 
     var isIncomplete = abstractStates.stream()
@@ -109,15 +110,13 @@ public final class ChildStateMachineBuilder {
 
     if (isIncomplete) {
       throw new IllegalArgumentException(
-          new CheckerException(
-              CheckerException.Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES,
-              stateMachineClass.name, parentStateMachine.getName()));
+          CheckerException.from(STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES, stateMachineClass.name, baseStateMachine.getName()));
     }
   }
 
   /**
-   * Adds states to the child state machine. Adding the not overridden parent states is necessary
-   * because {@link StateMachine#cloneWithStateMachineClass} returns a shallow copy.
+   * Adds states to the child state machine. Adding the not overridden parent states is necessary because
+   * {@link StateMachine#cloneWithStateMachineClass} returns a shallow copy.
    *
    * @param stateMachine The state machine.
    */
@@ -128,35 +127,34 @@ public final class ChildStateMachineBuilder {
     // Add new states and overridden states
     stateClasses.forEach(stateClass -> {
       // If the state already exists in the parent, remove it and re-add a new state which is built using the child state
-      Optional<State> childState = parentStateMachine.findStateByName(stateClass.name);
+      Optional<State> childState = baseStateMachine.findStateByName(stateClass.name);
       childState.ifPresent(stateMachine::removeVertex);
 
-      stateMachine.addVertex(new StateBuilder(stateClass, actionResolver, childState).build());
+      stateMachine.addVertex(StateBuilder.from(stateClass, actionResolver, childState).build());
     });
 
     // Add missing parent states which were not overridden
-    parentStateMachine.vertexSet().stream()
+    baseStateMachine.vertexSet().stream()
         .filter(state -> stateClasses.stream()
             .noneMatch(stateClass -> state.name.equals(stateClass.name)))
         .forEach(stateMachine::addVertex);
   }
 
   /**
-   * Recreates the edges. Recreating edges is necessary because
-   * {@link StateMachine#cloneWithStateMachineClass} returns a shallow copy.
+   * Recreates the edges. Recreating edges is necessary because {@link StateMachine#cloneWithStateMachineClass} returns a shallow copy.
    *
    * @param stateMachine The state machine.
    */
   private void addParentEdges(StateMachine stateMachine) {
     // Recreate all parent edges
-    parentStateMachine.edgeSet()
+    baseStateMachine.edgeSet()
         .forEach(transition -> {
           // Get the transition source and target from either the parent or child state machine (if overridden)
-          State source = parentStateMachine.getEdgeSource(transition);
+          State source = baseStateMachine.getEdgeSource(transition);
           var overriddenSource = stateMachine.findStateByName(source.name);
           source = overriddenSource.orElse(source);
 
-          State target = parentStateMachine.getEdgeTarget(transition);
+          State target = baseStateMachine.getEdgeTarget(transition);
           var overriddenTarget = stateMachine.findStateByName(target.name);
           target = overriddenTarget.orElse(target);
 

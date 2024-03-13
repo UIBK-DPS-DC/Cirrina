@@ -1,7 +1,10 @@
 package at.ac.uibk.dps.cirrina.core.objects.expression;
 
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.EXPRESSION_COULD_NOT_BE_PARSED;
+
 import at.ac.uibk.dps.cirrina.core.CoreException;
 import at.ac.uibk.dps.cirrina.core.objects.context.Context;
+import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelValidationException;
 import dev.cel.common.types.CelTypes;
@@ -25,21 +28,22 @@ public final class CelExpression extends Expression {
   private final CelAbstractSyntaxTree ast;
 
   /**
-   * Initializes a CEL expression. Parses the expression and reports an error in case parsing
-   * fails.
+   * Initializes a CEL expression. Parses the expression and reports an error in case parsing fails.
    *
    * @param source Source string.
    * @throws IllegalArgumentException In case the expression could not be parsed.
+   * @throws IllegalStateException    In case the expression could not be parsed.
    */
-  public CelExpression(String source) throws IllegalArgumentException {
+  public CelExpression(String source) throws IllegalArgumentException, IllegalStateException {
+    super(source);
+
     // Attempt to parse the expression into an abstract syntax tree
     CelCompiler celCompiler = null;
 
     try {
       celCompiler = getCelCompiler(Optional.empty());
     } catch (CoreException e) {
-      throw new IllegalArgumentException(
-          String.format("Could not acquire a CEL compiler: %s", e.getMessage()));
+      throw new IllegalStateException(String.format("Could not acquire a CEL compiler: %s", e.getMessage()));
     }
 
     // Parse the expression
@@ -47,16 +51,14 @@ public final class CelExpression extends Expression {
 
     // Check if parsing succeeded
     if (parseResult.hasError()) {
-      throw new IllegalArgumentException(
-          String.format("Failed to compile expression: %s", parseResult.getErrorString()));
+      throw new IllegalArgumentException(CheckerException.from(EXPRESSION_COULD_NOT_BE_PARSED, parseResult.getErrorString()));
     }
 
     // Attempt to acquire the abstract syntax tree
     try {
       ast = parseResult.getAst();
     } catch (CelValidationException e) {
-      throw new IllegalArgumentException(
-          String.format("Failed to compile expression: %s", e.getMessage()));
+      throw new IllegalArgumentException(CheckerException.from(EXPRESSION_COULD_NOT_BE_PARSED, e.getMessage()));
     }
   }
 
@@ -67,8 +69,7 @@ public final class CelExpression extends Expression {
    * @return CEL compiler.
    * @throws CoreException In case the compiler could not be acquired.
    */
-  private CelCompiler getCelCompiler(Optional<Context> context)
-      throws IllegalArgumentException, CoreException {
+  private CelCompiler getCelCompiler(Optional<Context> context) throws IllegalArgumentException, CoreException {
     var builder = CelCompilerFactory.standardCelCompilerBuilder();
 
     builder.setStandardMacros(CelStandardMacro.ALL);
@@ -81,8 +82,7 @@ public final class CelExpression extends Expression {
         }
       }
     } catch (CoreException e) {
-      throw new CoreException(
-          String.format("Failed to get the current context variables: %s", e.getMessage()));
+      throw CoreException.from("Failed to get the current context variables: %s", e.getMessage());
     }
 
     return builder.build();
@@ -113,8 +113,7 @@ public final class CelExpression extends Expression {
       return context.getAll().stream()
           .collect(Collectors.toMap(Context.ContextVariable::name, Context.ContextVariable::value));
     } catch (CoreException e) {
-      throw new CoreException(
-          String.format("Failed to retrieve context variables: %s", e.getMessage()));
+      throw CoreException.from("Failed to retrieve context variables: %s", e.getMessage());
     }
   }
 
@@ -133,8 +132,7 @@ public final class CelExpression extends Expression {
 
     // Check if parsing succeeded
     if (checkResult.hasError()) {
-      throw new IllegalArgumentException(
-          String.format("Failed to execute expression: %s", checkResult.getErrorString()));
+      throw CoreException.from("Failed to execute expression: %s", checkResult.getErrorString());
     }
 
     try {
@@ -143,7 +141,7 @@ public final class CelExpression extends Expression {
 
       return program.eval(getVariables(context));
     } catch (CelValidationException | CelEvaluationException e) {
-      throw new CoreException(String.format("Failed to execute expression: %s", e.getMessage()));
+      throw CoreException.from("Failed to execute expression: %s", e.getMessage());
     }
   }
 }

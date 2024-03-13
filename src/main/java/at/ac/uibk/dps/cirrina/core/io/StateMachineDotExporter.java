@@ -15,9 +15,7 @@ public class StateMachineDotExporter {
 
       exporter.exportGraph(stateMachineObject, out);
     } catch (IllegalArgumentException e) {
-      throw new CoreException(
-          String.format("Unexpected error while exporting a state machine object to DOT: %s",
-              e.getMessage()));
+      throw CoreException.from("Unexpected error while exporting a state machine object to DOT: %s", e.getMessage());
     }
   }
 }

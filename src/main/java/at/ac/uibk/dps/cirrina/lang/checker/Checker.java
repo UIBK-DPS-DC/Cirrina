@@ -12,10 +12,9 @@ public final class Checker {
     this.options = options;
   }
 
-  public CollaborativeStateMachine check(
-      CollaborativeStateMachineClass collaborativeStateMachineClass) throws CheckerException {
+  public CollaborativeStateMachine check(CollaborativeStateMachineClass collaborativeStateMachineClass) throws CheckerException {
     try {
-      return new CollaborativeStateMachineBuilder(collaborativeStateMachineClass).build();
+      return CollaborativeStateMachineBuilder.from(collaborativeStateMachineClass).build();
     } catch (IllegalArgumentException e) {
       // We expect a checker exception which is the cause of the exception caught, in case we don't get a checker
       // exception as the cause, we don't know what to do and just rethrow. Otherwise, we throw the CheckerException

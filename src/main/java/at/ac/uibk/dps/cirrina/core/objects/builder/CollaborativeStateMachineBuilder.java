@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Collaborative state machine builder, builds a collaborative state machine based on a
- * collaborative state machine class.
+ * Collaborative state machine builder, builds a collaborative state machine based on a collaborative state machine class.
  */
 public final class CollaborativeStateMachineBuilder {
 
@@ -23,16 +22,18 @@ public final class CollaborativeStateMachineBuilder {
   /**
    * Initializes a collaborative state machine builder.
    *
-   * @param collaborativeStateMachineClass The collaborative state machine class used to build the
-   *                                       collaborative state machine.
+   * @param collaborativeStateMachineClass The collaborative state machine class used to build the collaborative state machine.
    */
-  public CollaborativeStateMachineBuilder(
-      CollaborativeStateMachineClass collaborativeStateMachineClass) {
+  private CollaborativeStateMachineBuilder(CollaborativeStateMachineClass collaborativeStateMachineClass) {
     this.collaborativeStateMachineClass = collaborativeStateMachineClass;
 
     this.collaborativeStateMachine = new CollaborativeStateMachine(
         collaborativeStateMachineClass.name,
         collaborativeStateMachineClass.memoryMode);
+  }
+
+  public static CollaborativeStateMachineBuilder from(CollaborativeStateMachineClass collaborativeStateMachineClass) {
+    return new CollaborativeStateMachineBuilder(collaborativeStateMachineClass);
   }
 
   /**
@@ -42,7 +43,7 @@ public final class CollaborativeStateMachineBuilder {
     var knownStateMachines = new ArrayList<StateMachine>();
 
     collaborativeStateMachineClass.stateMachines.stream()
-        .map(stateMachineClass -> new StateMachineBuilder(stateMachineClass,
+        .map(stateMachineClass -> StateMachineBuilder.from(stateMachineClass,
             knownStateMachines).build())
         .forEach(collaborativeStateMachine::addVertex);
   }
@@ -62,9 +63,8 @@ public final class CollaborativeStateMachineBuilder {
   }
 
   /**
-   * Populates the source state machines according to pre-populated source state machines and raised
-   * events. The table is expected to represent the source state machine (row), raised event
-   * (column), and target state machines (cell).
+   * Populates the source state machines according to pre-populated source state machines and raised events. The table is expected to
+   * represent the source state machine (row), raised event (column), and target state machines (cell).
    *
    * @param events Raised events table.
    */
@@ -76,9 +76,8 @@ public final class CollaborativeStateMachineBuilder {
   }
 
   /**
-   * Populates the target state machines according to pre-populated source state machines and raised
-   * events. The table is expected to represent the source state machine (row), raised event
-   * (column), and target state machines (cell).
+   * Populates the target state machines according to pre-populated source state machines and raised events. The table is expected to
+   * represent the source state machine (row), raised event (column), and target state machines (cell).
    *
    * @param events Raised events table.
    */
@@ -108,9 +107,8 @@ public final class CollaborativeStateMachineBuilder {
   }
 
   /**
-   * Add edges to the currently building collaborative state machine according to the provided
-   * table. The table is expected to represent the source state machine (row), raised event
-   * (column), and target state machines (cell).
+   * Add edges to the currently building collaborative state machine according to the provided table. The table is expected to represent the
+   * source state machine (row), raised event (column), and target state machines (cell).
    *
    * @param events Raised events table.
    */
@@ -135,8 +133,7 @@ public final class CollaborativeStateMachineBuilder {
    * @return Built collaborative state machine.
    * @throws IllegalArgumentException In case the collaborative state machine could not be built.
    */
-  public CollaborativeStateMachine build()
-      throws IllegalArgumentException {
+  public CollaborativeStateMachine build() throws IllegalArgumentException {
     buildVertices();
     buildEdges();
 

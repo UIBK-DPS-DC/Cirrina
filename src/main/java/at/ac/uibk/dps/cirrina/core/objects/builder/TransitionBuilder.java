@@ -16,9 +16,13 @@ public final class TransitionBuilder {
 
   private final ActionResolver actionResolver;
 
-  public TransitionBuilder(TransitionClass transitionClass, ActionResolver actionResolver) {
+  private TransitionBuilder(TransitionClass transitionClass, ActionResolver actionResolver) {
     this.transitionClass = transitionClass;
     this.actionResolver = actionResolver;
+  }
+
+  public static TransitionBuilder from(TransitionClass transitionClass, ActionResolver actionResolver) {
+    return new TransitionBuilder(transitionClass, actionResolver);
   }
 
   public Transition build()
@@ -32,13 +36,10 @@ public final class TransitionBuilder {
     // Create the appropriate transition
     switch (transitionClass) {
       case OnTransitionClass onTransitionClass -> {
-        return new OnTransition(onTransitionClass.target,
-            resolveActions.apply(onTransitionClass.actions),
-            onTransitionClass.event);
+        return new OnTransition(onTransitionClass.target, resolveActions.apply(onTransitionClass.actions), onTransitionClass.event);
       }
       default -> {
-        return new Transition(transitionClass.target,
-            resolveActions.apply(transitionClass.actions));
+        return new Transition(transitionClass.target, resolveActions.apply(transitionClass.actions));
       }
     }
   }
