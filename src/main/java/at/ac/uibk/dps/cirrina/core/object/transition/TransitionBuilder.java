@@ -1,9 +1,7 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.transition;
 
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.object.transition.OnTransition;
-import at.ac.uibk.dps.cirrina.core.object.transition.Transition;
 import at.ac.uibk.dps.cirrina.lang.classes.action.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.lang.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.lang.classes.transition.TransitionClass;

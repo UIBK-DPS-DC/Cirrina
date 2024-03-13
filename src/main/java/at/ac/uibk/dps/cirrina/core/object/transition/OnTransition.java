@@ -7,7 +7,7 @@ public final class OnTransition extends Transition {
 
   public final String eventName;
 
-  public OnTransition(String target, List<Action> actions, String eventName) {
+  OnTransition(String target, List<Action> actions, String eventName) {
     super(target, actions);
 
     this.eventName = eventName;

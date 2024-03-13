@@ -7,7 +7,7 @@ public final class RaiseAction extends Action {
 
   public final Event event;
 
-  public RaiseAction(Optional<String> name, Event event) {
+  RaiseAction(Optional<String> name, Event event) {
     super(name);
 
     this.event = event;

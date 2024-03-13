@@ -1,8 +1,8 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine;
 
-import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
+import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachineBuilder;
 import at.ac.uibk.dps.cirrina.lang.classes.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventChannel;
 import com.google.common.collect.HashBasedTable;
@@ -71,7 +71,7 @@ public final class CollaborativeStateMachineBuilder {
   private void populateSourceStateMachines(Table<StateMachine, Event, List<StateMachine>> events) {
     // Add all source state machines and their raised events
     collaborativeStateMachine.vertexSet().forEach(targetStateMachine ->
-        targetStateMachine.getRaisedEvents()
+        targetStateMachine.getOutputEvents()
             .forEach(event -> events.put(targetStateMachine, event, new ArrayList<>())));
   }
 
@@ -90,7 +90,7 @@ public final class CollaborativeStateMachineBuilder {
       // Determine if the potential target state machine raises the column's raised event and append the target state
       // machine to the cell if it does
       for (var targetStateMachine : collaborativeStateMachine.vertexSet()) {
-        var handledEvents = targetStateMachine.getHandledEvents();
+        var handledEvents = targetStateMachine.getInputEvents();
 
         // If the raised event is internal, the source- and target state machines need to match, otherwise it can be
         // added to the table. At this point we assume that external events will be bound, we cannot resolve the case

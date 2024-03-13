@@ -1,6 +1,5 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.event;
 
-import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventClass;
 
 /**

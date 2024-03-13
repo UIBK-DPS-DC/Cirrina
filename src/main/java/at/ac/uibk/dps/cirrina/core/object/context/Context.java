@@ -77,7 +77,7 @@ public abstract class Context implements AutoCloseable {
      * @param name  Name of the variable.
      * @param value Value expression of the variable.
      */
-    public ContextVariable(String name, Expression value) {
+    ContextVariable(String name, Expression value) {
       this(name, value, true);
     }
 
@@ -87,7 +87,7 @@ public abstract class Context implements AutoCloseable {
      * @param name  Name of the variable.
      * @param value Value of the variable.
      */
-    public ContextVariable(String name, Object value) {
+    ContextVariable(String name, Object value) {
       this(name, value, false);
     }
   }

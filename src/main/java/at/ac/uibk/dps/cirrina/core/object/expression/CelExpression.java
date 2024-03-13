@@ -34,7 +34,7 @@ public final class CelExpression extends Expression {
    * @throws IllegalArgumentException In case the expression could not be parsed.
    * @throws IllegalStateException    In case the expression could not be parsed.
    */
-  public CelExpression(String source) throws IllegalArgumentException, IllegalStateException {
+  CelExpression(String source) throws IllegalArgumentException, IllegalStateException {
     super(source);
 
     // Attempt to parse the expression into an abstract syntax tree

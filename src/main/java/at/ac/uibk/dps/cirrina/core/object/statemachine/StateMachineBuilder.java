@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE;
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.ILLEGAL_STATE_MACHINE_GRAPH;
@@ -8,8 +8,10 @@ import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE
 
 import at.ac.uibk.dps.cirrina.core.Common;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
+import at.ac.uibk.dps.cirrina.core.object.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
+import at.ac.uibk.dps.cirrina.core.object.state.StateBuilder;
+import at.ac.uibk.dps.cirrina.core.object.transition.TransitionBuilder;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import at.ac.uibk.dps.cirrina.lang.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.classes.StateMachineClass;

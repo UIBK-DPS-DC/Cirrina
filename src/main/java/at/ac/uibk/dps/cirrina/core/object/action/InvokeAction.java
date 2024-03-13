@@ -18,7 +18,7 @@ public final class InvokeAction extends Action {
 
   public final List<Event> done;
 
-  public InvokeAction(Optional<String> name, String serviceType, boolean isLocal, List<ContextVariable> input, List<Event> done) {
+  InvokeAction(Optional<String> name, String serviceType, boolean isLocal, List<ContextVariable> input, List<Event> done) {
     super(name);
 
     this.serviceType = serviceType;

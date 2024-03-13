@@ -1,8 +1,7 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.state;
 
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.object.state.State;
 import at.ac.uibk.dps.cirrina.lang.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.classes.action.ActionOrActionReferenceClass;
 import java.util.List;

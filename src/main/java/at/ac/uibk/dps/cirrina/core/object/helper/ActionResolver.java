@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.object.helper;
 
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
-import at.ac.uibk.dps.cirrina.core.object.builder.ActionBuilder;
+import at.ac.uibk.dps.cirrina.core.object.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.lang.classes.action.ActionClass;
 import at.ac.uibk.dps.cirrina.lang.classes.action.ActionOrActionReferenceClass;

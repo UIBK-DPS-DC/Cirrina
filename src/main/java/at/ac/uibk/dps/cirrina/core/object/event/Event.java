@@ -10,7 +10,7 @@ public final class Event {
   public final EventChannel channel;
   public final Map<String, String> data;
 
-  public Event(String name, EventChannel channel, Map<String, String> data) {
+  Event(String name, EventChannel channel, Map<String, String> data) {
     this.name = name;
     this.channel = channel;
     this.data = data;

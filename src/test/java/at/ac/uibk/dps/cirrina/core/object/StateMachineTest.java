@@ -63,14 +63,14 @@ public class StateMachineTest {
 
   @Test
   public void testGetHandledEvents() {
-    var handledEvents = stateMachine.getHandledEvents();
+    var handledEvents = stateMachine.getInputEvents();
     var expectedHandledEvents = List.of("e1", "e2");
     assertEquals(handledEvents, expectedHandledEvents);
   }
 
   @Test
   public void testGetRaisedEvents() {
-    var raisedEvents = stateMachine.getHandledEvents();
+    var raisedEvents = stateMachine.getInputEvents();
     var expectedRaisedEvents = List.of("e1", "e2");
     assertEquals(raisedEvents, expectedRaisedEvents);
   }

@@ -2,7 +2,7 @@ package at.ac.uibk.dps.cirrina.core.object.state;
 
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
-import at.ac.uibk.dps.cirrina.core.object.builder.ActionGraphBuilder;
+import at.ac.uibk.dps.cirrina.core.object.action.ActionGraphBuilder;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -21,7 +21,7 @@ public final class State {
 
   private final ActionGraph whilee;
 
-  public State(String name, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions, boolean isAbstract,
+  State(String name, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions, boolean isAbstract,
       boolean isVirtual) {
     this.name = name;
 
@@ -33,7 +33,7 @@ public final class State {
     this.isVirtual = isVirtual;
   }
 
-  public State(State parentState, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions, boolean isAbstract) {
+  State(State parentState, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions, boolean isAbstract) {
     this.name = parentState.name;
 
     this.entry = ActionGraphBuilder.extend(parentState.entry, entryActions).build();

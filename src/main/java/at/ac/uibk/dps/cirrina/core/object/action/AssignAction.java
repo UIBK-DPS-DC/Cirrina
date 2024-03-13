@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.object.action;
 
-import at.ac.uibk.dps.cirrina.core.object.builder.ExpressionBuilder;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
+import at.ac.uibk.dps.cirrina.core.object.expression.ExpressionBuilder;
 import java.util.Optional;
 
 /**
@@ -27,7 +27,7 @@ public final class AssignAction extends Action {
    * @param value    Value expression source.
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  public AssignAction(Optional<String> name, String variable, String value) throws IllegalArgumentException {
+  AssignAction(Optional<String> name, String variable, String value) throws IllegalArgumentException {
     super(name);
 
     this.variable = ExpressionBuilder.from(variable).build();

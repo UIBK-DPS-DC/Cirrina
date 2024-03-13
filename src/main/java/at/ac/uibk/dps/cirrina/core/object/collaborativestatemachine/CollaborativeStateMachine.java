@@ -12,7 +12,7 @@ public final class CollaborativeStateMachine extends DirectedPseudograph<StateMa
 
   public final MemoryMode memoryMode;
 
-  public CollaborativeStateMachine(String name, MemoryMode memoryMode) {
+  CollaborativeStateMachine(String name, MemoryMode memoryMode) {
     super(Event.class);
 
     this.name = name;

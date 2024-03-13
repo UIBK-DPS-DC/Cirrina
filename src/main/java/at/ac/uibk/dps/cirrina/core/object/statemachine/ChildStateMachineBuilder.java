@@ -1,12 +1,11 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES;
 
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.core.object.state.State;
-import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
-import at.ac.uibk.dps.cirrina.core.object.transition.OnTransition;
+import at.ac.uibk.dps.cirrina.core.object.state.StateBuilder;
 import at.ac.uibk.dps.cirrina.core.object.transition.Transition;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import at.ac.uibk.dps.cirrina.lang.classes.StateClass;
@@ -159,10 +158,12 @@ public final class ChildStateMachineBuilder {
           target = overriddenTarget.orElse(target);
 
           // Recreate the transition
-          Transition newTransition = transition instanceof OnTransition
+          /*Transition newTransition = transition instanceof OnTransition
               ? new OnTransition(transition.target, transition.allActions(),
               ((OnTransition) transition).eventName)
-              : new Transition(transition.target, transition.allActions());
+              : new Transition(transition.target, transition.allActions());*/
+          // TODO: Felix, I disabled this because a Transition needs to be built through the TransitionBuilder
+          Transition newTransition = null;
 
           stateMachine.addEdge(source, target, newTransition);
         });

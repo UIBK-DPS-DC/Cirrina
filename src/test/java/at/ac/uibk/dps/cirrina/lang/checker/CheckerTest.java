@@ -51,7 +51,7 @@ public class CheckerTest {
     StateMachine stateMachine1 = csmChecked.getStateMachineByName("stateMachine1")
         .orElseThrow(() -> new AssertionError("stateMachine1 does not exist"));
     assertTrue(stateMachine1.isAbstract());
-    assertLinesMatch(List.of("e1"), stateMachine1.getHandledEvents());
+    assertLinesMatch(List.of("e1"), stateMachine1.getInputEvents());
     assertDoesNotThrow(() -> {
       Action action1 = stateMachine1.getActionByName("action1");
       Action action2 = stateMachine1.getActionByName("action2");
@@ -62,7 +62,7 @@ public class CheckerTest {
     StateMachine stateMachine2 = csmChecked.getStateMachineByName("stateMachine2")
         .orElseThrow(() -> new AssertionError("stateMachine2 does not exist"));
     assertFalse(stateMachine2.isAbstract());
-    assertLinesMatch(List.of("e1", "e2", "e3"), stateMachine2.getHandledEvents());
+    assertLinesMatch(List.of("e1", "e2", "e3"), stateMachine2.getInputEvents());
     assertDoesNotThrow(() -> {
       Action action1 = stateMachine2.getActionByName("action1");
       Action action2 = stateMachine2.getActionByName("action2");

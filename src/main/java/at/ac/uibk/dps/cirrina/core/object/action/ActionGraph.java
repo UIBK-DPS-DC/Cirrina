@@ -7,23 +7,20 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 /**
  * Abstract action graph, contains actions as vertices and edges indicating the order of execution.
  * <p>
- * Formally, an action graph is a directed graph:
- * <p>
- * \( \mathcal A = (V, A) \) with:
+ * Formally, an action graph is a directed graph \(\mathcal A = (V, A)\) with:
  * <ul>
- *   <li><i>V</i> is a set of action objects;</li>
- *   <li><i>A</i> is a set of ordered pairs of action objects.</li>
+ *   <li><i>\(V\)</i>: the set of action objects;</li>
+ *   <li><i>\(A\)</i>: the set of ordered pairs of action objects.</li>
  * </ul>
  * <p>
- * The order direction of actions contained within an action graph represents the order of execution
- * of the action objects contained in it.
+ * The order direction of actions contained within an action graph represents the order of execution of the action objects contained in it.
  */
 public final class ActionGraph extends SimpleDirectedGraph<Action, DefaultEdge> {
 
   /**
    * Initializes an empty action graph.
    */
-  public ActionGraph() {
+  ActionGraph() {
     super(DefaultEdge.class);
   }
 

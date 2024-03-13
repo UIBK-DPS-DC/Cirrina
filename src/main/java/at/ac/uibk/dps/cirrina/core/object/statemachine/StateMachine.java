@@ -19,6 +19,30 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.jgrapht.graph.DirectedPseudograph;
 
+/**
+ * Represents a state machine object, obtained by building a state machine class. This object encapsulates the structure and necessary
+ * information for executing a state machine using a state machine executor. Multiple executors can be associated with one state machine
+ * object, creating several state machine <i>instances</i>.
+ * <p>
+ * Formally, a state machine is a directed pseudograph, where states are vertices and transitions are edges. It is a deterministic
+ * finite-state transducer (Mealy machine), defined as \(\mathcal S = (\Sigma, \Gamma, S, s_0, \delta, F, E, \omega, \epsilon_t,
+ * \epsilon_s)\) with:
+ * <ul>
+ *   <li><i>\(\Sigma\)</i>: the set of input events;</li>
+ *   <li><i>\(\Gamma\)</i>: the set of output events;</li>
+ *   <li><i>\(S\)</i>: the set of states;</li>
+ *   <li><i>\(s_0\)</i>: the initial state (such that \(s_0 \in S\));</li>
+ *   <li><i>\(E\)</i>: the set of side effects;</li>
+ *   <li><i>\(\delta\)</i>: the state transition function \(\delta: S\times \Sigma \rightarrow S\);</li>
+ *   <li><i>\(\omega\)</i>: the output function \(\omega: S\times \Sigma \rightarrow \Gamma\);</li>
+ *   <li><i>\(\epsilon_t\)</i>: the transition side effect function \(\epsilon_t: S \times \Sigma \rightarrow E\);</li>
+ *   <li><i>\(\epsilon_s\)</i>: the state side effect function \(\epsilon_s: S \rightarrow E\).</li>
+ * </ul>
+ * <p>
+ * This formalism defines a state machine as a system that processes input events, transitions between states, produces output events,
+ * and triggers side effects during both transitions and in states. \(E\) are referred to as the actions of a collaborative state machine,
+ * which can be declared named within a state machine or inline within a state/transition.
+ */
 public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public final List<StateMachine> nestedStateMachines;
@@ -29,7 +53,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   private final List<Action> actions;
 
-  public StateMachine(String name, List<Action> actions, boolean isAbstract) {
+  StateMachine(String name, List<Action> actions, boolean isAbstract) {
     super(Transition.class);
 
     this.name = name;
@@ -55,14 +79,14 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
    *
    * @return Events handled by this state machine.
    */
-  public List<String> getHandledEvents() {
+  public List<String> getInputEvents() {
     return edgeSet().stream()
         .filter(OnTransition.class::isInstance)
         .map(onTransition -> ((OnTransition) onTransition).eventName)
         .toList();
   }
 
-  public List<Event> getRaisedEvents() {
+  public List<Event> getOutputEvents() {
     return Stream.concat(
         // Raise action events
         Stream.concat(

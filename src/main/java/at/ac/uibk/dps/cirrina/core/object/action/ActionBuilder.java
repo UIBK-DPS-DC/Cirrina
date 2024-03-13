@@ -1,15 +1,9 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.action;
 
-import at.ac.uibk.dps.cirrina.core.object.action.Action;
-import at.ac.uibk.dps.cirrina.core.object.action.AssignAction;
-import at.ac.uibk.dps.cirrina.core.object.action.CreateAction;
-import at.ac.uibk.dps.cirrina.core.object.action.InvokeAction;
-import at.ac.uibk.dps.cirrina.core.object.action.MatchAction;
-import at.ac.uibk.dps.cirrina.core.object.action.RaiseAction;
-import at.ac.uibk.dps.cirrina.core.object.action.TimeoutAction;
-import at.ac.uibk.dps.cirrina.core.object.action.TimeoutResetAction;
 import at.ac.uibk.dps.cirrina.core.object.context.Context.ContextVariable;
+import at.ac.uibk.dps.cirrina.core.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
+import at.ac.uibk.dps.cirrina.core.object.event.EventBuilder;
 import at.ac.uibk.dps.cirrina.lang.classes.action.ActionClass;
 import at.ac.uibk.dps.cirrina.lang.classes.action.AssignActionClass;
 import at.ac.uibk.dps.cirrina.lang.classes.action.CreateActionClass;
@@ -53,13 +47,13 @@ public final class ActionBuilder {
 
   private static List<ContextVariable> buildVariableList(List<ContextVariableClass> contextVariableClasses) {
     return contextVariableClasses.stream()
-        .map(c -> new ContextVariable(c.name, c.value))
+        .map(c -> ContextVariableBuilder.from(c).build())
         .toList();
   }
 
   private static List<Event> buildEvents(List<EventClass> eventClasses) {
     return eventClasses.stream()
-        .map(e -> new Event(e.name, e.channel, e.data))
+        .map(e -> EventBuilder.from(e).build())
         .toList();
   }
 

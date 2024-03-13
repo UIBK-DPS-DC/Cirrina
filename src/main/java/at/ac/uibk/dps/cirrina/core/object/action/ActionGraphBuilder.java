@@ -1,7 +1,5 @@
-package at.ac.uibk.dps.cirrina.core.object.builder;
+package at.ac.uibk.dps.cirrina.core.object.action;
 
-import at.ac.uibk.dps.cirrina.core.object.action.Action;
-import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Objects;

@@ -18,7 +18,7 @@ public abstract class Expression {
    *
    * @param source Source string.
    */
-  public Expression(String source) {
+  Expression(String source) {
     this.source = source;
   }
 

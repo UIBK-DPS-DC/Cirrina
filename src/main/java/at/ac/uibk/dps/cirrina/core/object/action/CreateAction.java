@@ -26,7 +26,7 @@ public final class CreateAction extends Action {
    * @param isPersistent True if the variable should be created persistently, otherwise non-persistent.
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  public CreateAction(Optional<String> name, ContextVariable variable, boolean isPersistent) {
+  CreateAction(Optional<String> name, ContextVariable variable, boolean isPersistent) {
     super(name);
 
     this.variable = variable;

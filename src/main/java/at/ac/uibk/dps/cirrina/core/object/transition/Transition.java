@@ -2,7 +2,7 @@ package at.ac.uibk.dps.cirrina.core.object.transition;
 
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
-import at.ac.uibk.dps.cirrina.core.object.builder.ActionGraphBuilder;
+import at.ac.uibk.dps.cirrina.core.object.action.ActionGraphBuilder;
 import java.util.List;
 import java.util.stream.Stream;
 import org.jgrapht.graph.DefaultEdge;
@@ -13,7 +13,7 @@ public class Transition extends DefaultEdge {
 
   public final ActionGraph actions;
 
-  public Transition(String target, List<Action> actions) {
+  Transition(String target, List<Action> actions) {
     this.target = target;
 
     this.actions = ActionGraphBuilder.from(actions).build();

@@ -17,7 +17,7 @@ public abstract class Action {
    *
    * @param name Name, can be optional in which case this action is inline.
    */
-  protected Action(Optional<String> name) {
+  Action(Optional<String> name) {
     this.name = name;
   }
 

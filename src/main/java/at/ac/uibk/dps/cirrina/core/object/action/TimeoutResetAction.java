@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public final class TimeoutResetAction extends Action {
 
-  public TimeoutResetAction(Optional<String> name) {
+  TimeoutResetAction(Optional<String> name) {
     super(name);
   }
 }
