@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.nats;
 
 import at.ac.uibk.dps.cirrina.core.CoreException;
-import at.ac.uibk.dps.cirrina.core.objects.context.Context;
+import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.KeyValue;

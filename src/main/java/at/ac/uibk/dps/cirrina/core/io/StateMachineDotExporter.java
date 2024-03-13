@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.io;
 
 import at.ac.uibk.dps.cirrina.core.CoreException;
-import at.ac.uibk.dps.cirrina.core.objects.StateMachine;
+import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import java.io.Writer;
 import org.jgrapht.nio.graphml.GraphMLExporter;
 

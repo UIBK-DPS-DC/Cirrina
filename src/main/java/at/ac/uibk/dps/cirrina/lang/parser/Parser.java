@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.lang.parser;
 
-import at.ac.uibk.dps.cirrina.lang.parser.classes.CollaborativeStateMachineClass;
+import at.ac.uibk.dps.cirrina.lang.classes.CollaborativeStateMachineClass;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
