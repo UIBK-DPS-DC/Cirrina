@@ -37,9 +37,19 @@ public final class StateBuilder {
     var exitActions = resolveActions.apply(stateClass.exit);
     var whileActions = resolveActions.apply(stateClass.whilee);
 
+    var parameters = new StateParameters(
+        stateClass.name,
+        stateClass.isInitial,
+        stateClass.isTerminal,
+        entryActions,
+        exitActions,
+        whileActions,
+        stateClass.isAbstract,
+        stateClass.isVirtual,
+        baseState
+    );
+
     // Create this state
-    return baseState
-        .map(baseState -> new State(baseState, entryActions, exitActions, whileActions, stateClass.isAbstract))
-        .orElseGet(() -> new State(stateClass.name, entryActions, exitActions, whileActions, stateClass.isAbstract, stateClass.isVirtual));
+    return new State(parameters);
   }
 }

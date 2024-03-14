@@ -6,7 +6,6 @@ import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.MULTI
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES;
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_MACHINE_INHERITS_FROM_INVALID;
 
-import at.ac.uibk.dps.cirrina.core.Common;
 import at.ac.uibk.dps.cirrina.core.runtime.action.Action;
 import at.ac.uibk.dps.cirrina.core.runtime.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.core.runtime.helper.ActionResolver;
@@ -16,6 +15,7 @@ import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import at.ac.uibk.dps.cirrina.lang.classes.StateClass;
 import at.ac.uibk.dps.cirrina.lang.classes.StateMachineClass;
 import at.ac.uibk.dps.cirrina.lang.classes.transition.TransitionClass;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -62,8 +62,10 @@ public final class StateMachineBuilder {
         .collect(Collectors.toList());
 
     // Ensure that no duplicate entries exist
-    Common.getListDuplicates(actions)
-        .forEach(action -> {
+    var duplicates = new HashSet<Action>();
+    actions.stream()
+        .filter(n -> !duplicates.add(n))
+        .collect(Collectors.toSet()).forEach(action -> {
           throw new IllegalArgumentException(CheckerException.from(ACTION_NAME_IS_NOT_UNIQUE, action.name));
         });
 

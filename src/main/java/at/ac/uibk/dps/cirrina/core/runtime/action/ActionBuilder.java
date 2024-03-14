@@ -106,7 +106,7 @@ public final class ActionBuilder {
       case TimeoutResetActionClass timeoutReset -> {
         return new TimeoutResetAction(timeoutReset.name);
       }
-      default -> throw new IllegalStateException("Unexpected value: " + actionClass.type);
+      default -> throw new IllegalStateException(String.format("Unexpected value: %s", actionClass.type));
     }
   }
 }

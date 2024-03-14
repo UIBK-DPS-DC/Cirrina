@@ -1,7 +1,8 @@
 package at.ac.uibk.dps.cirrina.lang.classes.event;
 
+import at.ac.uibk.dps.cirrina.lang.classes.context.ContextVariableClass;
 import jakarta.validation.constraints.NotNull;
-import java.util.Map;
+import java.util.List;
 
 public final class EventClass {
 
@@ -11,5 +12,5 @@ public final class EventClass {
   @NotNull
   public EventChannel channel;
 
-  public Map<String, String> data = Map.of();
+  public List<ContextVariableClass> data = List.of();
 }

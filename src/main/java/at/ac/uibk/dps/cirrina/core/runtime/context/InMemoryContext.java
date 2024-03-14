@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.runtime.context;
 
-import at.ac.uibk.dps.cirrina.core.CoreException;
+import at.ac.uibk.dps.cirrina.core.runtime.RuntimeException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,12 +23,12 @@ public final class InMemoryContext extends Context {
    *
    * @param name Name of the context variable.
    * @return The retrieved context variable.
-   * @throws CoreException If the context variable could not be retrieved.
+   * @throws RuntimeException If the context variable could not be retrieved.
    */
   @Override
-  public Object get(String name) throws CoreException {
+  public Object get(String name) throws RuntimeException {
     if (!values.containsKey(name)) {
-      throw CoreException.from("A variable with the name '%s' does not exist", name);
+      throw RuntimeException.from("A variable with the name '%s' does not exist", name);
     }
 
     return values.get(name);
@@ -39,12 +39,12 @@ public final class InMemoryContext extends Context {
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
-   * @throws CoreException If the variable could not be created.
+   * @throws RuntimeException If the variable could not be created.
    */
   @Override
-  public void create(String name, Object value) throws CoreException {
+  public void create(String name, Object value) throws RuntimeException {
     if (values.containsKey(name)) {
-      throw CoreException.from("A variable with the name '%s' already exists", name);
+      throw RuntimeException.from("A variable with the name '%s' already exists", name);
     }
 
     values.put(name, value);
@@ -55,12 +55,12 @@ public final class InMemoryContext extends Context {
    *
    * @param name  Name of the context variable.
    * @param value New value of the context variable.
-   * @throws CoreException If the variable could not be assigned to.
+   * @throws RuntimeException If the variable could not be assigned to.
    */
   @Override
-  public void assign(String name, Object value) throws CoreException {
+  public void assign(String name, Object value) throws RuntimeException {
     if (!values.containsKey(name)) {
-      throw CoreException.from("A variable with the name '%s' does not exist", name);
+      throw RuntimeException.from("A variable with the name '%s' does not exist", name);
     }
 
     values.put(name, value);
@@ -70,12 +70,12 @@ public final class InMemoryContext extends Context {
    * Deletes a context variable.
    *
    * @param name Name of the context variable.
-   * @throws CoreException If the variable could not be deleted.
+   * @throws RuntimeException If the variable could not be deleted.
    */
   @Override
-  public void delete(String name) throws CoreException {
+  public void delete(String name) throws RuntimeException {
     if (!values.containsKey(name)) {
-      throw CoreException.from("A variable with the name '%s' does not exist", name);
+      throw RuntimeException.from("A variable with the name '%s' does not exist", name);
     }
 
     values.remove(name);
@@ -87,7 +87,7 @@ public final class InMemoryContext extends Context {
    * @return Context variables.
    */
   @Override
-  public List<ContextVariable> getAll() throws CoreException {
+  public List<ContextVariable> getAll() throws RuntimeException {
     return values.entrySet().stream()
         .map(entry -> new ContextVariable(entry.getKey(), entry.getValue()))
         .toList();

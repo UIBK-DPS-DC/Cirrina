@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.core.runtime.state;
 
-import at.ac.uibk.dps.cirrina.core.runtime.action.Action;
 import at.ac.uibk.dps.cirrina.core.runtime.action.ActionGraph;
 import at.ac.uibk.dps.cirrina.core.runtime.action.ActionGraphBuilder;
 import java.util.Collection;
@@ -11,40 +10,46 @@ public final class State {
 
   public final String name;
 
+  public final boolean isInitial;
+
+  public final boolean isTerminal;
   public final boolean isAbstract;
-
   public final boolean isVirtual;
-
   private final ActionGraph entry;
-
   private final ActionGraph exit;
-
   private final ActionGraph whilee;
 
-  State(String name, List<Action> entryActions, List<Action> exitActions, List<Action> whileActions, boolean isAbstract,
-      boolean isVirtual) {
-    this.name = name;
+  State(StateParameters parameters) {
+    if (parameters.baseState().isEmpty()) {
+      this.name = parameters.name();
 
-    this.entry = ActionGraphBuilder.from(entryActions).build();
-    this.exit = ActionGraphBuilder.from(exitActions).build();
-    this.whilee = ActionGraphBuilder.from(whileActions).build();
+      this.isInitial = parameters.isInitial();
+      this.isTerminal = parameters.isTerminal();
 
-    this.isAbstract = isAbstract;
-    this.isVirtual = isVirtual;
-  }
+      this.entry = ActionGraphBuilder.from(parameters.entryActions()).build();
+      this.exit = ActionGraphBuilder.from(parameters.exitActions()).build();
+      this.whilee = ActionGraphBuilder.from(parameters.whileActions()).build();
 
-  State(State baseState, List<Action> entryActions, List<Action> exitActions,
-      List<Action> whileActions,
-      boolean isAbstract) {
-    this.name = baseState.name;
+      this.isAbstract = parameters.isAbstract();
+      this.isVirtual = parameters.isVirtual();
+    } else {
+      var baseState = parameters.baseState().get();
 
-    this.entry = ActionGraphBuilder.extend(new ActionGraph(baseState.entry), entryActions).build();
-    this.exit = ActionGraphBuilder.extend(new ActionGraph(baseState.exit), exitActions).build();
-    this.whilee = ActionGraphBuilder.extend(new ActionGraph(baseState.whilee), whileActions).build();
+      this.name = baseState.name;
 
-    this.isAbstract = isAbstract;
-    // Ensure overridden abstract states are virtual if they are no longer abstract, so they can be further overridden
-    this.isVirtual = (baseState.isAbstract && !isAbstract) || baseState.isVirtual;
+      // TODO: Felix, fix for inheritance
+      this.isInitial = parameters.isInitial();
+      this.isTerminal = parameters.isTerminal();
+
+      this.entry = ActionGraphBuilder.extend(new ActionGraph(baseState.entry), parameters.entryActions()).build();
+      this.exit = ActionGraphBuilder.extend(new ActionGraph(baseState.exit), parameters.exitActions()).build();
+      this.whilee = ActionGraphBuilder.extend(new ActionGraph(baseState.whilee), parameters.whileActions()).build();
+
+      this.isAbstract = parameters.isAbstract();
+
+      // Ensure overridden abstract states are virtual if they are no longer abstract, so they can be further overridden
+      this.isVirtual = (baseState.isAbstract && !isAbstract) || baseState.isVirtual;
+    }
   }
 
   public <T> List<T> getActionsOfType(Class<T> type) {

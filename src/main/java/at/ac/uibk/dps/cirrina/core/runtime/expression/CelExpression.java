@@ -2,7 +2,7 @@ package at.ac.uibk.dps.cirrina.core.runtime.expression;
 
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.EXPRESSION_COULD_NOT_BE_PARSED;
 
-import at.ac.uibk.dps.cirrina.core.CoreException;
+import at.ac.uibk.dps.cirrina.core.runtime.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.runtime.context.Context;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import dev.cel.common.CelAbstractSyntaxTree;
@@ -42,7 +42,7 @@ public final class CelExpression extends Expression {
 
     try {
       celCompiler = getCelCompiler(Optional.empty());
-    } catch (CoreException e) {
+    } catch (RuntimeException e) {
       throw new IllegalStateException(String.format("Could not acquire a CEL compiler: %s", e.getMessage()));
     }
 
@@ -67,9 +67,9 @@ public final class CelExpression extends Expression {
    *
    * @param context Context for looking up variables, may be null.
    * @return CEL compiler.
-   * @throws CoreException In case the compiler could not be acquired.
+   * @throws RuntimeException In case the compiler could not be acquired.
    */
-  private CelCompiler getCelCompiler(Optional<Context> context) throws IllegalArgumentException, CoreException {
+  private CelCompiler getCelCompiler(Optional<Context> context) throws IllegalArgumentException, RuntimeException {
     var builder = CelCompilerFactory.standardCelCompilerBuilder();
 
     builder.setStandardMacros(CelStandardMacro.ALL);
@@ -81,8 +81,8 @@ public final class CelExpression extends Expression {
           builder.addVar(name, CelTypes.DYN);
         }
       }
-    } catch (CoreException e) {
-      throw CoreException.from("Failed to get the current context variables: %s", e.getMessage());
+    } catch (RuntimeException e) {
+      throw RuntimeException.from("Failed to get the current context variables: %s", e.getMessage());
     }
 
     return builder.build();
@@ -106,14 +106,14 @@ public final class CelExpression extends Expression {
    *
    * @param context Context for retrieving variables.
    * @return Map of names and values.
-   * @throws CoreException If the variables could not be retrieved.
+   * @throws RuntimeException If the variables could not be retrieved.
    */
-  private Map<String, Object> getVariables(Context context) throws CoreException {
+  private Map<String, Object> getVariables(Context context) throws RuntimeException {
     try {
       return context.getAll().stream()
           .collect(Collectors.toMap(Context.ContextVariable::name, Context.ContextVariable::value));
-    } catch (CoreException e) {
-      throw CoreException.from("Failed to retrieve context variables: %s", e.getMessage());
+    } catch (RuntimeException e) {
+      throw RuntimeException.from("Failed to retrieve context variables: %s", e.getMessage());
     }
   }
 
@@ -122,9 +122,9 @@ public final class CelExpression extends Expression {
    *
    * @param context Context containing variables in scope.
    * @return Result of the expression.
-   * @throws CoreException In case of an error while executing the expression.
+   * @throws RuntimeException In case of an error while executing the expression.
    */
-  public Object execute(Context context) throws CoreException {
+  public Object execute(Context context) throws RuntimeException {
     var celCompiler = getCelCompiler(Optional.of(context));
 
     // Perform checking
@@ -132,7 +132,7 @@ public final class CelExpression extends Expression {
 
     // Check if parsing succeeded
     if (checkResult.hasError()) {
-      throw CoreException.from("Failed to execute expression: %s", checkResult.getErrorString());
+      throw RuntimeException.from("Failed to execute expression: %s", checkResult.getErrorString());
     }
 
     try {
@@ -141,7 +141,7 @@ public final class CelExpression extends Expression {
 
       return program.eval(getVariables(context));
     } catch (CelValidationException | CelEvaluationException e) {
-      throw CoreException.from("Failed to execute expression: %s", e.getMessage());
+      throw RuntimeException.from("Failed to execute expression: %s", e.getMessage());
     }
   }
 }

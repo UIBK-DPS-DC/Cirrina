@@ -2,6 +2,7 @@ package at.ac.uibk.dps.cirrina.core.runtime.statemachine;
 
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.ACTION_NAME_IS_NOT_UNIQUE;
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.NAMED_ACTION_DOES_NOT_EXIST;
+import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_MACHINE_DOES_NOT_HAVE_ONE_INITIAL_STATE;
 import static at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message.STATE_NAME_IS_NOT_UNIQUE;
 
 import at.ac.uibk.dps.cirrina.core.runtime.action.Action;
@@ -13,6 +14,7 @@ import at.ac.uibk.dps.cirrina.core.runtime.transition.OnTransition;
 import at.ac.uibk.dps.cirrina.core.runtime.transition.Transition;
 import at.ac.uibk.dps.cirrina.lang.checker.CheckerException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -56,7 +58,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
     super(Transition.class);
 
     this.name = name;
-    this.actions = actions;
+    this.actions = Collections.unmodifiableList(actions);
     this.isAbstract = isAbstract;
     this.nestedStateMachines = new ArrayList<>();
   }
@@ -71,6 +73,23 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public List<Action> getActions() {
     return actions;
+  }
+
+  /**
+   * Returns the initial state of this state machine.
+   *
+   * @return Initial state.
+   * @throws IllegalArgumentException If this state machine does not have exactly one initial state.
+   */
+  public State getInitialState() throws IllegalArgumentException {
+    var initialStates = vertexSet().stream()
+        .filter(state -> state.isInitial)
+        .toList();
+
+    if (initialStates.size() != 1) {
+      throw new IllegalArgumentException(CheckerException.from(STATE_MACHINE_DOES_NOT_HAVE_ONE_INITIAL_STATE, getName()));
+    }
+    return initialStates.getFirst();
   }
 
   /**
@@ -108,7 +127,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
    * @return The state with the supplied name.
    * @throws IllegalArgumentException In case not one state is known with the supplied name or multiple states were found.
    */
-  public State getStateByName(String stateName) {
+  public State getStateByName(String stateName) throws IllegalArgumentException {
     return findStateByName(stateName)
         .orElseThrow(() -> new IllegalArgumentException(
             CheckerException.from(CheckerException.Message.STATE_NAME_DOES_NOT_EXIST, stateName)));
@@ -121,7 +140,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
    * @return The state with the supplied name or empty.
    * @throws IllegalArgumentException In case multiple states were found for the supplied name.
    */
-  public Optional<State> findStateByName(String stateName) {
+  public Optional<State> findStateByName(String stateName) throws IllegalArgumentException {
     // Attempt to match the provided name to a known state
     var states = vertexSet().stream()
         .filter(state -> state.name.equals(stateName))

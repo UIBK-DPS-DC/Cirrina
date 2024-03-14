@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.runtime.context;
 
-import at.ac.uibk.dps.cirrina.core.CoreException;
+import at.ac.uibk.dps.cirrina.core.runtime.RuntimeException;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.KeyValue;
@@ -32,14 +32,14 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    *
    * @param natsUrl NATS server URL.
    */
-  public NatsPersistentContext(String natsUrl, String bucketName) throws CoreException {
+  public NatsPersistentContext(String natsUrl, String bucketName) throws RuntimeException {
     // Attempt to connect to the NATS server
     try {
       connection = Nats.connect(natsUrl);
     } catch (InterruptedException | IOException e) {
       Thread.currentThread().interrupt();
 
-      throw CoreException.from("Could not connect to the NATS server: %s", e.getMessage());
+      throw RuntimeException.from("Could not connect to the NATS server: %s", e.getMessage());
     }
 
     // Attempt to retrieve the bucket, which is expected to be pre-created. We do not manage the creation/deletion of
@@ -60,7 +60,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
       // Retrieve the bucket
       keyValue = connection.keyValue(bucketName);
     } catch (IOException | JetStreamApiException e) {
-      throw CoreException.from("Failed to create the persistent context bucket, make sure that it has been created");
+      throw RuntimeException.from("Failed to create the persistent context bucket, make sure that it has been created");
     }
   }
 
@@ -70,20 +70,20 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    *
    * @param name Name of the context variable.
    * @return The retrieved context variable.
-   * @throws CoreException If the context variable could not be retrieved.
+   * @throws RuntimeException If the context variable could not be retrieved.
    */
   @Override
-  public Object get(String name) throws CoreException {
+  public Object get(String name) throws RuntimeException {
     try {
       if (!knownKeys.contains(name)) {
-        throw CoreException.from("A variable with the name '%s' does not exist", name);
+        throw RuntimeException.from("A variable with the name '%s' does not exist", name);
       }
 
       var entry = keyValue.get(name);
 
       return fromBytes(entry.getValue());
     } catch (IOException | JetStreamApiException e) {
-      throw CoreException.from("Failed to retrieve the variable '%s': %s", name, e.getMessage());
+      throw RuntimeException.from("Failed to retrieve the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -92,20 +92,20 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
-   * @throws CoreException If the variable could not be created.
+   * @throws RuntimeException If the variable could not be created.
    */
   @Override
-  public void create(String name, Object value) throws CoreException {
+  public void create(String name, Object value) throws RuntimeException {
     try {
       if (knownKeys.contains(name)) {
-        CoreException.from("A variable with the name '%s' already exists", name);
+        RuntimeException.from("A variable with the name '%s' already exists", name);
       }
 
       keyValue.create(name, toBytes(value));
 
       knownKeys.add(name);
     } catch (IOException | JetStreamApiException e) {
-      throw CoreException.from("Failed to create variable '%s': %s", name, e.getMessage());
+      throw RuntimeException.from("Failed to create variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -114,20 +114,20 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    *
    * @param name  Name of the context variable.
    * @param value New value of the context variable.
-   * @throws CoreException If the variable could not be assigned to.
+   * @throws RuntimeException If the variable could not be assigned to.
    */
   @Override
-  public void assign(String name, Object value) throws CoreException {
+  public void assign(String name, Object value) throws RuntimeException {
     try {
       if (!knownKeys.contains(name)) {
-        throw CoreException.from("A variable with the name '%s' does not exist", name);
+        throw RuntimeException.from("A variable with the name '%s' does not exist", name);
       }
 
       keyValue.put(name, toBytes(value));
     } catch (IOException | JetStreamApiException e) {
       Thread.currentThread().interrupt();
 
-      throw CoreException.from("Failed to assign to the variable '%s': %s", name, e.getMessage());
+      throw RuntimeException.from("Failed to assign to the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -135,20 +135,20 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    * Deletes a context variable.
    *
    * @param name Name of the context variable.
-   * @throws CoreException If the variable could not be deleted.
+   * @throws RuntimeException If the variable could not be deleted.
    */
   @Override
-  public void delete(String name) throws CoreException {
+  public void delete(String name) throws RuntimeException {
     try {
       if (!knownKeys.contains(name)) {
-        throw CoreException.from("A variable with the name '%s' does not exist", name);
+        throw RuntimeException.from("A variable with the name '%s' does not exist", name);
       }
 
       keyValue.delete(name);
 
       knownKeys.remove(name);
     } catch (IOException | JetStreamApiException e) {
-      throw CoreException.from("Failed to delete the variable '%s': %s", name, e.getMessage());
+      throw RuntimeException.from("Failed to delete the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -156,10 +156,10 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    * Returns all context variables.
    *
    * @return Context variables.
-   * @throws CoreException If the variables could not be retrieved.
+   * @throws RuntimeException If the variables could not be retrieved.
    */
   @Override
-  public List<ContextVariable> getAll() throws CoreException {
+  public List<ContextVariable> getAll() throws RuntimeException {
     var ret = new ArrayList<ContextVariable>();
 
     try {
@@ -168,34 +168,34 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
 
         // This would be unexpected
         if (entry == null) {
-          throw CoreException.from("Could not retrieve the value of the variable '%s'", key);
+          throw RuntimeException.from("Could not retrieve the value of the variable '%s'", key);
         }
 
         ret.add(new ContextVariable(entry.getKey(), entry.getValue()));
       }
     } catch (IOException | JetStreamApiException e) {
-      throw new RuntimeException(e);
+      throw new java.lang.RuntimeException(e);
     }
 
     return ret;
   }
 
-  private byte[] toBytes(Object value) throws CoreException {
+  private byte[] toBytes(Object value) throws RuntimeException {
     try (var bs = new ByteArrayOutputStream(); var os = new ObjectOutputStream(bs)) {
       // Acquire serialize to bytes
       os.writeObject(value);
 
       return bs.toByteArray();
     } catch (IOException e) {
-      throw CoreException.from("Failed to convert object to binary data: %s", e.getMessage());
+      throw RuntimeException.from("Failed to convert object to binary data: %s", e.getMessage());
     }
   }
 
-  private Object fromBytes(byte[] bytes) throws CoreException {
+  private Object fromBytes(byte[] bytes) throws RuntimeException {
     try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
       return ois.readObject();
     } catch (IOException | ClassNotFoundException e) {
-      throw CoreException.from("Failed to convert binary data to object: %s", e.getMessage());
+      throw RuntimeException.from("Failed to convert binary data to object: %s", e.getMessage());
     }
   }
 
@@ -209,7 +209,7 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
 
       connection.close();
     } catch (IOException | JetStreamApiException | InterruptedException e) {
-      throw CoreException.from("Failed to close NATS persistent context: %s", e.getMessage());
+      throw RuntimeException.from("Failed to close NATS persistent context: %s", e.getMessage());
     }
   }
 }

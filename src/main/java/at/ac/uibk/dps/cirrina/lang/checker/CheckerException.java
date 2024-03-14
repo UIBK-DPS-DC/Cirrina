@@ -27,7 +27,8 @@ public final class CheckerException extends CirrinaException {
     STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES(8, "State machine '%s' overrides states which are neither abstract nor virtual"),
     STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES(9, "State machine '%s' does not override all abstract states of state machine '%s'"),
     NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES(10, "State machine '%s' has abstract states but is not defined as abstract"),
-    EXPRESSION_COULD_NOT_BE_PARSED(11, "The expression '%s' could not be parsed: %s");
+    EXPRESSION_COULD_NOT_BE_PARSED(11, "The expression '%s' could not be parsed: %s"),
+    STATE_MACHINE_DOES_NOT_HAVE_ONE_INITIAL_STATE(12, "State machine '%s' does not have exactly one initial state");
 
     public final int number;
 

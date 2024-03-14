@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.runtime.expression;
 
-import at.ac.uibk.dps.cirrina.core.CoreException;
+import at.ac.uibk.dps.cirrina.core.runtime.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.runtime.context.Context;
 
 /**
@@ -27,7 +27,7 @@ public abstract class Expression {
    *
    * @param context Context containing variables in scope.
    * @return Result of the expression.
-   * @throws CoreException In case of an error while executing the expression.
+   * @throws RuntimeException In case of an error while executing the expression.
    */
-  public abstract Object execute(Context context) throws CoreException;
+  public abstract Object execute(Context context) throws RuntimeException;
 }

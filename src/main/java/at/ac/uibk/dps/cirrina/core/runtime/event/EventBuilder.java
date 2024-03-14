@@ -1,6 +1,10 @@
 package at.ac.uibk.dps.cirrina.core.runtime.event;
 
+import at.ac.uibk.dps.cirrina.core.runtime.context.Context.ContextVariable;
+import at.ac.uibk.dps.cirrina.core.runtime.context.ContextVariableBuilder;
+import at.ac.uibk.dps.cirrina.lang.classes.context.ContextVariableClass;
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventClass;
+import java.util.List;
 
 /**
  * Event builder, used to build event objects.
@@ -31,6 +35,12 @@ public class EventBuilder {
     return new EventBuilder(eventClass);
   }
 
+  private static List<ContextVariable> buildVariableList(List<ContextVariableClass> contextVariableClasses) {
+    return contextVariableClasses.stream()
+        .map(c -> ContextVariableBuilder.from(c).build())
+        .toList();
+  }
+
   /**
    * Builds the event.
    *
@@ -40,7 +50,7 @@ public class EventBuilder {
     return new Event(
         eventClass.name,
         eventClass.channel,
-        eventClass.data
+        buildVariableList(eventClass.data)
     );
   }
 }

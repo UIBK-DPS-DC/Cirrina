@@ -25,7 +25,7 @@ public final class ActionResolver {
       case ActionReferenceClass actionReferenceClass -> {
         return this.stateMachine.getActionByName(actionReferenceClass.reference);
       }
-      default -> throw new IllegalStateException("Unexpected value: " + actionOrActionReferenceClass);
+      default -> throw new IllegalStateException(String.format("Unexpected value: ", actionOrActionReferenceClass));
     }
   }
 }
