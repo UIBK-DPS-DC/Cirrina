@@ -120,6 +120,7 @@ public class DefaultDescriptions {
               {
                 name: 'state1',
                 isVirtual: true,
+                isInitial: true,
                 on: [
                   {
                     target: 'state2',
@@ -130,6 +131,10 @@ public class DefaultDescriptions {
               {
                 name: 'state2',
                 isAbstract: true
+              },
+              {
+                name: 'state3',
+                isTerminal: true
               }
             ],
             actions: [
@@ -168,8 +173,17 @@ public class DefaultDescriptions {
                 name: 'state2',
                 on: [
                   {
-                    target: 'state2',
+                    target: 'state3',
                     event: 'e3'
+                  }
+                ]
+              },
+              {
+                name: 'state4',
+                 on: [
+                  {
+                    target: 'state3',
+                    event: 'e4'
                   }
                 ]
               }
@@ -182,6 +196,114 @@ public class DefaultDescriptions {
                   name: 'v2',
                   value: '2'
                 }
+              }
+            ]
+          }
+        ]
+      }
+      """;
+
+  public static String invalidInheritance = """
+      {
+        name: 'collaborativeStateMachine',
+        version: '0.1',
+        memoryMode: 'distributed',
+        stateMachines: [
+          {
+            name: 'stateMachine1',
+            inherit: 'invalidStateMachine',
+            states: [
+              {
+                name: 'state1',
+                isInitial: true,
+                isTerminal: true
+              }
+            ]
+          }
+        ]
+      }
+      """;
+
+  public static String invalidStateOverride = """
+      {
+        name: 'collaborativeStateMachine',
+        version: '0.1',
+        memoryMode: 'distributed',
+        stateMachines: [
+          {
+            name: 'stateMachine1',
+            states: [
+              {
+                name: 'state1',
+                isInitial: true,
+                isTerminal: true
+              }
+            ]
+          },
+          {
+            name: 'stateMachine2',
+            inherit: 'stateMachine1',
+            states: [
+              {
+                name: 'state1'
+              }
+            ]
+          }
+        ]
+      }
+      """;
+
+  public static String invalidAbstraction = """
+      {
+        name: 'collaborativeStateMachine',
+        version: '0.1',
+        memoryMode: 'distributed',
+        stateMachines: [
+          {
+            name: 'stateMachine1',
+            isAbstract: true,
+            states: [
+              {
+                name: 'state1',
+                isInitial: true,
+                isTerminal: true
+              },
+              {
+                name: 'state2',
+                isAbstract: true
+              }
+            ]
+          },
+          {
+            name: 'stateMachine2',
+            inherit: 'stateMachine1',
+            states: [
+              {
+                name: 'state3'
+              }
+            ]
+          }
+        ]
+      }
+      """;
+
+  public static String invalidAbstractStates = """
+      {
+        name: 'collaborativeStateMachine',
+        version: '0.1',
+        memoryMode: 'distributed',
+        stateMachines: [
+          {
+            name: 'stateMachine1',
+            states: [
+              {
+                name: 'state1',
+                isInitial: true,
+                isTerminal: true
+              },
+              {
+                name: 'state2',
+                isAbstract: true
               }
             ]
           }

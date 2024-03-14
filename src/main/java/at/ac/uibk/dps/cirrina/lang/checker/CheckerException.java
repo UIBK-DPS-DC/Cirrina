@@ -5,8 +5,11 @@ import at.ac.uibk.dps.cirrina.CirrinaException;
 
 public final class CheckerException extends CirrinaException {
 
+  public final Message message;
+
   private CheckerException(Message message, Object... args) {
     super(String.format("%s (Error): ", message.number) + String.format(message.message, args));
+    this.message = message;
   }
 
   public static CheckerException from(Message message, Object... args) {

@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.lang.classes.action;
 
 import at.ac.uibk.dps.cirrina.lang.classes.context.ContextVariableClass;
+import at.ac.uibk.dps.cirrina.lang.classes.context.ContextVariableReference;
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventClass;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
@@ -28,5 +29,5 @@ public final class InvokeActionClass extends ActionClass {
    * <p>
    * Used to automatically store service output to a local context variable. The variable must exist at runtime.
    */
-  public Optional<String> output = Optional.empty(); // TODO: Felix this should be a context variable, I just introduced ContextVariable
+  public Optional<ContextVariableReference> output = Optional.empty();
 }

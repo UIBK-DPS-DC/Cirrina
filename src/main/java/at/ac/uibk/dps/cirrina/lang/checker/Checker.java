@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.lang.checker;
 
-import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
-import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
+import at.ac.uibk.dps.cirrina.core.runtime.collaborativestatemachine.CollaborativeStateMachine;
+import at.ac.uibk.dps.cirrina.core.runtime.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.lang.classes.CollaborativeStateMachineClass;
 
 public final class Checker {
