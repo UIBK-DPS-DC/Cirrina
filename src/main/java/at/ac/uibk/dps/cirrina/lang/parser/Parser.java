@@ -21,77 +21,6 @@ import jakarta.validation.Validator;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-/**
- * Bean deserializer with validation. Provides additional bean validation after deserialization.
- */
-final class BeanDeserializerWithValidation extends BeanDeserializer {
-
-  private final Validator validator;
-
-  /**
-   * Initializes the bean deserializer with validation.
-   *
-   * @param source Source deserializer.
-   */
-  protected BeanDeserializerWithValidation(BeanDeserializerBase source) {
-    super(source);
-
-    // Create the validator
-    validator = Validation.buildDefaultValidatorFactory().getValidator();
-  }
-
-  /**
-   * Perform deserialization. Will perform default deserialization, with additional bean validation after deserialization. Any validation
-   * error will result in an IllegalArgumentException to be thrown.
-   *
-   * @param parser  JSON parser.
-   * @param context Deserialization context.
-   * @return Deserialized and validated object.
-   * @throws IOException              Default exceptions.
-   * @throws IllegalArgumentException In case of validation errors.
-   */
-  @Override
-  public Object deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-    // Call the base deserialization
-    Object instance = super.deserialize(parser, context);
-
-    // Check for violations, in case we find violations we throw an IllegalArgumentException that
-    // is handled in the parse function below
-    var violations = validator.validate(instance);
-    if (!violations.isEmpty()) {
-      throw new IllegalArgumentException(violations.stream()
-          .map(v -> v.getMessage())
-          .collect(Collectors.joining(",")));
-    }
-
-    return instance;
-  }
-}
-
-/**
- * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a bean deserializer.
- */
-final class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
-
-  /**
-   * Provides a bean deserializer with validation in the place of a bean deserializer.
-   *
-   * @param configuration Deserialization configuration.
-   * @param description   Bean description.
-   * @param deserializer  Deserializer to modify.
-   * @return The deserializer or bean deserializer with validation instead of bean deserializer.
-   */
-  @Override
-  public JsonDeserializer<?> modifyDeserializer(DeserializationConfig configuration, BeanDescription description,
-      JsonDeserializer<?> deserializer) {
-    // Provide the deserializer with validation
-    if (deserializer instanceof BeanDeserializer) {
-      return new BeanDeserializerWithValidation((BeanDeserializer) deserializer);
-    }
-
-    return deserializer;
-  }
-}
 
 /**
  * CSML parser. Provides parsing functionality for descriptions written in the CSML language. A description is parsed into a structure
@@ -147,5 +76,77 @@ public final class Parser {
    */
   public record Options() {
 
+  }
+
+  /**
+   * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a bean deserializer.
+   */
+  class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
+
+    /**
+     * Provides a bean deserializer with validation in the place of a bean deserializer.
+     *
+     * @param configuration Deserialization configuration.
+     * @param description   Bean description.
+     * @param deserializer  Deserializer to modify.
+     * @return The deserializer or bean deserializer with validation instead of bean deserializer.
+     */
+    @Override
+    public JsonDeserializer<?> modifyDeserializer(DeserializationConfig configuration, BeanDescription description,
+        JsonDeserializer<?> deserializer) {
+      // Provide the deserializer with validation
+      if (deserializer instanceof BeanDeserializer) {
+        return new BeanDeserializerWithValidation((BeanDeserializer) deserializer);
+      }
+
+      return deserializer;
+    }
+  }
+
+  /**
+   * Bean deserializer with validation. Provides additional bean validation after deserialization.
+   */
+  class BeanDeserializerWithValidation extends BeanDeserializer {
+
+    private final Validator validator;
+
+    /**
+     * Initializes the bean deserializer with validation.
+     *
+     * @param source Source deserializer.
+     */
+    protected BeanDeserializerWithValidation(BeanDeserializerBase source) {
+      super(source);
+
+      // Create the validator
+      validator = Validation.buildDefaultValidatorFactory().getValidator();
+    }
+
+    /**
+     * Perform deserialization. Will perform default deserialization, with additional bean validation after deserialization. Any validation
+     * error will result in an IllegalArgumentException to be thrown.
+     *
+     * @param parser  JSON parser.
+     * @param context Deserialization context.
+     * @return Deserialized and validated object.
+     * @throws IOException              Default exceptions.
+     * @throws IllegalArgumentException In case of validation errors.
+     */
+    @Override
+    public Object deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+      // Call the base deserialization
+      Object instance = super.deserialize(parser, context);
+
+      // Check for violations, in case we find violations we throw an IllegalArgumentException that
+      // is handled in the parse function below
+      var violations = validator.validate(instance);
+      if (!violations.isEmpty()) {
+        throw new IllegalArgumentException(violations.stream()
+            .map(v -> v.getMessage())
+            .collect(Collectors.joining(",")));
+      }
+
+      return instance;
+    }
   }
 }
