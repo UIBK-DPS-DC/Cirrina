@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.lang.parser.Parser;
+import at.ac.uibk.dps.cirrina.runtime.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import org.junit.jupiter.api.Test;
 
 public class CheckerTest {
@@ -16,8 +17,7 @@ public class CheckerTest {
     assertDoesNotThrow(() -> {
       var csm = parser.parse(json);
 
-      var checker = new Checker(new Checker.Options());
-      checker.check(csm);
+      CollaborativeStateMachineBuilder.from(csm).build();
     });
   }
 }

@@ -1,18 +1,24 @@
 package at.ac.uibk.dps.cirrina.lang.checker;
 
-import at.ac.uibk.dps.cirrina.core.runtime.action.AssignAction;
-import at.ac.uibk.dps.cirrina.core.runtime.collaborativestatemachine.CollaborativeStateMachine;
-import at.ac.uibk.dps.cirrina.core.runtime.context.InMemoryContext;
-import at.ac.uibk.dps.cirrina.core.runtime.statemachine.StateMachine;
-import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
-import at.ac.uibk.dps.cirrina.lang.checker.CheckerException.Message;
-import at.ac.uibk.dps.cirrina.lang.parser.Parser;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
+import at.ac.uibk.dps.cirrina.exception.VerificationException;
+import at.ac.uibk.dps.cirrina.exception.VerificationException.Message;
+import at.ac.uibk.dps.cirrina.lang.parser.Parser;
+import at.ac.uibk.dps.cirrina.runtime.action.AssignAction;
+import at.ac.uibk.dps.cirrina.runtime.collaborativestatemachine.CollaborativeStateMachine;
+import at.ac.uibk.dps.cirrina.runtime.collaborativestatemachine.CollaborativeStateMachineBuilder;
+import at.ac.uibk.dps.cirrina.runtime.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.runtime.statemachine.StateMachine;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class InheritanceTest {
 
@@ -21,19 +27,15 @@ public class InheritanceTest {
     var parser = new Parser(new Parser.Options());
     return assertDoesNotThrow(() -> {
       var csm = parser.parse(DefaultDescriptions.completeInheritance);
-
-      var checker = new Checker(new Checker.Options());
-      return checker.check(csm);
+      return CollaborativeStateMachineBuilder.from(csm).build();
     });
   }
 
-  private CollaborativeStateMachine getCollaborativeStateMachineUnchecked(String json) throws CheckerException {
-
+  private CollaborativeStateMachine getCollaborativeStateMachineUnchecked(String json) throws VerificationException {
     var parser = new Parser(new Parser.Options());
     var csm = assertDoesNotThrow(() -> parser.parse(json));
 
-    var checker = new Checker(new Checker.Options());
-    return checker.check(csm);
+    return CollaborativeStateMachineBuilder.from(csm).build();
   }
 
   private StateMachine getStateMachine1(CollaborativeStateMachine csm) {
@@ -131,8 +133,8 @@ public class InheritanceTest {
         var action2 = stateMachine1.getActionByName("action2");
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
-        assertEquals(0L, ((AssignAction)action1).value.execute(context));
-        assertEquals(1L, ((AssignAction)action2).value.execute(context));
+        assertEquals(0L, ((AssignAction) action1).value.execute(context));
+        assertEquals(1L, ((AssignAction) action2).value.execute(context));
       });
 
       var stateMachine2 = getStateMachine2(csm);
@@ -141,37 +143,37 @@ public class InheritanceTest {
         var action2 = stateMachine2.getActionByName("action2");
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
-        assertEquals(0L, ((AssignAction)action1).value.execute(context));
-        assertEquals(2L, ((AssignAction)action2).value.execute(context));
+        assertEquals(0L, ((AssignAction) action1).value.execute(context));
+        assertEquals(2L, ((AssignAction) action2).value.execute(context));
       });
     }
   }
 
   @Test
   public void testInvalidInheritance() {
-    CheckerException exception = assertThrows(CheckerException.class,
-        () ->  getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidInheritance));
+    VerificationException exception = assertThrows(VerificationException.class,
+        () -> getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidInheritance));
     assertEquals(exception.message, Message.STATE_MACHINE_INHERITS_FROM_INVALID);
   }
 
   @Test
   public void testInvalidStateOverride() {
-    CheckerException exception = assertThrows(CheckerException.class,
-        () ->  getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidStateOverride));
+    VerificationException exception = assertThrows(VerificationException.class,
+        () -> getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidStateOverride));
     assertEquals(exception.message, Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES);
   }
 
   @Test
   public void testInvalidAbstraction() {
-    CheckerException exception = assertThrows(CheckerException.class,
-        () ->  getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidAbstraction));
+    VerificationException exception = assertThrows(VerificationException.class,
+        () -> getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidAbstraction));
     assertEquals(exception.message, Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES);
   }
 
   @Test
   public void testInvalidAbstractStates() {
-    CheckerException exception = assertThrows(CheckerException.class,
-        () ->  getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidAbstractStates));
+    VerificationException exception = assertThrows(VerificationException.class,
+        () -> getCollaborativeStateMachineUnchecked(DefaultDescriptions.invalidAbstractStates));
     assertEquals(exception.message, Message.NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES);
   }
 }

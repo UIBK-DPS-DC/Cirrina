@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
+import at.ac.uibk.dps.cirrina.exception.ParserException;
 import at.ac.uibk.dps.cirrina.lang.parser.Parser.Options;
 import org.junit.jupiter.api.Test;
 
