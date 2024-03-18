@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.lang.parser.Parser;
-import at.ac.uibk.dps.cirrina.runtime.collaborativestatemachine.CollaborativeStateMachineBuilder;
+import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import org.junit.jupiter.api.Test;
 
 public class CheckerTest {

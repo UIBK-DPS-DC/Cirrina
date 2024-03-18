@@ -12,11 +12,11 @@ import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.exception.VerificationException.Message;
 import at.ac.uibk.dps.cirrina.lang.parser.Parser;
-import at.ac.uibk.dps.cirrina.runtime.action.AssignAction;
-import at.ac.uibk.dps.cirrina.runtime.collaborativestatemachine.CollaborativeStateMachine;
-import at.ac.uibk.dps.cirrina.runtime.collaborativestatemachine.CollaborativeStateMachineBuilder;
-import at.ac.uibk.dps.cirrina.runtime.context.InMemoryContext;
-import at.ac.uibk.dps.cirrina.runtime.statemachine.StateMachine;
+import at.ac.uibk.dps.cirrina.object.action.AssignAction;
+import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachine;
+import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
+import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

@@ -15,6 +15,7 @@ public class DefaultDescriptions {
             states: [
               {
                 name: 'state1',
+                isInitial: true,
                 entry: [
                   {
                     reference: 'action1'

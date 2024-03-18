@@ -36,6 +36,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     testImplementation("org.glassfish:jakarta.el:4.0.2")
+
+    testImplementation("org.mockito:mockito-core:5.11.0")
 }
 
 tasks {
