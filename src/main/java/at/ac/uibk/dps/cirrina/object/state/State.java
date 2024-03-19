@@ -8,16 +8,14 @@ import java.util.stream.Stream;
 
 public final class State {
 
-  public final String name;
-
-  public final boolean isInitial;
-
-  public final boolean isTerminal;
-  public final boolean isAbstract;
-  public final boolean isVirtual;
-  public final ActionGraph entry;
-  public final ActionGraph exit;
-  public final ActionGraph whilee;
+  private final String name;
+  private final boolean isInitial;
+  private final boolean isTerminal;
+  private final boolean isAbstract;
+  private final boolean isVirtual;
+  private final ActionGraph entry;
+  private final ActionGraph exit;
+  private final ActionGraph whilee;
 
   State(StateParameters parameters) {
     if (parameters.baseState().isEmpty()) {
@@ -50,6 +48,38 @@ public final class State {
       // Ensure overridden abstract states are virtual if they are no longer abstract, so they can be further overridden
       this.isVirtual = (baseState.isAbstract && !isAbstract) || baseState.isVirtual;
     }
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public boolean isInitial() {
+    return isInitial;
+  }
+
+  public boolean isTerminal() {
+    return isTerminal;
+  }
+
+  public boolean isAbstract() {
+    return isAbstract;
+  }
+
+  public boolean isVirtual() {
+    return isVirtual;
+  }
+
+  public ActionGraph getEntry() {
+    return entry;
+  }
+
+  public ActionGraph getExit() {
+    return exit;
+  }
+
+  public ActionGraph getWhile() {
+    return whilee;
   }
 
   public <T> List<T> getActionsOfType(Class<T> type) {

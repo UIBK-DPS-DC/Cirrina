@@ -92,23 +92,23 @@ public class InheritanceTest {
     var stateMachine1 = getStateMachine1(csm);
     assertDoesNotThrow(() -> {
       var state1 = stateMachine1.getStateByName("state1");
-      assertTrue(state1.isVirtual);
-      assertFalse(state1.isAbstract);
+      assertTrue(state1.isVirtual());
+      assertFalse(state1.isAbstract());
 
       var state2 = stateMachine1.getStateByName("state2");
-      assertFalse(state2.isVirtual);
-      assertTrue(state2.isAbstract);
+      assertFalse(state2.isVirtual());
+      assertTrue(state2.isAbstract());
     });
 
     var stateMachine2 = getStateMachine2(csm);
     assertDoesNotThrow(() -> {
       var state1 = stateMachine2.getStateByName("state1");
-      assertTrue(state1.isVirtual);
-      assertFalse(state1.isAbstract);
+      assertTrue(state1.isVirtual());
+      assertFalse(state1.isAbstract());
 
       var state2 = stateMachine2.getStateByName("state2");
-      assertTrue(state2.isVirtual);
-      assertFalse(state2.isAbstract);
+      assertTrue(state2.isVirtual());
+      assertFalse(state2.isAbstract());
     });
   }
 

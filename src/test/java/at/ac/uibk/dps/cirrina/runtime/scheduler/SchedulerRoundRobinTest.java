@@ -18,14 +18,14 @@ public class SchedulerRoundRobinTest {
   public void testSelectEmpty() {
     Queue<StateMachineInstance> mockQueue = new LinkedList<>();
 
-    RoundRobinScheduler scheduler = new RoundRobinScheduler();
+    var scheduler = new RoundRobinScheduler();
 
     assertEquals(Optional.empty(), scheduler.select(mockQueue));
   }
 
   @Test
   public void testSelectNoneExecutable() {
-    StateMachineInstance instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
+    var instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
     Mockito.when(instanceWithoutCommand.getExecutableCommand()).thenReturn(Optional.empty());
 
     Queue<StateMachineInstance> mockQueue = new LinkedList<>();
@@ -36,7 +36,7 @@ public class SchedulerRoundRobinTest {
     mockQueue.add(instanceWithoutCommand); // 4
     mockQueue.add(instanceWithoutCommand); // 5
 
-    RoundRobinScheduler scheduler = new RoundRobinScheduler();
+    var scheduler = new RoundRobinScheduler();
 
     assertEquals(Optional.empty(), scheduler.select(mockQueue));
   }
@@ -47,13 +47,13 @@ public class SchedulerRoundRobinTest {
 
     var instancesWithCommand = IntStream.range(0, 3)
         .mapToObj(i -> {
-          StateMachineInstance instanceWithCommand = Mockito.mock(StateMachineInstance.class);
+          var instanceWithCommand = Mockito.mock(StateMachineInstance.class);
           Mockito.when(instanceWithCommand.getExecutableCommand()).thenReturn(Optional.of(mockCommand));
           return instanceWithCommand;
         })
         .toArray(StateMachineInstance[]::new);
 
-    StateMachineInstance instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
+    var instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
     Mockito.when(instanceWithoutCommand.getExecutableCommand()).thenReturn(Optional.empty());
 
     Queue<StateMachineInstance> mockQueue = new LinkedList<>();
@@ -64,7 +64,7 @@ public class SchedulerRoundRobinTest {
     mockQueue.add(instanceWithoutCommand); // 4
     mockQueue.add(instancesWithCommand[2]); // 5
 
-    RoundRobinScheduler scheduler = new RoundRobinScheduler();
+    var scheduler = new RoundRobinScheduler();
 
     var expected = IntStream.range(0, 3)
         .mapToObj(i -> {

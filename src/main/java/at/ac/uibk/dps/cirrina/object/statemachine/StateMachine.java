@@ -83,7 +83,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
    */
   public State getInitialState() throws IllegalArgumentException {
     var initialStates = vertexSet().stream()
-        .filter(state -> state.isInitial)
+        .filter(state -> state.isInitial())
         .toList();
 
     if (initialStates.size() != 1) {
@@ -143,7 +143,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
   public Optional<State> findStateByName(String stateName) throws IllegalArgumentException {
     // Attempt to match the provided name to a known state
     var states = vertexSet().stream()
-        .filter(state -> state.name.equals(stateName))
+        .filter(state -> state.getName().equals(stateName))
         .toList();
 
     if (states.isEmpty()) {

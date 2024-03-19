@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
+import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.object.state.State;
@@ -30,7 +31,7 @@ public class StateMachineInstance {
 
   private final Status status;
 
-  public StateMachineInstance(Runtime runtime, StateMachine stateMachine) {
+  public StateMachineInstance(Runtime runtime, StateMachine stateMachine) throws RuntimeException {
     this(runtime, stateMachine, null);
   }
 
@@ -42,6 +43,18 @@ public class StateMachineInstance {
 
     // Enter an enter state command that enters the initial state
     appendCommand(new StateEntryCommand(this, stateMachine.getInitialState()));
+  }
+
+  /**
+   * Sets the active state by state name.
+   *
+   * @param stateName Name of the new active state.
+   * @throws RuntimeException If the state name is not a valid state within this state machine.
+   */
+  public void setActiveStateByName(String stateName) throws RuntimeException {
+    status.activateState = stateMachine.findStateByName(stateName).orElseThrow(() -> RuntimeException.from(
+        "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
+        stateName, instanceId));
   }
 
   /**
@@ -70,7 +83,7 @@ public class StateMachineInstance {
    * @param command The command to execute.
    * @see StateMachineInstance#getExecutableCommand().
    */
-  void execute(Command command) {
+  void execute(Command command) throws RuntimeException {
     // When executing a command, this state machine instance must be locked, as the command should only be acquired along with a lock. This
     // must always hold, otherwise we made a programming error
     assert lock.isLocked();

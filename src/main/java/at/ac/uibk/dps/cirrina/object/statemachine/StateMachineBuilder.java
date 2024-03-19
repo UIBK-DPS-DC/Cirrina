@@ -127,7 +127,7 @@ public final class StateMachineBuilder {
         .orElseGet(this::buildBase);
 
     // If the state machine is not abstract but has abstract states, throw an error
-    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream().anyMatch(state -> state.isAbstract)) {
+    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream().anyMatch(state -> state.isAbstract())) {
       throw new IllegalArgumentException(
           VerificationException.from(NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES, stateMachineClass.name));
     }
@@ -149,7 +149,8 @@ public final class StateMachineBuilder {
 
               // Attempt to add an edge to the state machine graph that resembles the transition
               if (!stateMachine.addEdge(source, target, TransitionBuilder.from(transitionClass, actionResolver).build())) {
-                throw new IllegalArgumentException(VerificationException.from(ILLEGAL_STATE_MACHINE_GRAPH, source.name, target.name));
+                throw new IllegalArgumentException(
+                    VerificationException.from(ILLEGAL_STATE_MACHINE_GRAPH, source.getName(), target.getName()));
               }
             }
           };

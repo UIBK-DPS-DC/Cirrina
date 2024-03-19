@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command;
 
+import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.runtime.StateMachineInstance;
 import java.util.List;
 
@@ -11,5 +12,5 @@ public abstract class Command {
     this.stateMachineInstance = stateMachineInstance;
   }
 
-  public abstract List<Command> execute();
+  public abstract List<Command> execute() throws RuntimeException;
 }

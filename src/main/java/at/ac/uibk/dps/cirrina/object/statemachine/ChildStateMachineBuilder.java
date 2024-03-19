@@ -81,7 +81,7 @@ public final class ChildStateMachineBuilder {
 
     boolean cannotOverrideState = stateClasses.stream()
         .anyMatch(stateClass -> baseStateMachine.vertexSet().stream()
-            .anyMatch(state -> !state.isVirtual && !state.isAbstract && state.name.equals(
+            .anyMatch(state -> !state.isVirtual() && !state.isAbstract() && state.getName().equals(
                 stateClass.name)));
 
     if (cannotOverrideState) {
@@ -102,11 +102,11 @@ public final class ChildStateMachineBuilder {
 
     var stateClasses = getStateClasses();
     var abstractStates = baseStateMachine.vertexSet().stream()
-        .filter(state -> state.isAbstract).toList();
+        .filter(state -> state.isAbstract()).toList();
 
     var isIncomplete = abstractStates.stream()
         .anyMatch(state -> stateClasses.stream()
-            .noneMatch(stateClass -> state.name.equals(stateClass.name)));
+            .noneMatch(stateClass -> state.getName().equals(stateClass.name)));
 
     if (isIncomplete) {
       throw new IllegalArgumentException(
@@ -136,7 +136,7 @@ public final class ChildStateMachineBuilder {
     // Add missing base states which were not overridden
     baseStateMachine.vertexSet().stream()
         .filter(state -> stateClasses.stream()
-            .noneMatch(stateClass -> state.name.equals(stateClass.name)))
+            .noneMatch(stateClass -> state.getName().equals(stateClass.name)))
         .forEach(stateMachine::addVertex);
   }
 
@@ -151,11 +151,11 @@ public final class ChildStateMachineBuilder {
         .forEach(transition -> {
           // Get the transition source and target from either the base or child state machine (if overridden)
           State source = baseStateMachine.getEdgeSource(transition);
-          var overriddenSource = stateMachine.findStateByName(source.name);
+          var overriddenSource = stateMachine.findStateByName(source.getName());
           source = overriddenSource.orElse(source);
 
           State target = baseStateMachine.getEdgeTarget(transition);
-          var overriddenTarget = stateMachine.findStateByName(target.name);
+          var overriddenTarget = stateMachine.findStateByName(target.getName());
           target = overriddenTarget.orElse(target);
 
           // Recreate the transition
