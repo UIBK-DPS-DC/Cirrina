@@ -2,10 +2,15 @@ package at.ac.uibk.dps.cirrina.runtime;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
+import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
-import at.ac.uibk.dps.cirrina.runtime.StateMachineInstance.InstanceId;
+import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
+import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
+import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance.InstanceId;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.Scheduler;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -14,15 +19,19 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class Runtime<T extends Scheduler> implements Runnable {
+public final class Runtime<T extends Scheduler> implements Runnable, Scope {
 
   private static final Logger logger = LogManager.getLogger();
 
   private final Queue<StateMachineInstance> instances = new ConcurrentLinkedQueue<>();
 
+  private final Context localContext = new InMemoryContext();
+
   private final T scheduler;
 
   private final Context persistentContext;
+
+  private final List<Context> extent;
 
   public Runtime(Class<T> schedulerClass, Context persistentContext) throws RuntimeException {
     // Instantiate the scheduler
@@ -33,10 +42,12 @@ public final class Runtime<T extends Scheduler> implements Runnable {
     }
 
     this.persistentContext = persistentContext;
+
+    this.extent = List.of(this.persistentContext, this.localContext);
   }
 
   public InstanceId newInstance(StateMachine stateMachine) throws RuntimeException {
-    var instance = new StateMachineInstance(this, stateMachine);
+    var instance = new StateMachineInstance(this, stateMachine, Optional.empty());
     instances.add(instance);
 
     return instance.instanceId;
@@ -73,5 +84,15 @@ public final class Runtime<T extends Scheduler> implements Runnable {
         Thread.currentThread().interrupt();
       }
     }
+  }
+
+  @Override
+  public List<Context> getExtent() {
+    return extent;
+  }
+
+  @Override
+  public EventHandler getEventHandler() {
+    return null;
   }
 }

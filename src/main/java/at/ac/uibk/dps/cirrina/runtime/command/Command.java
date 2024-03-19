@@ -1,16 +1,18 @@
 package at.ac.uibk.dps.cirrina.runtime.command;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
-import at.ac.uibk.dps.cirrina.runtime.StateMachineInstance;
+import at.ac.uibk.dps.cirrina.object.context.Context;
+import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import java.util.List;
 
-public abstract class Command {
+public interface Command {
 
-  protected final StateMachineInstance stateMachineInstance;
+  List<Command> execute() throws RuntimeException;
 
-  public Command(StateMachineInstance stateMachineInstance) {
-    this.stateMachineInstance = stateMachineInstance;
+  interface Scope {
+
+    List<Context> getExtent();
+
+    EventHandler getEventHandler();
   }
-
-  public abstract List<Command> execute() throws RuntimeException;
 }

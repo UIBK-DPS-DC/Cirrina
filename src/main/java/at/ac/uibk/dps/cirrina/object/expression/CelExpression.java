@@ -5,6 +5,7 @@ import static at.ac.uibk.dps.cirrina.exception.VerificationException.Message.EXP
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
+import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelValidationException;
 import dev.cel.common.types.CelTypes;
@@ -111,7 +112,7 @@ public final class CelExpression extends Expression {
   private Map<String, Object> getVariables(Context context) throws RuntimeException {
     try {
       return context.getAll().stream()
-          .collect(Collectors.toMap(Context.ContextVariable::name, Context.ContextVariable::value));
+          .collect(Collectors.toMap(ContextVariable::name, ContextVariable::value));
     } catch (RuntimeException e) {
       throw RuntimeException.from("Failed to retrieve context variables: %s", e.getMessage());
     }

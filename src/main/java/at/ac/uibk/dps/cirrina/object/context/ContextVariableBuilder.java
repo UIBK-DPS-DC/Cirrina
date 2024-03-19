@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.object.context;
 
 import at.ac.uibk.dps.cirrina.lang.classes.context.ContextVariableClass;
-import at.ac.uibk.dps.cirrina.object.context.Context.ContextVariable;
 import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
 
 /**

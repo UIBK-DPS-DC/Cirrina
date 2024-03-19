@@ -1,21 +1,26 @@
-package at.ac.uibk.dps.cirrina.runtime;
+package at.ac.uibk.dps.cirrina.runtime.instance;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
+import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
-import at.ac.uibk.dps.cirrina.runtime.command.StateEntryCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class StateMachineInstance {
+public class StateMachineInstance implements Scope {
 
   public final InstanceId instanceId = new InstanceId();
 
@@ -23,38 +28,33 @@ public class StateMachineInstance {
 
   private final Deque<Command> queue = new ConcurrentLinkedDeque<>();
 
+  private final Context localContext = new InMemoryContext();
+
+  private final StateMachineInstanceStatus status = new StateMachineInstanceStatus();
+
   private final Runtime runtime;
 
   private final StateMachine stateMachine;
 
-  private final StateMachineInstance parent;
+  private final Optional<StateMachineInstance> parent;
 
-  private final Status status;
+  private final Map<String, StateInstance> states;
 
   public StateMachineInstance(Runtime runtime, StateMachine stateMachine) throws RuntimeException {
     this(runtime, stateMachine, null);
   }
 
-  public StateMachineInstance(Runtime runtime, StateMachine stateMachine, StateMachineInstance parent) throws RuntimeException {
+  public StateMachineInstance(Runtime runtime, StateMachine stateMachine, Optional<StateMachineInstance> parent) throws RuntimeException {
     this.runtime = runtime;
     this.stateMachine = stateMachine;
+
     this.parent = parent;
-    this.status = new Status(null);
 
-    // Enter an enter state command that enters the initial state
-    appendCommand(new StateEntryCommand(this, stateMachine.getInitialState()));
-  }
+    // Construct state instances
+    this.states = stateMachine.vertexSet().stream()
+        .collect(Collectors.toMap(State::getName, state -> new StateInstance(state, this)));
 
-  /**
-   * Sets the active state by state name.
-   *
-   * @param stateName Name of the new active state.
-   * @throws RuntimeException If the state name is not a valid state within this state machine.
-   */
-  public void setActiveStateByName(String stateName) throws RuntimeException {
-    status.activateState = stateMachine.findStateByName(stateName).orElseThrow(() -> RuntimeException.from(
-        "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
-        stateName, instanceId));
+    // TODO: Transition into initial state
   }
 
   /**
@@ -76,6 +76,37 @@ public class StateMachineInstance {
     return Optional.empty();
   }
 
+  @Override
+  public List<Context> getExtent() {
+    return Stream.concat(
+            parent.map(StateMachineInstance::getExtent)
+                .orElseGet(runtime::getExtent).stream(),
+            Stream.of(localContext))
+        .toList();
+  }
+
+  @Override
+  public EventHandler getEventHandler() {
+    return null;
+  }
+
+  /**
+   * Sets the active state by state name.
+   *
+   * @param stateName Name of the new active state.
+   * @throws RuntimeException If the state name is not a valid state within this state machine.
+   */
+  public void setActiveStateByName(String stateName) throws RuntimeException {
+    if (!states.containsKey(stateName)) {
+      throw RuntimeException.from(
+          "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
+          stateName, instanceId);
+    }
+
+    // Update the active state
+    status.setActivateState(states.get(stateName));
+  }
+
   /**
    * Executes a command, the state machine instance must be locked through a call to getExecutableCommand(). This state machine instance
    * will be unlocked after the execution of the command.
@@ -83,7 +114,7 @@ public class StateMachineInstance {
    * @param command The command to execute.
    * @see StateMachineInstance#getExecutableCommand().
    */
-  void execute(Command command) throws RuntimeException {
+  public void execute(Command command) throws RuntimeException {
     // When executing a command, this state machine instance must be locked, as the command should only be acquired along with a lock. This
     // must always hold, otherwise we made a programming error
     assert lock.isLocked();
@@ -123,22 +154,6 @@ public class StateMachineInstance {
     }
   }
 
-  static class Status {
-
-    private final Context localContext = new InMemoryContext();
-
-    private State activateState;
-
-    private boolean isAlive = true;
-
-    public Status(State initialState) {
-      this.activateState = initialState;
-    }
-
-    public void setAlive(boolean isAlive) {
-      this.isAlive = isAlive;
-    }
-  }
 
   public static class InstanceId {
 

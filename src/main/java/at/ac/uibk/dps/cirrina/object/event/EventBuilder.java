@@ -2,7 +2,7 @@ package at.ac.uibk.dps.cirrina.object.event;
 
 import at.ac.uibk.dps.cirrina.lang.classes.context.ContextVariableClass;
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventClass;
-import at.ac.uibk.dps.cirrina.object.context.Context.ContextVariable;
+import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.object.context.ContextVariableBuilder;
 import java.util.List;
 

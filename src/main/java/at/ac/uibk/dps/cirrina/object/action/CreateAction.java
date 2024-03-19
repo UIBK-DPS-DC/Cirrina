@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.object.action;
 
-import at.ac.uibk.dps.cirrina.object.context.Context.ContextVariable;
+import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import java.util.Optional;
 
 /**

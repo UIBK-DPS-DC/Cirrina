@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.runtime.scheduler;
 
-import at.ac.uibk.dps.cirrina.runtime.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
+import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import java.util.Optional;
 import java.util.Queue;
 

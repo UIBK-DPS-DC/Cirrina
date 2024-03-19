@@ -2,8 +2,8 @@ package at.ac.uibk.dps.cirrina.runtime.scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import at.ac.uibk.dps.cirrina.runtime.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
+import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.Scheduler.StateMachineInstanceCommand;
 import java.util.LinkedList;
 import java.util.Optional;
