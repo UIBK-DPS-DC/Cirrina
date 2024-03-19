@@ -50,7 +50,7 @@ public final class Runtime<T extends Scheduler> implements Runnable, Scope {
     var instance = new StateMachineInstance(this, stateMachine, Optional.empty());
     instances.add(instance);
 
-    return instance.instanceId;
+    return instance.id;
   }
 
   /**

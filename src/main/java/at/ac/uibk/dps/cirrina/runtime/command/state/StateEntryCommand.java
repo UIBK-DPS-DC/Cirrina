@@ -10,24 +10,23 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public final class StateEntryCommand implements Command {
 
-  private StateInstance stateInstance;
+  private StateInstance state;
 
-  public StateEntryCommand(StateInstance stateInstance) {
-    this.stateInstance = stateInstance;
+  public StateEntryCommand(StateInstance state) {
+    this.state = state;
   }
 
   @Override
   public List<Command> execute() throws RuntimeException {
     var commands = new ArrayList<Command>();
 
-    // Then add the entry actions, executed in topological order:
     // Append the entry actions to the command list
-    new TopologicalOrderIterator<>(stateInstance.getState().getEntry()).forEachRemaining(
-        action -> commands.add(ActionCommand.from(stateInstance, action, false)));
+    new TopologicalOrderIterator<>(state.getState().getEntry()).forEachRemaining(
+        action -> commands.add(ActionCommand.from(state, action, false)));
 
     // Append the while actions to the command list
-    new TopologicalOrderIterator<>(stateInstance.getState().getWhile()).forEachRemaining(
-        action -> commands.add(ActionCommand.from(stateInstance, action, true)));
+    new TopologicalOrderIterator<>(state.getState().getWhile()).forEachRemaining(
+        action -> commands.add(ActionCommand.from(state, action, true)));
 
     // TODO: Start timeout actions
 

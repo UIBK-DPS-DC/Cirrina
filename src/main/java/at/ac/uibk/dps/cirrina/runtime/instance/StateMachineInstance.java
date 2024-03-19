@@ -9,6 +9,7 @@ import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
+import at.ac.uibk.dps.cirrina.runtime.command.statemachine.InitialTransitionCommand;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 
 public class StateMachineInstance implements Scope {
 
-  public final InstanceId instanceId = new InstanceId();
+  public final InstanceId id = new InstanceId();
 
   private final ReentrantLock lock = new ReentrantLock();
 
@@ -30,7 +31,7 @@ public class StateMachineInstance implements Scope {
 
   private final Context localContext = new InMemoryContext();
 
-  private final StateMachineInstanceStatus status = new StateMachineInstanceStatus();
+  private final Status status = new Status();
 
   private final Runtime runtime;
 
@@ -54,7 +55,22 @@ public class StateMachineInstance implements Scope {
     this.states = stateMachine.vertexSet().stream()
         .collect(Collectors.toMap(State::getName, state -> new StateInstance(state, this)));
 
-    // TODO: Transition into initial state
+    // Enter an enter state command that enters the initial state
+    appendCommand(new InitialTransitionCommand(this, states.get(stateMachine.getInitialState().getName())));
+  }
+
+  @Override
+  public List<Context> getExtent() {
+    return Stream.concat(
+            parent.map(StateMachineInstance::getExtent)
+                .orElseGet(runtime::getExtent).stream(),
+            Stream.of(localContext))
+        .toList();
+  }
+
+  @Override
+  public EventHandler getEventHandler() {
+    return null;
   }
 
   /**
@@ -76,35 +92,19 @@ public class StateMachineInstance implements Scope {
     return Optional.empty();
   }
 
-  @Override
-  public List<Context> getExtent() {
-    return Stream.concat(
-            parent.map(StateMachineInstance::getExtent)
-                .orElseGet(runtime::getExtent).stream(),
-            Stream.of(localContext))
-        .toList();
+  public Status getStatus() {
+    return status;
   }
 
-  @Override
-  public EventHandler getEventHandler() {
-    return null;
-  }
-
-  /**
-   * Sets the active state by state name.
-   *
-   * @param stateName Name of the new active state.
-   * @throws RuntimeException If the state name is not a valid state within this state machine.
-   */
-  public void setActiveStateByName(String stateName) throws RuntimeException {
-    if (!states.containsKey(stateName)) {
+  public void setActiveState(StateInstance state) throws RuntimeException {
+    if (!states.containsValue(state)) {
       throw RuntimeException.from(
           "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
-          stateName, instanceId);
+          state.getState().getName(), id);
     }
 
     // Update the active state
-    status.setActivateState(states.get(stateName));
+    status.activeState = state;
   }
 
   /**
@@ -162,6 +162,25 @@ public class StateMachineInstance implements Scope {
     @Override
     public String toString() {
       return uuid.toString();
+    }
+  }
+
+  public class Status {
+
+    private StateInstance activeState = null;
+
+    private boolean isTerminated = false;
+
+    public boolean isTerminated() {
+      return isTerminated;
+    }
+
+    public StateInstance getActivateState() {
+      return activeState;
+    }
+
+    public void terminate() {
+      this.isTerminated = true;
     }
   }
 }

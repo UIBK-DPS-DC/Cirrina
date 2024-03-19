@@ -1,16 +1,16 @@
 package at.ac.uibk.dps.cirrina.runtime.command.state;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
-import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
+import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
 import java.util.List;
 
 public final class StateExitCommand implements Command {
 
 
-  private State state;
+  private StateInstance state;
 
-  public StateExitCommand(Scope scope, State state) {
+  public StateExitCommand(StateInstance state) {
     this.state = state;
   }
 
