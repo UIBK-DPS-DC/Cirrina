@@ -11,7 +11,7 @@ import at.ac.uibk.dps.cirrina.object.action.TimeoutResetAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 
-public class ActionCommand {
+public final class ActionCommand {
 
   public static Command from(Scope scope, Action action, boolean isWhile) throws IllegalStateException {
     switch (action) {
@@ -19,22 +19,22 @@ public class ActionCommand {
         return new AssignActionCommand(scope, a, isWhile);
       }
       case CreateAction a -> {
-        return new CreateActionCommand(scope, a, isWhile);
+        return new CreateActionCommand(scope, a);
       }
       case InvokeAction a -> {
         return new InvokeActionCommand(scope, a, isWhile);
       }
       case MatchAction a -> {
-        return new MatchActionCommand(scope, a, isWhile);
+        return new MatchActionCommand(scope, a);
       }
       case RaiseAction a -> {
-        return new RaiseActionCommand(scope, a, isWhile);
+        return new RaiseActionCommand(scope, a);
       }
       case TimeoutAction a -> {
-        return new TimeoutActionCommand(scope, a, isWhile);
+        return new TimeoutActionCommand(scope, a);
       }
       case TimeoutResetAction a -> {
-        return new TimeoutResetActionCommand(scope, a, isWhile);
+        return new TimeoutResetActionCommand(scope, a);
       }
       default -> throw new IllegalStateException("Unexpected action");
     }

@@ -7,6 +7,8 @@ import at.ac.uibk.dps.cirrina.lang.parser.Parser;
 import at.ac.uibk.dps.cirrina.lang.parser.Parser.Options;
 import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.object.event.Event;
+import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinScheduler;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,7 +35,15 @@ public class RuntimeTest {
     assertDoesNotThrow(() -> {
       var persistentContext = new InMemoryContext();
 
-      var runtime = new Runtime<RoundRobinScheduler>(RoundRobinScheduler.class, persistentContext);
+      var mockEventHandler = new EventHandler() {
+
+        @Override
+        public void sendEvent(Event event) {
+          propagateEvent(event);
+        }
+      };
+
+      var runtime = new Runtime(new RoundRobinScheduler(), mockEventHandler, persistentContext);
 
       var thread = new Thread(runtime);
       thread.start();

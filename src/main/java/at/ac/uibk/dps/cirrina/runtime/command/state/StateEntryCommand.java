@@ -18,7 +18,7 @@ public final class StateEntryCommand implements Command {
 
   @Override
   public List<Command> execute() throws RuntimeException {
-    var commands = new ArrayList<Command>();
+    final var commands = new ArrayList<Command>();
 
     // Append the entry actions to the command list
     new TopologicalOrderIterator<>(state.getState().getEntry()).forEachRemaining(

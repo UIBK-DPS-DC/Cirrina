@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.object.expression;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
-import at.ac.uibk.dps.cirrina.object.context.Context;
+import at.ac.uibk.dps.cirrina.object.context.Extent;
 
 /**
  * Expression, represents an executable expression that yields a return value.
@@ -29,5 +29,5 @@ public abstract class Expression {
    * @return Result of the expression.
    * @throws RuntimeException In case of an error while executing the expression.
    */
-  public abstract Object execute(Context context) throws RuntimeException;
+  public abstract Object execute(Extent extent) throws RuntimeException;
 }

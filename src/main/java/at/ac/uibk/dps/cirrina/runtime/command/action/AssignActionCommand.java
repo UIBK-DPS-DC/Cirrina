@@ -5,7 +5,7 @@ import at.ac.uibk.dps.cirrina.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public class AssignActionCommand implements Command {
+public final class AssignActionCommand implements Command {
 
   public AssignActionCommand(Scope scope, AssignAction action, boolean isWhile) {
 

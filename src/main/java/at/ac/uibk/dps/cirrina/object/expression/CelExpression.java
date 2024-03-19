@@ -6,15 +6,16 @@ import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
 import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
+import at.ac.uibk.dps.cirrina.object.context.Extent;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelValidationException;
-import dev.cel.common.types.CelTypes;
 import dev.cel.compiler.CelCompiler;
 import dev.cel.compiler.CelCompilerFactory;
 import dev.cel.parser.CelStandardMacro;
 import dev.cel.runtime.CelEvaluationException;
 import dev.cel.runtime.CelRuntime;
 import dev.cel.runtime.CelRuntimeFactory;
+import dev.cel.runtime.CelVariableResolver;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public final class CelExpression extends Expression {
     CelCompiler celCompiler = null;
 
     try {
-      celCompiler = getCelCompiler(Optional.empty());
+      celCompiler = getCelCompiler();
     } catch (RuntimeException e) {
       throw new IllegalStateException(String.format("Could not acquire a CEL compiler: %s", e.getMessage()));
     }
@@ -66,25 +67,14 @@ public final class CelExpression extends Expression {
   /**
    * Returns the standard compiler.
    *
-   * @param context Context for looking up variables, may be null.
    * @return CEL compiler.
    * @throws RuntimeException In case the compiler could not be acquired.
    */
-  private CelCompiler getCelCompiler(Optional<Context> context) throws IllegalArgumentException, RuntimeException {
+  private CelCompiler getCelCompiler() throws IllegalArgumentException, RuntimeException {
     var builder = CelCompilerFactory.standardCelCompilerBuilder();
 
     builder.setStandardMacros(CelStandardMacro.ALL);
     builder.setStandardEnvironmentEnabled(true);
-
-    try {
-      if (context.isPresent()) {
-        for (var name : getVariables(context.get()).keySet()) {
-          builder.addVar(name, CelTypes.DYN);
-        }
-      }
-    } catch (RuntimeException e) {
-      throw RuntimeException.from("Failed to get the current context variables: %s", e.getMessage());
-    }
 
     return builder.build();
   }
@@ -121,12 +111,12 @@ public final class CelExpression extends Expression {
   /**
    * Executes this expression, producing a value.
    *
-   * @param context Context containing variables in scope.
+   * @param extent Extent for resolving variables.
    * @return Result of the expression.
    * @throws RuntimeException In case of an error while executing the expression.
    */
-  public Object execute(Context context) throws RuntimeException {
-    var celCompiler = getCelCompiler(Optional.of(context));
+  public Object execute(Extent extent) throws RuntimeException {
+    var celCompiler = getCelCompiler();
 
     // Perform checking
     var checkResult = celCompiler.check(ast);
@@ -140,9 +130,17 @@ public final class CelExpression extends Expression {
       var celRuntime = CelRuntimeFactory.standardCelRuntimeBuilder().build();
       var program = celRuntime.createProgram(checkResult.getAst());
 
-      return program.eval(getVariables(context));
+      return program.eval(new ExtentVariableResolver());
     } catch (CelValidationException | CelEvaluationException e) {
       throw RuntimeException.from("Failed to execute expression: %s", e.getMessage());
+    }
+  }
+
+  class ExtentVariableResolver implements CelVariableResolver {
+
+    @Override
+    public Optional<Object> find(String name) {
+      return Optional.empty();
     }
   }
 }

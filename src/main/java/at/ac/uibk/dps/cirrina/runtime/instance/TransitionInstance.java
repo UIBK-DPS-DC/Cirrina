@@ -2,7 +2,7 @@ package at.ac.uibk.dps.cirrina.runtime.instance;
 
 import at.ac.uibk.dps.cirrina.object.transition.Transition;
 
-public class TransitionInstance {
+public final class TransitionInstance {
 
   private final Transition transition;
 

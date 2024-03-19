@@ -15,6 +15,7 @@ import at.ac.uibk.dps.cirrina.lang.parser.Parser;
 import at.ac.uibk.dps.cirrina.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
+import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import java.util.List;
@@ -129,22 +130,28 @@ public class InheritanceTest {
     try (var context = new InMemoryContext()) {
       var stateMachine1 = getStateMachine1(csm);
       assertDoesNotThrow(() -> {
+        var extent = new Extent(context);
+
         var action1 = stateMachine1.getActionByName("action1");
         var action2 = stateMachine1.getActionByName("action2");
+
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
-        assertEquals(0L, ((AssignAction) action1).value.execute(context));
-        assertEquals(1L, ((AssignAction) action2).value.execute(context));
+        assertEquals(0L, ((AssignAction) action1).value.execute(extent));
+        assertEquals(1L, ((AssignAction) action2).value.execute(extent));
       });
 
       var stateMachine2 = getStateMachine2(csm);
       assertDoesNotThrow(() -> {
+        var extent = new Extent(context);
+
         var action1 = stateMachine2.getActionByName("action1");
         var action2 = stateMachine2.getActionByName("action2");
+
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
-        assertEquals(0L, ((AssignAction) action1).value.execute(context));
-        assertEquals(2L, ((AssignAction) action2).value.execute(context));
+        assertEquals(0L, ((AssignAction) action1).value.execute(extent));
+        assertEquals(2L, ((AssignAction) action2).value.execute(extent));
       });
     }
   }

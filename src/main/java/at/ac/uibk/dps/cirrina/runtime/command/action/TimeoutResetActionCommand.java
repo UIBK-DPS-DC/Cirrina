@@ -5,9 +5,9 @@ import at.ac.uibk.dps.cirrina.object.action.TimeoutResetAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public class TimeoutResetActionCommand implements Command {
+public final class TimeoutResetActionCommand implements Command {
 
-  public TimeoutResetActionCommand(Scope scope, TimeoutResetAction action, boolean isWhile) {
+  public TimeoutResetActionCommand(Scope scope, TimeoutResetAction action) {
 
   }
 

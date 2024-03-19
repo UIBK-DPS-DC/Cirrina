@@ -2,6 +2,7 @@ package at.ac.uibk.dps.cirrina.runtime.instance;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
+import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.state.State;
@@ -19,9 +20,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class StateMachineInstance implements Scope {
+public final class StateMachineInstance implements Scope {
 
   public final InstanceId id = new InstanceId();
 
@@ -60,12 +60,8 @@ public class StateMachineInstance implements Scope {
   }
 
   @Override
-  public List<Context> getExtent() {
-    return Stream.concat(
-            parent.map(StateMachineInstance::getExtent)
-                .orElseGet(runtime::getExtent).stream(),
-            Stream.of(localContext))
-        .toList();
+  public Extent getExtent() {
+    return runtime.getExtent().extend(localContext);
   }
 
   @Override

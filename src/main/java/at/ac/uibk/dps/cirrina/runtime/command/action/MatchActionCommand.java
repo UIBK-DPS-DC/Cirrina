@@ -5,9 +5,9 @@ import at.ac.uibk.dps.cirrina.object.action.MatchAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public class MatchActionCommand implements Command {
+public final class MatchActionCommand implements Command {
 
-  public MatchActionCommand(Scope scope, MatchAction action, boolean isWhile) {
+  public MatchActionCommand(Scope scope, MatchAction action) {
 
   }
 

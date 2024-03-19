@@ -17,7 +17,7 @@ public abstract class EventHandler {
     listeners.remove(listener);
   }
 
-  protected void propogateEvent(Event event) {
+  protected void propagateEvent(Event event) {
     listeners.stream()
         .forEach(listener -> listener.onReceiveEvent(event));
   }

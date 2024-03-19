@@ -5,9 +5,9 @@ import at.ac.uibk.dps.cirrina.object.action.TimeoutAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public class TimeoutActionCommand implements Command {
+public final class TimeoutActionCommand implements Command {
 
-  public TimeoutActionCommand(Scope scope, TimeoutAction action, boolean isWhile) {
+  public TimeoutActionCommand(Scope scope, TimeoutAction action) {
 
   }
 

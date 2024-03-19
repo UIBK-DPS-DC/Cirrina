@@ -8,7 +8,7 @@ import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InitialTransitionCommand implements Command {
+public final class InitialTransitionCommand implements Command {
 
   private StateMachineInstance stateMachine;
 
@@ -21,7 +21,7 @@ public class InitialTransitionCommand implements Command {
 
   @Override
   public List<Command> execute() throws RuntimeException {
-    var commands = new ArrayList<Command>();
+    final var commands = new ArrayList<Command>();
 
     // Change the active state
     commands.add(new StateChangeCommand(stateMachine, targetState));

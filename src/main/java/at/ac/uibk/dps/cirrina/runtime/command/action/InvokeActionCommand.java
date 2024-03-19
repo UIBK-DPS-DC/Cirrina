@@ -5,7 +5,7 @@ import at.ac.uibk.dps.cirrina.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public class InvokeActionCommand implements Command {
+public final class InvokeActionCommand implements Command {
 
   public InvokeActionCommand(Scope scope, InvokeAction action, boolean isWhile) {
 

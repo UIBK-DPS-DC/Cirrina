@@ -5,9 +5,9 @@ import at.ac.uibk.dps.cirrina.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public class RaiseActionCommand implements Command {
+public final class RaiseActionCommand implements Command {
 
-  public RaiseActionCommand(Scope scope, RaiseAction action, boolean isWhile) {
+  public RaiseActionCommand(Scope scope, RaiseAction action) {
 
   }
 

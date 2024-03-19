@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-public class TransitionCommand implements Command {
+public final class TransitionCommand implements Command {
 
   private StateMachineInstance stateMachine;
 
@@ -29,7 +29,7 @@ public class TransitionCommand implements Command {
 
   @Override
   public List<Command> execute() throws RuntimeException {
-    var commands = new ArrayList<Command>();
+    final var commands = new ArrayList<Command>();
 
     // Exit the currently active state
     commands.add(new StateExitCommand(stateMachine.getStatus().getActivateState()));
@@ -43,7 +43,7 @@ public class TransitionCommand implements Command {
 
     // Enter the target state
     commands.add(new StateEntryCommand(targetState));
-    
+
     return commands;
   }
 }

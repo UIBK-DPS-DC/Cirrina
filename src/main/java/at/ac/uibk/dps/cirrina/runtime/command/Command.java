@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.runtime.command;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
-import at.ac.uibk.dps.cirrina.object.context.Context;
+import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import java.util.List;
 
@@ -11,7 +11,7 @@ public interface Command {
 
   interface Scope {
 
-    List<Context> getExtent();
+    Extent getExtent();
 
     EventHandler getEventHandler();
   }
