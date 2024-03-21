@@ -11,12 +11,12 @@ public final class CreateAction extends Action {
   /**
    * The variable to create, is an expression. The name of the variable will be retrieved through evaluating the expression.
    */
-  public final ContextVariable variable;
+  private final ContextVariable variable;
 
   /**
    * Indicates whether this variable should be created persistently.
    */
-  public final boolean isPersistent;
+  private final boolean isPersistent;
 
   /**
    * Initializes this create action.
@@ -31,5 +31,13 @@ public final class CreateAction extends Action {
 
     this.variable = variable;
     this.isPersistent = isPersistent;
+  }
+
+  public ContextVariable getVariable() {
+    return variable;
+  }
+
+  public boolean isPersistent() {
+    return isPersistent;
   }
 }

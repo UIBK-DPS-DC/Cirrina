@@ -13,10 +13,10 @@ import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class StateInstanceChangeCommandTest {
+public class StateChangeCommandTest {
 
   @Test
-  public void TestStateChangeCommand() {
+  public void testStateChangeCommand() {
     assertDoesNotThrow(() -> {
       var stateOne = Mockito.mock(StateInstance.class);
       var stateTwo = Mockito.mock(StateInstance.class);

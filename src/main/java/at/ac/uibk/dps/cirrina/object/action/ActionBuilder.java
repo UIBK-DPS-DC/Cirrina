@@ -67,10 +67,10 @@ public final class ActionBuilder {
   public Action build() throws IllegalArgumentException, IllegalStateException {
     switch (actionClass) {
       case AssignActionClass assign -> {
+        var contextVariable = ContextVariableBuilder.from(assign.variable).build();
         return new AssignAction(
             assign.name,
-            assign.variable.name,
-            assign.variable.value.expression
+            contextVariable
         );
       }
       case CreateActionClass create -> {

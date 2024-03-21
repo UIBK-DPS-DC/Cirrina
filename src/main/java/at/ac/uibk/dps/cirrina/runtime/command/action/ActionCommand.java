@@ -16,7 +16,7 @@ public final class ActionCommand {
   public static Command from(Scope scope, Action action, boolean isWhile) throws IllegalStateException {
     switch (action) {
       case AssignAction a -> {
-        return new AssignActionCommand(scope, a, isWhile);
+        return new AssignActionCommand(scope, a);
       }
       case CreateAction a -> {
         return new CreateActionCommand(scope, a);

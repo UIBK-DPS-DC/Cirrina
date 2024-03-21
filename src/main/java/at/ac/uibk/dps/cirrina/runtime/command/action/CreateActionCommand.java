@@ -19,13 +19,13 @@ public final class CreateActionCommand implements Command {
 
   @Override
   public List<Command> execute() throws RuntimeException {
-    final var isPersistent = createAction.isPersistent;
+    final var isPersistent = createAction.isPersistent();
 
     var targetContext = isPersistent ?
         scope.getExtent().getLow() : // The lowest priority context in the extent is the persistent context
         scope.getExtent().getHigh(); // The highest priority context in the extent is the local context in scope
 
-    var variable = createAction.variable;
+    var variable = createAction.getVariable();
 
     // Acquire the value
     Object value = null;
@@ -33,7 +33,7 @@ public final class CreateActionCommand implements Command {
       var expression = variable.value();
 
       assert expression instanceof Expression;
-      ((Expression) expression).execute(scope.getExtent());
+      value = ((Expression) expression).execute(scope.getExtent());
     } else {
       value = variable.value();
     }

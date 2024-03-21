@@ -24,6 +24,24 @@ public class Extent {
         .toList();
   }
 
+  public void trySet(String name, Object value) throws RuntimeException {
+    var exceptions = extent.reversed().stream()
+        .map(context -> {
+          try {
+            context.assign(name, value);
+            return Optional.<RuntimeException>empty();
+          } catch (RuntimeException e) {
+            return Optional.of(e);
+          }
+        })
+        .flatMap(Optional::stream)
+        .toList();
+
+    if (exceptions.size() == extent.size()) {
+      throw exceptions.getLast();
+    }
+  }
+
   public Extent extend(Context high) {
     return new Extent(extent, high);
   }
@@ -36,12 +54,11 @@ public class Extent {
     return extent.getLast();
   }
 
-  public Optional<Object> resolve(String key) {
-
+  public Optional<Object> resolve(String name) {
     return extent.reversed().stream()
-        .map(ctx -> {
+        .map(context -> {
           try {
-            return Optional.of(ctx.get(key));
+            return Optional.ofNullable(context.get(name));
           } catch (RuntimeException e) {
             return Optional.empty();
           }

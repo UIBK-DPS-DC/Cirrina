@@ -17,6 +17,7 @@ import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStat
 import at.ac.uibk.dps.cirrina.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -138,8 +139,8 @@ public class InheritanceTest {
 
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
-        assertEquals(0, ((AssignAction) action1).value.execute(extent));
-        assertEquals(1, ((AssignAction) action2).value.execute(extent));
+        assertEquals(0, ((Expression) ((AssignAction) action1).getVariable().value()).execute(extent));
+        assertEquals(1, ((Expression) ((AssignAction) action2).getVariable().value()).execute(extent));
       });
 
       var stateMachine2 = getStateMachine2(csm);
@@ -151,8 +152,8 @@ public class InheritanceTest {
 
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
-        assertEquals(0, ((AssignAction) action1).value.execute(extent));
-        assertEquals(2, ((AssignAction) action2).value.execute(extent));
+        assertEquals(0, ((Expression) ((AssignAction) action1).getVariable().value()).execute(extent));
+        assertEquals(2, ((Expression) ((AssignAction) action2).getVariable().value()).execute(extent));
       });
     }
   }
@@ -160,28 +161,28 @@ public class InheritanceTest {
   @Test
   public void testInvalidInheritance() {
     VerificationException exception = assertThrows(VerificationException.class,
-        () ->  tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidInheritance));
+        () -> tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidInheritance));
     assertEquals(Message.STATE_MACHINE_INHERITS_FROM_INVALID, exception.message);
   }
 
   @Test
   public void testInvalidStateOverride() {
     VerificationException exception = assertThrows(VerificationException.class,
-        () ->  tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidStateOverride));
+        () -> tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidStateOverride));
     assertEquals(Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, exception.message);
   }
 
   @Test
   public void testInvalidAbstraction() {
     VerificationException exception = assertThrows(VerificationException.class,
-        () ->  tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidAbstraction));
+        () -> tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidAbstraction));
     assertEquals(Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES, exception.message);
   }
 
   @Test
   public void testInvalidAbstractStates() {
     VerificationException exception = assertThrows(VerificationException.class,
-        () ->  tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidAbstractStates));
+        () -> tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidAbstractStates));
     assertEquals(Message.NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES, exception.message);
   }
 }

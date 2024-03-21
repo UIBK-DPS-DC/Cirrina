@@ -51,10 +51,10 @@ public class StateInstanceMachineTest {
     assertTrue(action instanceof CreateAction);
 
     var createAction = (CreateAction) action;
-    Assertions.assertEquals(createAction.variable.name(), "v");
-    Assertions.assertTrue(createAction.variable.isLazy());
+    Assertions.assertEquals(createAction.getVariable().name(), "v");
+    Assertions.assertTrue(createAction.getVariable().isLazy());
 
-    var val = createAction.variable.value();
+    var val = createAction.getVariable().value();
     assertTrue(val instanceof Expression);
 
     var expression = (Expression) val;

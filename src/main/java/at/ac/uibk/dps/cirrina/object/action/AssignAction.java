@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.object.action;
 
-import at.ac.uibk.dps.cirrina.object.expression.Expression;
-import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
+import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import java.util.Optional;
 
 /**
@@ -10,27 +9,24 @@ import java.util.Optional;
 public final class AssignAction extends Action {
 
   /**
-   * The variable to assign to, is an expression. The name of the variable will be retrieved through evaluating the expression.
+   * The variable to create, is an expression. The name of the variable will be retrieved through evaluating the expression.
    */
-  public final Expression variable;
-
-  /**
-   * The value to assign, is an expression. The value will be retrieved through evaluating the expression.
-   */
-  public final Expression value;
+  private final ContextVariable variable;
 
   /**
    * Initializes this assign action.
    *
    * @param name     Name, can be optional in which case this action is inline.
-   * @param variable Variable expression source.
-   * @param value    Value expression source.
+   * @param variable Context variable.
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  AssignAction(Optional<String> name, String variable, String value) throws IllegalArgumentException {
+  AssignAction(Optional<String> name, ContextVariable variable) throws IllegalArgumentException {
     super(name);
 
-    this.variable = ExpressionBuilder.from(variable).build();
-    this.value = ExpressionBuilder.from(value).build();
+    this.variable = variable;
+  }
+
+  public ContextVariable getVariable() {
+    return variable;
   }
 }
