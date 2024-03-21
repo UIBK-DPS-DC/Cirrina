@@ -21,16 +21,14 @@ public final class CreateAction extends Action {
   /**
    * Initializes this create action.
    *
-   * @param name         Name, can be optional in which case this action is inline.
-   * @param variable     Context variable.
-   * @param isPersistent True if the variable should be created persistently, otherwise non-persistent.
+   * @param parameters Initialization parameters.
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  CreateAction(Optional<String> name, ContextVariable variable, boolean isPersistent) {
-    super(name);
+  CreateAction(Parameters parameters) {
+    super(parameters.name());
 
-    this.variable = variable;
-    this.isPersistent = isPersistent;
+    this.variable = parameters.variable();
+    this.isPersistent = parameters.isPersistent();
   }
 
   public ContextVariable getVariable() {
@@ -39,5 +37,13 @@ public final class CreateAction extends Action {
 
   public boolean isPersistent() {
     return isPersistent;
+  }
+
+  public record Parameters(
+      Optional<String> name,
+      ContextVariable variable,
+      boolean isPersistent
+  ) {
+
   }
 }

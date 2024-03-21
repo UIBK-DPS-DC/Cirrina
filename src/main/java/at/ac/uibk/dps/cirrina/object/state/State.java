@@ -1,9 +1,11 @@
 package at.ac.uibk.dps.cirrina.object.state;
 
+import at.ac.uibk.dps.cirrina.object.action.Action;
 import at.ac.uibk.dps.cirrina.object.action.ActionGraph;
 import at.ac.uibk.dps.cirrina.object.action.ActionGraphBuilder;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public final class State {
@@ -17,7 +19,7 @@ public final class State {
   private final ActionGraph exit;
   private final ActionGraph whilee;
 
-  State(StateParameters parameters) {
+  State(Parameters parameters) {
     if (parameters.baseState().isEmpty()) {
       this.name = parameters.name();
 
@@ -91,5 +93,19 @@ public final class State {
   @Override
   public String toString() {
     return name;
+  }
+
+  record Parameters(
+      String name,
+      boolean isInitial,
+      boolean isTerminal,
+      List<Action> entryActions,
+      List<Action> exitActions,
+      List<Action> whileActions,
+      boolean isAbstract,
+      boolean isVirtual,
+      Optional<State> baseState
+  ) {
+
   }
 }

@@ -14,6 +14,9 @@ import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.object.event.Event;
 import at.ac.uibk.dps.cirrina.object.event.EventBuilder;
+import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
+import at.ac.uibk.dps.cirrina.object.helper.ActionResolver;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -26,13 +29,16 @@ public final class ActionBuilder {
    */
   private final ActionClass actionClass;
 
+  private final ActionResolver actionResolver;
+
   /**
    * Initializes an action builder.
    *
    * @param actionClass Action class.
    */
-  private ActionBuilder(ActionClass actionClass) {
+  private ActionBuilder(ActionClass actionClass, ActionResolver actionResolver) {
     this.actionClass = actionClass;
+    this.actionResolver = actionResolver;
   }
 
   /**
@@ -41,8 +47,8 @@ public final class ActionBuilder {
    * @param actionClass Action class.
    * @return Action builder.
    */
-  public static ActionBuilder from(ActionClass actionClass) {
-    return new ActionBuilder(actionClass);
+  public static ActionBuilder from(ActionClass actionClass, ActionResolver actionResolver) {
+    return new ActionBuilder(actionClass, actionResolver);
   }
 
   private static List<ContextVariable> buildVariableList(List<ContextVariableClass> contextVariableClasses) {
@@ -68,21 +74,27 @@ public final class ActionBuilder {
     switch (actionClass) {
       case AssignActionClass assign -> {
         var contextVariable = ContextVariableBuilder.from(assign.variable).build();
-        return new AssignAction(
+
+        var parameters = new AssignAction.Parameters(
             assign.name,
             contextVariable
         );
+
+        return new AssignAction(parameters);
       }
       case CreateActionClass create -> {
         var contextVariable = ContextVariableBuilder.from(create.variable).build();
-        return new CreateAction(
+
+        var parameters = new CreateAction.Parameters(
             create.name,
             contextVariable,
             create.isPersistent
         );
+
+        return new CreateAction(parameters);
       }
       case InvokeActionClass invoke -> {
-        return new InvokeAction(
+        var parameters = new InvokeAction.Parameters(
             invoke.name,
             invoke.serviceType,
             invoke.isLocal,
@@ -90,22 +102,41 @@ public final class ActionBuilder {
             buildEvents(invoke.done),
             invoke.output
         );
+
+        return new InvokeAction(parameters);
       }
       case MatchActionClass match -> {
-        return new MatchAction(match.name);
+        var parameters = new MatchAction.Parameters(
+            match.name,
+            ExpressionBuilder.from(match.value).build(),
+            new HashMap<>() // TODO: Initialize
+        );
+
+        return new MatchAction(parameters);
       }
       case RaiseActionClass raise -> {
         var event = EventBuilder.from(raise.event).build();
-        return new RaiseAction(
+
+        var parameters = new RaiseAction.Parameters(
             raise.name,
             event
         );
+
+        return new RaiseAction(parameters);
       }
       case TimeoutActionClass timeout -> {
-        return new TimeoutAction(timeout.name);
+        var parameters = new TimeoutAction.Parameters(
+            timeout.name
+        );
+
+        return new TimeoutAction(parameters);
       }
       case TimeoutResetActionClass timeoutReset -> {
-        return new TimeoutResetAction(timeoutReset.name);
+        var parameters = new TimeoutResetAction.Parameters(
+            timeoutReset.name
+        );
+
+        return new TimeoutResetAction(parameters);
       }
       default -> throw new IllegalStateException(String.format("Unexpected value: %s", actionClass.type));
     }

@@ -7,9 +7,16 @@ public final class RaiseAction extends Action {
 
   public final Event event;
 
-  RaiseAction(Optional<String> name, Event event) {
-    super(name);
+  RaiseAction(Parameters parameters) {
+    super(parameters.name());
 
-    this.event = event;
+    this.event = parameters.event();
+  }
+
+  public record Parameters(
+      Optional<String> name,
+      Event event
+  ) {
+
   }
 }

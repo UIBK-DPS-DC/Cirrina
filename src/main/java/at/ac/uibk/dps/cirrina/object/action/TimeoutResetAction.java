@@ -4,7 +4,13 @@ import java.util.Optional;
 
 public final class TimeoutResetAction extends Action {
 
-  TimeoutResetAction(Optional<String> name) {
-    super(name);
+  TimeoutResetAction(Parameters parameters) {
+    super(parameters.name());
+  }
+
+  public record Parameters(
+      Optional<String> name
+  ) {
+
   }
 }

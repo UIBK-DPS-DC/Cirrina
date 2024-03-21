@@ -7,8 +7,13 @@ import java.util.List;
 
 public final class MatchActionCommand implements Command {
 
-  public MatchActionCommand(Scope scope, MatchAction action) {
+  private Scope scope;
 
+  private MatchAction matchAction;
+
+  public MatchActionCommand(Scope scope, MatchAction matchAction) {
+    this.scope = scope;
+    this.matchAction = matchAction;
   }
 
   @Override

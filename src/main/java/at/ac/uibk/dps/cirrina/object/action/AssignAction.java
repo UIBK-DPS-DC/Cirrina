@@ -16,17 +16,23 @@ public final class AssignAction extends Action {
   /**
    * Initializes this assign action.
    *
-   * @param name     Name, can be optional in which case this action is inline.
-   * @param variable Context variable.
+   * @param parameters Initialization parameters.
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  AssignAction(Optional<String> name, ContextVariable variable) throws IllegalArgumentException {
-    super(name);
+  AssignAction(Parameters parameters) throws IllegalArgumentException {
+    super(parameters.name());
 
-    this.variable = variable;
+    this.variable = parameters.variable();
   }
 
   public ContextVariable getVariable() {
     return variable;
+  }
+
+  public record Parameters(
+      Optional<String> name,
+      ContextVariable variable
+  ) {
+
   }
 }

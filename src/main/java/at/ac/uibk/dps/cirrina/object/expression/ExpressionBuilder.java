@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.object.expression;
 
+import at.ac.uibk.dps.cirrina.lang.classes.ExpressionClass;
 import com.google.common.hash.Hashing;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -13,14 +14,14 @@ public final class ExpressionBuilder {
 
   private static Map<Integer, Expression> cache = new HashMap<>();
 
-  private String source;
+  private ExpressionClass expressionClass;
 
-  private ExpressionBuilder(String source) {
-    this.source = source;
+  private ExpressionBuilder(ExpressionClass expressionClass) {
+    this.expressionClass = expressionClass;
   }
 
-  public static ExpressionBuilder from(String source) {
-    return new ExpressionBuilder(source);
+  public static ExpressionBuilder from(ExpressionClass expressionClass) {
+    return new ExpressionBuilder(expressionClass);
   }
 
   /**
@@ -31,10 +32,10 @@ public final class ExpressionBuilder {
    */
   public Expression build() throws IllegalArgumentException {
     // Compute source hash
-    var hash = Hashing.sha256().hashString(source, StandardCharsets.UTF_8).asInt();
+    var hash = Hashing.sha256().hashString(expressionClass.expression, StandardCharsets.UTF_8).asInt();
 
     // Construct a new expression if it did not exist in the cache yet
-    cache.computeIfAbsent(hash, (h) -> new JexlExpression(source));
+    cache.computeIfAbsent(hash, (h) -> new JexlExpression(expressionClass.expression));
 
     return cache.get(hash);
   }

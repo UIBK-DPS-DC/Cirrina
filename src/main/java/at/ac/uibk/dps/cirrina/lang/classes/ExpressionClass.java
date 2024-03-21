@@ -7,7 +7,7 @@ public final class ExpressionClass {
   @NotNull
   public String expression;
 
-  ExpressionClass(String expression) {
+  public ExpressionClass(String expression) {
     this.expression = expression;
   }
 }

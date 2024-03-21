@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.object.context.Extent;
@@ -28,7 +29,7 @@ public class CreateActionCommandTest {
 
     var contextVariable = Mockito.mock(ContextVariable.class);
     doReturn("var").when(contextVariable).name();
-    doReturn(ExpressionBuilder.from("5+1").build()).when(contextVariable).value();
+    doReturn(ExpressionBuilder.from(new ExpressionClass("5+1")).build()).when(contextVariable).value();
     doReturn(true).when(contextVariable).isLazy();
 
     var createAction = Mockito.mock(CreateAction.class);
@@ -55,7 +56,7 @@ public class CreateActionCommandTest {
 
     var contextVariable = Mockito.mock(ContextVariable.class);
     doReturn("var").when(contextVariable).name();
-    doReturn(ExpressionBuilder.from("5+1").build()).when(contextVariable).value();
+    doReturn(ExpressionBuilder.from(new ExpressionClass("5+1")).build()).when(contextVariable).value();
     doReturn(true).when(contextVariable).isLazy();
 
     var createAction = Mockito.mock(CreateAction.class);
@@ -109,7 +110,7 @@ public class CreateActionCommandTest {
 
     var contextVariable = Mockito.mock(ContextVariable.class);
     doReturn("var").when(contextVariable).name();
-    doReturn(ExpressionBuilder.from("5+1").build()).when(contextVariable).value();
+    doReturn(ExpressionBuilder.from(new ExpressionClass("5+1")).build()).when(contextVariable).value();
     doReturn(true).when(contextVariable).isLazy();
 
     var createAction = Mockito.mock(CreateAction.class);

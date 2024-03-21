@@ -19,7 +19,7 @@ public final class ActionResolver {
     switch (actionOrActionReferenceClass) {
       // An inline action is provided as an action class, since this action is inline it needs to be constructed
       case ActionClass actionClass -> {
-        return ActionBuilder.from(actionClass).build();
+        return ActionBuilder.from(actionClass, null /* TODO: Make me optional */).build();
       }
       // An action reference is a reference to a named action contained within the state machine, we provide this action
       case ActionReferenceClass actionReferenceClass -> {

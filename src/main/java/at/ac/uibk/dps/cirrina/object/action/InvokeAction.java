@@ -21,14 +21,24 @@ public final class InvokeAction extends Action {
 
   public final Optional<ContextVariableReference> output;
 
-  InvokeAction(Optional<String> name, String serviceType, boolean isLocal, List<ContextVariable> input,
-               List<Event> done, Optional<ContextVariableReference> output) {
-    super(name);
+  InvokeAction(Parameters parameters) {
+    super(parameters.name());
 
-    this.serviceType = serviceType;
-    this.isLocal = isLocal;
-    this.input = input;
-    this.done = done;
-    this.output = output;
+    this.serviceType = parameters.serviceType();
+    this.isLocal = parameters.isLocal();
+    this.input = parameters.input();
+    this.done = parameters.done();
+    this.output = parameters.output();
+  }
+
+  public record Parameters(
+      Optional<String> name,
+      String serviceType,
+      boolean isLocal,
+      List<ContextVariable> input,
+      List<Event> done,
+      Optional<ContextVariableReference> output
+  ) {
+
   }
 }

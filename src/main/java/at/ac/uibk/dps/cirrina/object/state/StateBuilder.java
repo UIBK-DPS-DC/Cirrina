@@ -37,7 +37,7 @@ public final class StateBuilder {
     var exitActions = resolveActions.apply(stateClass.exit);
     var whileActions = resolveActions.apply(stateClass.whilee);
 
-    var parameters = new StateParameters(
+    var parameters = new State.Parameters(
         stateClass.name,
         stateClass.isInitial,
         stateClass.isTerminal,

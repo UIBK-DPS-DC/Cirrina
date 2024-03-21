@@ -39,7 +39,7 @@ public class ContextVariableBuilder {
    */
   public ContextVariable build() {
     // If the variable comes from a context variable class, the variable is always lazy as the value is an expression
-    var lazyVariable = ExpressionBuilder.from(contextVariableClass.value.expression).build();
+    var lazyVariable = ExpressionBuilder.from(contextVariableClass.value).build();
     return new ContextVariable(
         contextVariableClass.name,
         lazyVariable

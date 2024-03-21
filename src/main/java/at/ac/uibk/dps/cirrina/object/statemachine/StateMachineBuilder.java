@@ -13,6 +13,7 @@ import at.ac.uibk.dps.cirrina.lang.classes.transition.TransitionClass;
 import at.ac.uibk.dps.cirrina.object.action.Action;
 import at.ac.uibk.dps.cirrina.object.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.object.helper.ActionResolver;
+import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.object.state.StateBuilder;
 import at.ac.uibk.dps.cirrina.object.transition.TransitionBuilder;
 import java.util.HashSet;
@@ -58,7 +59,7 @@ public final class StateMachineBuilder {
   private List<Action> buildActions() throws IllegalArgumentException {
     // Construct the list of named actions of this state machine, or leave empty if no named actions are declared
     var actions = stateMachineClass.actions.stream()
-        .map(actionClass -> ActionBuilder.from(actionClass).build())
+        .map(actionClass -> ActionBuilder.from(actionClass, null /* TODO: Provide me */).build())
         .collect(Collectors.toList());
 
     // Ensure that no duplicate entries exist
@@ -118,7 +119,7 @@ public final class StateMachineBuilder {
   /**
    * Builds a state machine which inherits from another state machine given by its name.
    *
-   * @param inheritName         The name of the state machine to inherit from.
+   * @param inheritName The name of the state machine to inherit from.
    * @return The state machine.
    * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name is not known.
    * @see ChildStateMachineBuilder
@@ -150,7 +151,7 @@ public final class StateMachineBuilder {
         .orElseGet(this::buildBase);
 
     // If the state machine is not abstract but has abstract states, throw an error
-    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream().anyMatch(state -> state.isAbstract())) {
+    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream().anyMatch(State::isAbstract)) {
       throw new IllegalArgumentException(
           VerificationException.from(NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES, stateMachineClass.name));
     }
