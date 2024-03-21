@@ -34,7 +34,7 @@ public final class ExpressionBuilder {
     var hash = Hashing.sha256().hashString(source, StandardCharsets.UTF_8).asInt();
 
     // Construct a new expression if it did not exist in the cache yet
-    cache.computeIfAbsent(hash, (h) -> new CelExpression(source));
+    cache.computeIfAbsent(hash, (h) -> new JexlExpression(source));
 
     return cache.get(hash);
   }

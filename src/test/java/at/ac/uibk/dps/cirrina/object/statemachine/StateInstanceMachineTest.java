@@ -47,7 +47,7 @@ public class StateInstanceMachineTest {
     assertEquals(stateMachine.getActions().size(), 1);
 
     var action = stateMachine.getActions().getFirst();
-    assertEquals(action.name.get(), "action1");
+    Assertions.assertEquals(action.name.get(), "action1");
     assertTrue(action instanceof CreateAction);
 
     var createAction = (CreateAction) action;

@@ -21,16 +21,20 @@ public final class ChildStateMachineBuilder {
 
   private final StateMachineClass stateMachineClass;
   private final StateMachine baseStateMachine;
+  private final List<StateMachine> nestedStateMachines;
   private List<Action> actions;
 
-  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine base, List<Action> actions) {
+  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine baseStateMachine, List<Action> actions,
+      List<StateMachine> nestedStateMachine) {
     this.stateMachineClass = stateMachineClass;
-    this.baseStateMachine = base;
+    this.baseStateMachine = baseStateMachine;
     this.actions = actions;
+    this.nestedStateMachines = nestedStateMachine;
   }
 
-  public static ChildStateMachineBuilder implement(StateMachineClass tthis, StateMachine base, List<Action> actions) {
-    return new ChildStateMachineBuilder(tthis, base, actions);
+  public static ChildStateMachineBuilder implement(StateMachineClass tthis, StateMachine base, List<Action> actions,
+      List<StateMachine> nestedStateMachine) {
+    return new ChildStateMachineBuilder(tthis, base, actions, nestedStateMachine);
   }
 
   /**
@@ -45,7 +49,8 @@ public final class ChildStateMachineBuilder {
 
     addBaseActions();
 
-    StateMachine stateMachine = new StateMachine(stateMachineClass.name, actions, stateMachineClass.isAbstract);
+    StateMachine stateMachine = new StateMachine(stateMachineClass.name, actions, stateMachineClass.isAbstract,
+        nestedStateMachines);
 
     addStates(stateMachine);
     addBaseEdges(stateMachine);
@@ -102,7 +107,7 @@ public final class ChildStateMachineBuilder {
 
     var stateClasses = getStateClasses();
     var abstractStates = baseStateMachine.vertexSet().stream()
-        .filter(state -> state.isAbstract()).toList();
+        .filter(State::isAbstract).toList();
 
     var isIncomplete = abstractStates.stream()
         .anyMatch(state -> stateClasses.stream()
@@ -115,8 +120,7 @@ public final class ChildStateMachineBuilder {
   }
 
   /**
-   * Adds states to the child state machine. Adding the not overridden base states is necessary because
-   * {@link StateMachine#cloneWithStateMachineClass} returns a shallow copy.
+   * Adds states to the child state machine.
    *
    * @param stateMachine The state machine.
    */
@@ -141,7 +145,7 @@ public final class ChildStateMachineBuilder {
   }
 
   /**
-   * Recreates the edges. Recreating edges is necessary because {@link StateMachine#cloneWithStateMachineClass} returns a shallow copy.
+   * Recreates the edges.
    *
    * @param stateMachine The state machine.
    */

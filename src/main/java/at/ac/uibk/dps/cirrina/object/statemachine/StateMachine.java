@@ -13,7 +13,6 @@ import at.ac.uibk.dps.cirrina.object.event.Event;
 import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.object.transition.OnTransition;
 import at.ac.uibk.dps.cirrina.object.transition.Transition;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,23 +25,29 @@ import org.jgrapht.graph.DirectedPseudograph;
  * object, creating several state machine <i>instances</i>.
  * <p>
  * Formally, a state machine is a directed pseudograph, where states are vertices and transitions are edges. It is a deterministic
- * finite-state transducer (Mealy machine), defined as \(\mathcal S = (\Sigma, \Gamma, S, s_0, \delta, F, E, \omega, \epsilon_t,
- * \epsilon_s)\) with:
+ * finite-state transducer (Mealy machine), defined as \(\mathcal S = (\Sigma, \Gamma, S, s_0, S_t, E, \delta, \omega, \epsilon_t,
+ * \epsilon_s, \mathcal N\)) with:
+ * </p>
  * <ul>
  *   <li><i>\(\Sigma\)</i>: the set of input events;</li>
  *   <li><i>\(\Gamma\)</i>: the set of output events;</li>
  *   <li><i>\(S\)</i>: the set of states;</li>
  *   <li><i>\(s_0\)</i>: the initial state (such that \(s_0 \in S\));</li>
+ *   <li><i>\(S_t\)</i>: the set of terminal states (such that \(S_t \subseteq S\));</li>
  *   <li><i>\(E\)</i>: the set of side effects;</li>
  *   <li><i>\(\delta\)</i>: the state transition function \(\delta: S\times \Sigma \rightarrow S\);</li>
  *   <li><i>\(\omega\)</i>: the output function \(\omega: S\times \Sigma \rightarrow \Gamma\);</li>
  *   <li><i>\(\epsilon_t\)</i>: the transition side effect function \(\epsilon_t: S \times \Sigma \rightarrow E\);</li>
- *   <li><i>\(\epsilon_s\)</i>: the state side effect function \(\epsilon_s: S \rightarrow E\).</li>
+ *   <li><i>\(\epsilon_s\)</i>: the state side effect function \(\epsilon_s: S \rightarrow E\);</li>
+ *   <li><i>\(\mathcal N\)</i>: the set of nested state machines (such that \(\mathcal N = \{\mathcal{S}_1, \mathcal{S}_2, \ldots,
+ *   \mathcal{S}_n\}\), where \(n \ge 0\)).</li>
  * </ul>
  * <p>
  * This formalism defines a state machine as a system that processes input events, transitions between states, produces output events,
  * and triggers side effects during both transitions and in states. \(E\) are referred to as the actions of a collaborative state machine,
- * which can be declared named within a state machine or inline within a state/transition.
+ * which can be declared named within a state machine or inline within a state/transition. The nested state machines \(N\) are themselves
+ * state machines which are executed in parallel as soon as its top level state machine \(\mathcal S\) is executed.
+ * </p>
  */
 public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
@@ -54,13 +59,13 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   private final List<Action> actions;
 
-  StateMachine(String name, List<Action> actions, boolean isAbstract) {
+  StateMachine(String name, List<Action> actions, boolean isAbstract, List<StateMachine> nestedStateMachines) {
     super(Transition.class);
 
     this.name = name;
     this.actions = Collections.unmodifiableList(actions);
     this.isAbstract = isAbstract;
-    this.nestedStateMachines = new ArrayList<>();
+    this.nestedStateMachines = Collections.unmodifiableList(nestedStateMachines);
   }
 
   public String getName() {

@@ -87,7 +87,8 @@ public final class ActionBuilder {
             invoke.serviceType,
             invoke.isLocal,
             buildVariableList(invoke.input),
-            buildEvents(invoke.done)
+            buildEvents(invoke.done),
+            invoke.output
         );
       }
       case MatchActionClass match -> {

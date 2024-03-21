@@ -73,6 +73,25 @@ public final class StateMachineBuilder {
   }
 
   /**
+   * Builds all nested state machines contained in the state machine class.
+   *
+   * @return A list containing all nested state machines.
+   * @throws IllegalArgumentException In case one nested state machine could not be built.
+   */
+  private List<StateMachine> buildNestedStateMachines() throws IllegalArgumentException {
+    // Gather the nested state machines
+    List<StateMachineClass> nestedStateMachinesClasses = stateMachineClass.states.stream()
+        .filter(StateMachineClass.class::isInstance)
+        .map(StateMachineClass.class::cast)
+        .toList();
+
+    // Build all nested state machines
+    return nestedStateMachinesClasses.stream()
+        .map(nestedStateMachineClass -> new StateMachineBuilder(nestedStateMachineClass, knownStateMachines).build())
+        .toList();
+  }
+
+  /**
    * Builds a state machine which does not inherit from another state machine.
    *
    * @return The state machine.
@@ -80,8 +99,9 @@ public final class StateMachineBuilder {
    */
   private StateMachine buildBase() throws IllegalArgumentException {
     var actions = buildActions();
+    var nestedStateMachines = buildNestedStateMachines();
 
-    var stateMachine = new StateMachine(stateMachineClass.name, actions, stateMachineClass.isAbstract);
+    var stateMachine = new StateMachine(stateMachineClass.name, actions, stateMachineClass.isAbstract, nestedStateMachines);
 
     var actionResolver = new ActionResolver(stateMachine);
 
@@ -98,7 +118,7 @@ public final class StateMachineBuilder {
   /**
    * Builds a state machine which inherits from another state machine given by its name.
    *
-   * @param inheritName The name of the state machine to inherit from.
+   * @param inheritName         The name of the state machine to inherit from.
    * @return The state machine.
    * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name is not known.
    * @see ChildStateMachineBuilder
@@ -111,8 +131,11 @@ public final class StateMachineBuilder {
         .findFirst().orElseThrow(() -> new IllegalArgumentException(
             VerificationException.from(STATE_MACHINE_INHERITS_FROM_INVALID, stateMachineClass.name, inheritName)));
 
+    var actions = buildActions();
+    var nestedStateMachines = buildNestedStateMachines();
+
     // Create the child state machine
-    return ChildStateMachineBuilder.implement(stateMachineClass, baseStateMachine, buildActions()).build();
+    return ChildStateMachineBuilder.implement(stateMachineClass, baseStateMachine, actions, nestedStateMachines).build();
   }
 
   /**
@@ -171,17 +194,6 @@ public final class StateMachineBuilder {
 
     // Add the created state machine as a known state machine in this builder
     knownStateMachines.add(stateMachine);
-
-    // Gather the nested state machines
-    var nestedStateMachines = stateMachineClass.states.stream()
-        .filter(StateMachineClass.class::isInstance)
-        .map(StateMachineClass.class::cast)
-        .toList();
-
-    // Add all nested state machines to the base state machine
-    stateMachine.nestedStateMachines.addAll(nestedStateMachines.stream()
-        .map(nestedStateMachineClass -> new StateMachineBuilder(nestedStateMachineClass, knownStateMachines).build())
-        .toList());
 
     return stateMachine;
   }

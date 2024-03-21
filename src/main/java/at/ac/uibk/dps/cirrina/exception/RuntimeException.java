@@ -1,3 +1,4 @@
+
 package at.ac.uibk.dps.cirrina.exception;
 
 public final class RuntimeException extends CirrinaException {

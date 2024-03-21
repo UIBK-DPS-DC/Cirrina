@@ -19,6 +19,7 @@ dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
 
     implementation("dev.cel:cel:0.3.1")
+    implementation("org.apache.commons:commons-jexl3:3.3")
 
     implementation("io.nats:jnats:2.17.3")
 

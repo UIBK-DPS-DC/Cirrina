@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 
 public class ExpressionTest {
 
-  @Disabled // TODO: Fix resolving of variables
   @Test
   public void testExpressionPositive() throws Exception {
     try (var context = new InMemoryContext()) {
@@ -34,8 +33,8 @@ public class ExpressionTest {
         context.create("varBad1dBytes", bytes);
         context.create("varVariousList", list);
 
-        Assertions.assertEquals(ExpressionBuilder.from("varPlusOneInt+1").build().execute(extent), 2L);
-        assertEquals(ExpressionBuilder.from("varNegativeOneInt-1").build().execute(extent), -2L);
+        Assertions.assertEquals(ExpressionBuilder.from("varPlusOneInt+1").build().execute(extent), 2);
+        assertEquals(ExpressionBuilder.from("varNegativeOneInt-1").build().execute(extent), -2);
         assertEquals(ExpressionBuilder.from("varPlusOneDouble+1.0").build().execute(extent), 2.0);
         assertEquals(ExpressionBuilder.from("varNegativeOneDouble-1.0").build().execute(extent),
             -2.0);

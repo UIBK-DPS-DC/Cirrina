@@ -1,6 +1,8 @@
 package at.ac.uibk.dps.cirrina.object.context;
 
+import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class Extent {
@@ -32,5 +34,20 @@ public class Extent {
 
   public Context getHigh() {
     return extent.getLast();
+  }
+
+  public Optional<Object> resolve(String key) {
+
+    return extent.reversed().stream()
+        .map(ctx -> {
+          try {
+            return Optional.of(ctx.get(key));
+          } catch (RuntimeException e) {
+            return Optional.empty();
+          }
+        })
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .findFirst();
   }
 }

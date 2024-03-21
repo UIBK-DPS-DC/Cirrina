@@ -35,9 +35,8 @@ public final class State {
 
       this.name = baseState.name;
 
-      // TODO: Felix, fix for inheritance
-      this.isInitial = parameters.isInitial();
-      this.isTerminal = parameters.isTerminal();
+      this.isInitial = parameters.isInitial() || baseState.isInitial;
+      this.isTerminal = parameters.isTerminal() || baseState.isTerminal;
 
       this.entry = ActionGraphBuilder.extend(new ActionGraph(baseState.entry), parameters.entryActions()).build();
       this.exit = ActionGraphBuilder.extend(new ActionGraph(baseState.exit), parameters.exitActions()).build();

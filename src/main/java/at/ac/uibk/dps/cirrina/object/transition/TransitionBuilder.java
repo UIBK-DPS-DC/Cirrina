@@ -5,9 +5,15 @@ import at.ac.uibk.dps.cirrina.lang.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.lang.classes.transition.TransitionClass;
 import at.ac.uibk.dps.cirrina.object.action.Action;
 import at.ac.uibk.dps.cirrina.object.helper.ActionResolver;
+import at.ac.uibk.dps.cirrina.object.statemachine.ChildStateMachineBuilder;
+import at.ac.uibk.dps.cirrina.object.statemachine.StateMachineBuilder;
+
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Abstract transition builder.
+ */
 public abstract class TransitionBuilder {
 
   public static TransitionBuilder from(TransitionClass transitionClass, ActionResolver actionResolver) {
@@ -18,8 +24,19 @@ public abstract class TransitionBuilder {
     return new TransitionFromTransitionBuilder(transition);
   }
 
+  /**
+   * Builds the transition.
+   *
+   * @return the transition.
+   * @throws IllegalArgumentException In case the transition could not be built.
+   */
   public abstract Transition build() throws IllegalArgumentException;
 
+  /**
+   * Transition builder implementation. Builds a transition based on a transition class.
+   *
+   * @see StateMachineBuilder
+   */
   private static final class TransitionFromClassBuilder extends TransitionBuilder {
 
     private final TransitionClass transitionClass;
@@ -51,6 +68,11 @@ public abstract class TransitionBuilder {
     }
   }
 
+  /**
+   * Transition builder implementation. Builds a transition based on another transition.
+   *
+   * @see ChildStateMachineBuilder
+   */
   private static final class TransitionFromTransitionBuilder extends TransitionBuilder {
 
     private final Transition transition;
