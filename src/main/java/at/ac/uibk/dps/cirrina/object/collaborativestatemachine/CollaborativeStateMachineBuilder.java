@@ -99,10 +99,10 @@ public final class CollaborativeStateMachineBuilder {
         // added to the table. At this point we assume that external events will be bound, we cannot resolve the case
         // that it does not here
         if ((
-            raisedEvent.channel == EventChannel.INTERNAL && sourceStateMachine == targetStateMachine
-                || raisedEvent.channel == EventChannel.GLOBAL
-                || raisedEvent.channel == EventChannel.EXTERNAL)
-            && handledEvents.contains(raisedEvent.name)) {
+            raisedEvent.getChannel() == EventChannel.INTERNAL && sourceStateMachine == targetStateMachine
+                || raisedEvent.getChannel() == EventChannel.GLOBAL
+                || raisedEvent.getChannel() == EventChannel.EXTERNAL)
+            && handledEvents.contains(raisedEvent.getName())) {
           targetStateMachines.add(targetStateMachine);
         }
       }

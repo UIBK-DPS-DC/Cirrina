@@ -1,16 +1,14 @@
 package at.ac.uibk.dps.cirrina.object.context;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
+import io.fury.Fury;
+import io.fury.config.Language;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.KeyValue;
 import io.nats.client.Nats;
 import io.nats.client.api.KeyValueConfiguration;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -181,22 +179,13 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
   }
 
   private byte[] toBytes(Object value) throws RuntimeException {
-    try (var bs = new ByteArrayOutputStream(); var os = new ObjectOutputStream(bs)) {
-      // Acquire serialize to bytes
-      os.writeObject(value);
-
-      return bs.toByteArray();
-    } catch (IOException e) {
-      throw RuntimeException.from("Failed to convert object to binary data: %s", e.getMessage());
-    }
+    Fury fury = Fury.builder().withLanguage(Language.XLANG).build();
+    return fury.serialize(value);
   }
 
   private Object fromBytes(byte[] bytes) throws RuntimeException {
-    try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
-      return ois.readObject();
-    } catch (IOException | ClassNotFoundException e) {
-      throw RuntimeException.from("Failed to convert binary data to object: %s", e.getMessage());
-    }
+    Fury fury = Fury.builder().withLanguage(Language.XLANG).build();
+    return fury.deserialize(bytes);
   }
 
   @Override

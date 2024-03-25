@@ -11,6 +11,7 @@ import at.ac.uibk.dps.cirrina.object.event.Event;
 import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinScheduler;
+import java.net.URI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -38,8 +39,23 @@ public class RuntimeTest {
       var mockEventHandler = new EventHandler() {
 
         @Override
-        public void sendEvent(Event event) {
+        public void close() throws Exception {
+
+        }
+
+        @Override
+        public void sendEvent(URI source, Event event) {
           propagateEvent(event);
+        }
+
+        @Override
+        public void subscribe(String topic) {
+
+        }
+
+        @Override
+        public void unsubscribe(String topic) {
+
         }
       };
 
