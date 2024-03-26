@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.object.event;
 
-import java.net.URI;
+import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,7 +10,7 @@ public abstract class EventHandler implements AutoCloseable {
   private final List<EventListener> listeners = new ArrayList<>();
   private final ReentrantLock lock = new ReentrantLock();
 
-  public abstract void sendEvent(URI source, Event event);
+  public abstract void sendEvent(Event event, String source) throws RuntimeException;
 
   public void addListener(EventListener listener) {
     lock.lock();
@@ -32,9 +32,13 @@ public abstract class EventHandler implements AutoCloseable {
     }
   }
 
-  public abstract void subscribe(String topic);
+  public abstract void subscribe(String subject);
 
-  public abstract void unsubscribe(String topic);
+  public abstract void unsubscribe(String subject);
+
+  public abstract void subscribe(String source, String subject);
+
+  public abstract void unsubscribe(String source, String subject);
 
   protected void propagateEvent(Event event) {
     lock.lock();

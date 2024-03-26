@@ -6,7 +6,6 @@ import static org.mockito.Mockito.doReturn;
 
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventChannel;
 import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ import org.mockito.Mockito;
 public class EventTest {
 
   @Test
-  public void testToFromCloudEvent() throws URISyntaxException {
+  public void testToBytes() throws URISyntaxException {
     var contextVariable = Mockito.mock(ContextVariable.class);
     doReturn("varName").when(contextVariable).name();
     doReturn("some string").when(contextVariable).value();
@@ -23,9 +22,9 @@ public class EventTest {
 
     assertDoesNotThrow(() -> {
       var eventOut = new Event("name", EventChannel.EXTERNAL, List.of(contextVariable));
-      var cloudEvent = eventOut.toCloudEvent(new URI("1"));
+      var data = eventOut.toBytes();
 
-      var eventIn = Event.fromCloudEvent(cloudEvent);
+      var eventIn = Event.fromBytes(data);
 
       assertEquals(eventIn.getId(), eventOut.getId());
       assertEquals(eventIn.getName(), "name");

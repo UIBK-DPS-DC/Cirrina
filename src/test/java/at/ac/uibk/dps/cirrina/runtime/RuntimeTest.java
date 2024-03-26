@@ -11,7 +11,6 @@ import at.ac.uibk.dps.cirrina.object.event.Event;
 import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinScheduler;
-import java.net.URI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +43,7 @@ public class RuntimeTest {
         }
 
         @Override
-        public void sendEvent(URI source, Event event) {
+        public void sendEvent(Event event, String source) {
           propagateEvent(event);
         }
 
@@ -55,6 +54,16 @@ public class RuntimeTest {
 
         @Override
         public void unsubscribe(String topic) {
+
+        }
+
+        @Override
+        public void subscribe(String source, String subject) {
+
+        }
+
+        @Override
+        public void unsubscribe(String source, String subject) {
 
         }
       };

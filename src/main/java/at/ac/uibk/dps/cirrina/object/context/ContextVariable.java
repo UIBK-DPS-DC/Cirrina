@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.object.context;
 
+import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.object.expression.Expression;
 
 /**
@@ -40,5 +41,21 @@ public record ContextVariable(
    */
   ContextVariable(String name, Object value) {
     this(name, value, false);
+  }
+
+  public ContextVariable evaluate(Extent extent) throws RuntimeException {
+    if (isLazy) {
+      var expression = value;
+
+      assert expression instanceof Expression;
+
+      try {
+        return new ContextVariable(name, ((Expression) expression).execute(extent));
+      } catch (RuntimeException e) {
+        throw RuntimeException.from("Could not evaluate variable: %s", e.getMessage());
+      }
+    } else {
+      return this;
+    }
   }
 }

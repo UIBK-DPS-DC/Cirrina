@@ -3,11 +3,10 @@ package at.ac.uibk.dps.cirrina.object.event;
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.lang.classes.event.EventChannel;
 import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import at.ac.uibk.dps.cirrina.object.context.Extent;
 import io.fury.Fury;
 import io.fury.config.Language;
-import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -37,24 +36,34 @@ public final class Event {
   }
 
   /**
-   * (Re)constructs an event from a CloudEvents event.
+   * (Re)constructs an event from byte data.
    *
-   * @param cloudEvent CloudEvents event.
+   * @param bytes Byte data.
    * @return Event.
    * @throws RuntimeException In case the event could not be retrieved from the CloudEvents event.
    */
-  public static Event fromCloudEvent(CloudEvent cloudEvent) throws RuntimeException {
+  public static Event fromBytes(byte[] bytes) throws RuntimeException {
     Fury fury = Fury.builder()
         .withLanguage(Language.XLANG)
         .requireClassRegistration(false)
         .build();
 
-    var event = fury.deserialize(cloudEvent.getData().toBytes());
+    var event = fury.deserialize(bytes);
     if (!(event instanceof Event)) {
       throw RuntimeException.from("Received a cloud event that does not contain an event as its data");
     }
 
     return (Event) event;
+  }
+
+  public static Event ensureHasEvaluatedData(Event event, Extent extent) throws RuntimeException {
+    var data = new ArrayList<ContextVariable>();
+
+    for (var variable : event.getData()) {
+      data.add(variable.evaluate(extent));
+    }
+
+    return new Event(event.getName(), event.getChannel(), data);
   }
 
   /**
@@ -114,24 +123,20 @@ public final class Event {
   }
 
   /**
-   * Converts this event to a CloudEvents event.
+   * Converts this event to byte data.
    *
-   * @param source Source to include.
-   * @return CloudEvents event.
+   * @return Byte data.
    */
-  public CloudEvent toCloudEvent(URI source) {
+  public byte[] toBytes() throws RuntimeException {
+    if (data.stream().anyMatch(ContextVariable::isLazy)) {
+      throw RuntimeException.from("All variables need to be evaluated before an event can be converted to bytes");
+    }
+
     Fury fury = Fury.builder()
         .withLanguage(Language.XLANG)
         .requireClassRegistration(false)
         .build();
 
-    var data = fury.serialize(this);
-
-    return CloudEventBuilder.v1()
-        .withId(id)
-        .withSource(source)
-        .withData(data)
-        .withType("at.ac.uibk.dps.cirrina.event")
-        .build();
+    return fury.serialize(this);
   }
 }

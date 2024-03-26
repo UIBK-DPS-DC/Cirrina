@@ -24,8 +24,6 @@ dependencies {
 
     implementation("org.furyio:fury-core:0.4.1")
 
-    implementation("io.cloudevents:cloudevents-core:2.5.0")
-
     implementation("io.nats:jnats:2.17.3")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
