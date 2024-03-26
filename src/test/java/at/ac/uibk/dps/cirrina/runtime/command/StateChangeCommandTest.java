@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 
 import at.ac.uibk.dps.cirrina.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.statemachine.StateChangeCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
@@ -27,13 +28,13 @@ public class StateChangeCommandTest {
       doNothing().when(stateMachine).setActiveState(stateOne);
 
       assertDoesNotThrow(() -> {
-        var command = new StateChangeCommand(stateMachine, stateOne);
-        command.execute();
+        var command = new StateChangeCommand(stateOne);
+        command.execute(new ExecutionContext(stateMachine, null));
       });
 
       assertThrows(RuntimeException.class, () -> {
-        var command = new StateChangeCommand(stateMachine, stateTwo);
-        command.execute();
+        var command = new StateChangeCommand(stateTwo);
+        command.execute(new ExecutionContext(stateMachine, null));
       });
     });
   }

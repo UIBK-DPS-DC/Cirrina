@@ -10,14 +10,14 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public final class StateEntryCommand implements Command {
 
-  private StateInstance state;
+  private final StateInstance state;
 
   public StateEntryCommand(StateInstance state) {
     this.state = state;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     final var commands = new ArrayList<Command>();
 
     // Append the entry actions to the command list

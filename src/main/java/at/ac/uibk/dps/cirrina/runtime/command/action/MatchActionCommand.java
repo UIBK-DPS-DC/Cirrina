@@ -6,26 +6,27 @@ import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class MatchActionCommand implements Command {
+public final class MatchActionCommand extends ActionCommand {
 
-  private Scope scope;
+  private final MatchAction matchAction;
 
-  private MatchAction matchAction;
+  public MatchActionCommand(Scope scope, MatchAction matchAction, boolean isWhile) {
+    super(scope, isWhile);
 
-  public MatchActionCommand(Scope scope, MatchAction matchAction) {
-    this.scope = scope;
     this.matchAction = matchAction;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     final var commands = new ArrayList<Command>();
 
+    var extent = scope.getExtent();
+
     try {
-      var conditionValue = matchAction.getValue().execute(scope.getExtent());
+      var conditionValue = matchAction.getValue().execute(extent);
 
       for (var entry : matchAction.getCasee().entrySet()) {
-        var caseValue = entry.getKey().execute(scope.getExtent());
+        var caseValue = entry.getKey().execute(extent);
         var caseAction = entry.getValue();
 
         if (conditionValue == caseValue) {

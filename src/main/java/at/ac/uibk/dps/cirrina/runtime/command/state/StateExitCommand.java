@@ -8,14 +8,14 @@ import java.util.List;
 public final class StateExitCommand implements Command {
 
 
-  private StateInstance state;
+  private final StateInstance state;
 
   public StateExitCommand(StateInstance state) {
     this.state = state;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     return null;
   }
 }

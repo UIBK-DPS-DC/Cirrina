@@ -10,6 +10,7 @@ import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
+import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.action.AssignActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import org.junit.jupiter.api.Test;
@@ -37,10 +38,10 @@ public class AssignActionCommandTest {
     var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction);
+    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction, false);
 
     assertDoesNotThrow(() -> {
-      assignActionCommand.execute();
+      assignActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       assertEquals(persistentContext.get("v"), 6);
     });
@@ -66,10 +67,10 @@ public class AssignActionCommandTest {
     var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction);
+    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction, false);
 
     assertDoesNotThrow(() -> {
-      assignActionCommand.execute();
+      assignActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       assertEquals(localContext.get("v"), 6);
     });
@@ -95,10 +96,10 @@ public class AssignActionCommandTest {
     var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction);
+    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction, false);
 
     assertDoesNotThrow(() -> {
-      assignActionCommand.execute();
+      assignActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       assertEquals(localContext.get("v"), "v+1");
     });
@@ -127,10 +128,10 @@ public class AssignActionCommandTest {
     var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction);
+    var assignActionCommand = new AssignActionCommand(stateMachine, assignAction, false);
 
     assertDoesNotThrow(() -> {
-      assignActionCommand.execute();
+      assignActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       assertEquals(persistentContext.get("v"), 6);
       assertEquals(localContext.get("v"), 6);

@@ -43,7 +43,7 @@ public final class Runtime implements Runnable, Scope {
     final var instance = new StateMachineInstance(this, stateMachine, Optional.empty());
     instances.add(instance);
 
-    return instance.id;
+    return instance.getId();
   }
 
   /**

@@ -6,19 +6,18 @@ import at.ac.uibk.dps.cirrina.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public final class AssignActionCommand implements Command {
+public final class AssignActionCommand extends ActionCommand {
 
-  private Scope scope;
+  private final AssignAction assignAction;
 
-  private AssignAction assignAction;
+  public AssignActionCommand(Scope scope, AssignAction assignAction, boolean isWhile) {
+    super(scope, isWhile);
 
-  public AssignActionCommand(Scope scope, AssignAction assignAction) {
-    this.scope = scope;
     this.assignAction = assignAction;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     var extent = scope.getExtent();
 
     var variable = assignAction.getVariable();
@@ -29,7 +28,7 @@ public final class AssignActionCommand implements Command {
       var expression = variable.value();
 
       assert expression instanceof Expression;
-      value = ((Expression) expression).execute(scope.getExtent());
+      value = ((Expression) expression).execute(extent);
     } else {
       value = variable.value();
     }

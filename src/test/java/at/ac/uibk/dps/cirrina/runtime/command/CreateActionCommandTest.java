@@ -12,6 +12,7 @@ import at.ac.uibk.dps.cirrina.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
+import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.action.CreateActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import org.junit.jupiter.api.Test;
@@ -36,10 +37,10 @@ public class CreateActionCommandTest {
     doReturn(true).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    var createActionCommand = new CreateActionCommand(stateMachine, createAction);
+    var createActionCommand = new CreateActionCommand(stateMachine, createAction, false);
 
     assertDoesNotThrow(() -> {
-      createActionCommand.execute();
+      createActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       var value = persistentContext.get("var");
       assertEquals(value, 6);
@@ -63,10 +64,10 @@ public class CreateActionCommandTest {
     doReturn(false).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    var createActionCommand = new CreateActionCommand(stateMachine, createAction);
+    var createActionCommand = new CreateActionCommand(stateMachine, createAction, false);
 
     assertDoesNotThrow(() -> {
-      createActionCommand.execute();
+      createActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       var value = localContext.get("var");
       assertEquals(value, 6);
@@ -90,10 +91,10 @@ public class CreateActionCommandTest {
     doReturn(false).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    var createActionCommand = new CreateActionCommand(stateMachine, createAction);
+    var createActionCommand = new CreateActionCommand(stateMachine, createAction, false);
 
     assertDoesNotThrow(() -> {
-      createActionCommand.execute();
+      createActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       var value = localContext.get("var");
       assertEquals(value, "5+1");
@@ -117,15 +118,15 @@ public class CreateActionCommandTest {
     doReturn(false).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    var createActionCommand = new CreateActionCommand(stateMachine, createAction);
+    var createActionCommand = new CreateActionCommand(stateMachine, createAction, false);
 
     assertThrows(RuntimeException.class, () -> {
-      createActionCommand.execute();
+      createActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       var value = localContext.get("var");
       assertEquals(value, 6);
 
-      createActionCommand.execute();
+      createActionCommand.execute(new ExecutionContext(stateMachine, null));
     });
   }
 }

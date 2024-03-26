@@ -9,6 +9,7 @@ import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
+import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 import at.ac.uibk.dps.cirrina.runtime.command.statemachine.InitialTransitionCommand;
 import java.util.Collections;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 public final class StateMachineInstance implements Scope {
 
-  public final InstanceId id = new InstanceId();
+  private final InstanceId id = new InstanceId();
 
   private final ReentrantLock lock = new ReentrantLock();
 
@@ -56,7 +57,7 @@ public final class StateMachineInstance implements Scope {
         .collect(Collectors.toMap(State::getName, state -> new StateInstance(state, this)));
 
     // Enter an enter state command that enters the initial state
-    appendCommand(new InitialTransitionCommand(this, states.get(stateMachine.getInitialState().getName())));
+    appendCommand(new InitialTransitionCommand(states.get(stateMachine.getInitialState().getName())));
   }
 
   @Override
@@ -86,6 +87,10 @@ public final class StateMachineInstance implements Scope {
     }
 
     return Optional.empty();
+  }
+
+  public InstanceId getId() {
+    return id;
   }
 
   public Status getStatus() {
@@ -118,7 +123,7 @@ public final class StateMachineInstance implements Scope {
     // When executing a command, new commands replacing the currently executed command can be generated, insert those commands into the
     // command queue at the beginning. The currently executing command is always the head of the queue, hence we can insert these commands
     // as the new head
-    prependCommands(command.execute());
+    prependCommands(command.execute(new ExecutionContext(this, getEventHandler())));
 
     // Unlock the state machine instance
     lock.unlock();

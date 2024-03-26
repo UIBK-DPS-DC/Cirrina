@@ -6,26 +6,27 @@ import at.ac.uibk.dps.cirrina.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public final class CreateActionCommand implements Command {
+public final class CreateActionCommand extends ActionCommand {
 
-  private Scope scope;
+  private final CreateAction createAction;
 
-  private CreateAction createAction;
+  public CreateActionCommand(Scope scope, CreateAction createAction, boolean isWhile) {
+    super(scope, isWhile);
 
-  public CreateActionCommand(Scope scope, CreateAction createAction) {
-    this.scope = scope;
     this.createAction = createAction;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     final var isPersistent = createAction.isPersistent();
+
+    var extent = scope.getExtent();
 
     // Create the variable
     try {
       var targetContext = isPersistent ?
-          scope.getExtent().getLow() : // The lowest priority context in the extent is the persistent context
-          scope.getExtent().getHigh(); // The highest priority context in the extent is the local context in scope
+          extent.getLow() : // The lowest priority context in the extent is the persistent context
+          extent.getHigh(); // The highest priority context in the extent is the local context in scope
 
       var variable = createAction.getVariable();
 
@@ -35,7 +36,7 @@ public final class CreateActionCommand implements Command {
         var expression = variable.value();
 
         assert expression instanceof Expression;
-        value = ((Expression) expression).execute(scope.getExtent());
+        value = ((Expression) expression).execute(extent);
       } else {
         value = variable.value();
       }

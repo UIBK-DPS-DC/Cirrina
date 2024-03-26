@@ -5,14 +5,18 @@ import at.ac.uibk.dps.cirrina.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
 
-public final class InvokeActionCommand implements Command {
+public final class InvokeActionCommand extends ActionCommand {
 
-  public InvokeActionCommand(Scope scope, InvokeAction action, boolean isWhile) {
+  private final InvokeAction invokeAction;
 
+  public InvokeActionCommand(Scope scope, InvokeAction invokeAction, boolean isWhile) {
+    super(scope, isWhile);
+
+    this.invokeAction = invokeAction;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     return null;
   }
 }

@@ -6,7 +6,6 @@ import at.ac.uibk.dps.cirrina.runtime.command.action.ActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateEntryCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateExitCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
-import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.TransitionInstance;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,32 +13,31 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public final class TransitionCommand implements Command {
 
-  private StateMachineInstance stateMachine;
+  private final TransitionInstance transition;
 
-  private TransitionInstance transition;
+  private final StateInstance targetState;
 
-  private StateInstance targetState;
 
-  public TransitionCommand(StateMachineInstance stateMachine, TransitionInstance transition, StateInstance targetState)
-      throws RuntimeException {
-    this.stateMachine = stateMachine;
+  public TransitionCommand(TransitionInstance transition, StateInstance targetState) throws RuntimeException {
     this.transition = transition;
     this.targetState = targetState;
   }
 
   @Override
-  public List<Command> execute() throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     final var commands = new ArrayList<Command>();
 
+    var stateMachineInstance = executionContext.stateMachineInstance();
+
     // Exit the currently active state
-    commands.add(new StateExitCommand(stateMachine.getStatus().getActivateState()));
+    commands.add(new StateExitCommand(executionContext.stateMachineInstance().getStatus().getActivateState()));
 
     // Append the entry actions to the command list
     new TopologicalOrderIterator<>(transition.getTransition().actions).forEachRemaining(
-        action -> commands.add(ActionCommand.from(stateMachine, action, false)));
+        action -> commands.add(ActionCommand.from(stateMachineInstance, action, false)));
 
     // Change the active state
-    commands.add(new StateChangeCommand(stateMachine, targetState));
+    commands.add(new StateChangeCommand(targetState));
 
     // Enter the target state
     commands.add(new StateEntryCommand(targetState));
