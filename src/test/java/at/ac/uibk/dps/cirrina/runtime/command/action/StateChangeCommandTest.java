@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime.command;
+package at.ac.uibk.dps.cirrina.runtime.command.action;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;

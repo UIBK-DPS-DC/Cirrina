@@ -27,7 +27,7 @@ public final class TransitionCommand implements Command {
   public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
     final var commands = new ArrayList<Command>();
 
-    var stateMachineInstance = executionContext.stateMachineInstance();
+    final var stateMachineInstance = executionContext.stateMachineInstance();
 
     // Exit the currently active state
     commands.add(new StateExitCommand(executionContext.stateMachineInstance().getStatus().getActivateState()));

@@ -3,7 +3,6 @@ package at.ac.uibk.dps.cirrina.runtime.instance;
 import at.ac.uibk.dps.cirrina.object.context.Context;
 import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
-import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 
@@ -23,11 +22,6 @@ public final class StateInstance implements Scope {
   @Override
   public Extent getExtent() {
     return parent.getExtent().extend(localContext);
-  }
-
-  @Override
-  public EventHandler getEventHandler() {
-    return null;
   }
 
   public State getState() {

@@ -10,17 +10,42 @@ import at.ac.uibk.dps.cirrina.object.action.TimeoutAction;
 import at.ac.uibk.dps.cirrina.object.action.TimeoutResetAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 
+/**
+ * Action command, a base class for commands that perform actions. Action commands are scoped, such that data retrieval happens with respect
+ * to the scope of the action command. An action command can also be instructed to be executed while in a state.
+ */
 public abstract class ActionCommand implements Command {
 
+  /**
+   * The scope of execution.
+   */
   protected final Scope scope;
 
+  /**
+   * Whether this action is to be executed while in a state.
+   */
   protected final boolean isWhile;
 
+  /**
+   * Initializes this action command.
+   *
+   * @param scope   Execution scope.
+   * @param isWhile Is a while action.
+   */
   public ActionCommand(Scope scope, boolean isWhile) {
     this.scope = scope;
     this.isWhile = isWhile;
   }
 
+  /**
+   * Builder method, builds a specific action command, given an action.
+   *
+   * @param scope   Execution scope.
+   * @param action  Action.
+   * @param isWhile Is a while action.
+   * @return Built action command.
+   * @throws IllegalStateException If the action is not recognized.
+   */
   public static Command from(Scope scope, Action action, boolean isWhile) throws IllegalStateException {
     switch (action) {
       case AssignAction a -> {

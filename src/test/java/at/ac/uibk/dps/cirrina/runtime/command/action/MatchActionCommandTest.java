@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime.command;
+package at.ac.uibk.dps.cirrina.runtime.command.action;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +15,6 @@ import at.ac.uibk.dps.cirrina.object.event.Event;
 import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
-import at.ac.uibk.dps.cirrina.runtime.command.action.MatchActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

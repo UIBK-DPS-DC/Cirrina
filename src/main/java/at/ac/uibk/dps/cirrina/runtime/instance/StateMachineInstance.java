@@ -4,7 +4,6 @@ import at.ac.uibk.dps.cirrina.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.object.context.Context;
 import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
-import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.object.state.State;
 import at.ac.uibk.dps.cirrina.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.Runtime;
@@ -65,11 +64,6 @@ public final class StateMachineInstance implements Scope {
     return runtime.getExtent().extend(localContext);
   }
 
-  @Override
-  public EventHandler getEventHandler() {
-    return null;
-  }
-
   /**
    * Returns an executable command whenever it is available. An executable command is available whenever this state machine has commands in
    * its queue and a lock can be acquired (i.e., the state machine instance is not locked).
@@ -123,7 +117,7 @@ public final class StateMachineInstance implements Scope {
     // When executing a command, new commands replacing the currently executed command can be generated, insert those commands into the
     // command queue at the beginning. The currently executing command is always the head of the queue, hence we can insert these commands
     // as the new head
-    prependCommands(command.execute(new ExecutionContext(this, getEventHandler())));
+    prependCommands(command.execute(new ExecutionContext(this, runtime.getEventHandler())));
 
     // Unlock the state machine instance
     lock.unlock();

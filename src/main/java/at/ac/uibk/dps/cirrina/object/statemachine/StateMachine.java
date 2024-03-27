@@ -115,7 +115,7 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
         Stream.concat(
             vertexSet().stream().flatMap(v -> v.getActionsOfType(RaiseAction.class).stream()),
             edgeSet().stream().flatMap(e -> e.getActionsOfType(RaiseAction.class).stream())
-        ).map(raiseAction -> raiseAction.event),
+        ).map(raiseAction -> raiseAction.getEvent()),
 
         // Invoke action events
         Stream.concat(

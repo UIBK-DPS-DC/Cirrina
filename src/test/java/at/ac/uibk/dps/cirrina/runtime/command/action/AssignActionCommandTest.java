@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime.command;
+package at.ac.uibk.dps.cirrina.runtime.command.action;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,7 +11,6 @@ import at.ac.uibk.dps.cirrina.object.context.Extent;
 import at.ac.uibk.dps.cirrina.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.object.expression.ExpressionBuilder;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
-import at.ac.uibk.dps.cirrina.runtime.command.action.AssignActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

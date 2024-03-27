@@ -10,6 +10,7 @@ import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance.InstanceId;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.Scheduler;
+import java.util.EventListener;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class Runtime implements Runnable, Scope {
+public final class Runtime implements Runnable, Scope, EventListener {
 
   private static final Logger logger = LogManager.getLogger();
 
@@ -84,7 +85,6 @@ public final class Runtime implements Runnable, Scope {
     return new Extent(persistentContext, localContext);
   }
 
-  @Override
   public EventHandler getEventHandler() {
     return null;
   }

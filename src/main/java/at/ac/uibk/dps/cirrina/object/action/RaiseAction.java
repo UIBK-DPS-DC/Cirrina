@@ -5,12 +5,16 @@ import java.util.Optional;
 
 public final class RaiseAction extends Action {
 
-  public final Event event;
+  private final Event event;
 
   RaiseAction(Parameters parameters) {
     super(parameters.name());
 
     this.event = parameters.event();
+  }
+
+  public Event getEvent() {
+    return event;
   }
 
   public record Parameters(

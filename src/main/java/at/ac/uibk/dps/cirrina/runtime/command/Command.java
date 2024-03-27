@@ -6,6 +6,10 @@ import at.ac.uibk.dps.cirrina.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import java.util.List;
 
+/**
+ * Command, represents the interface to commands that can be entered into a state machine's command queue. Commands can be executed and may
+ * produce new commands and have side effects.
+ */
 public interface Command {
 
   List<Command> execute(ExecutionContext executionContext) throws RuntimeException;
@@ -13,8 +17,6 @@ public interface Command {
   interface Scope {
 
     Extent getExtent();
-
-    EventHandler getEventHandler();
   }
 
   record ExecutionContext(
