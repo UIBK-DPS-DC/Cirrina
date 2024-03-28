@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.core.data;
+package at.ac.uibk.dps.cirrina.runtime.data;
 
 public class DefaultDescriptions {
 
@@ -202,6 +202,122 @@ public class DefaultDescriptions {
           }
         ]
       }
+      """;
+
+  public static String pingPong = """
+        {
+          name: 'collaborativeStateMachine',
+          version: '0.1',
+          memoryMode: 'distributed',
+          localContext: {
+            variables: [
+              {
+                name: 'v',
+                value: '0'
+              }
+            ]
+          },
+          stateMachines: [
+            {
+              name: 'stateMachine1',
+              states: [
+                {
+                  name: 'a',
+                  isInitial: true,
+                  entry: [
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e1',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      event: 'e2',
+                      target: 'b'
+                    }
+                  ]
+                },
+                {
+                  name: 'b',
+                  entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v + 1'
+                      }
+                    },
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e3',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      event: 'e4',
+                      target: 'a'
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              name: 'stateMachine2',
+              states: [
+                {
+                  name: 'c',
+                  isInitial: true,
+                  entry: [
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e4',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      event: 'e1',
+                      target: 'd'
+                    }
+                  ]
+                },
+                {
+                  name: 'd',
+                  entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v + 1'
+                      }
+                    },
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e2',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      event: 'e3',
+                      target: 'c'
+                    }
+                  ]
+                }
+              ]
+            }
+          ] 
+        }  
       """;
 
   public static String invalidInheritance = """

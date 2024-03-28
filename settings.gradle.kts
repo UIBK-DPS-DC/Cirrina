@@ -1,3 +1,3 @@
 rootProject.name = "Cirrina"
 
-include("core")
+include("core", "runtime")
