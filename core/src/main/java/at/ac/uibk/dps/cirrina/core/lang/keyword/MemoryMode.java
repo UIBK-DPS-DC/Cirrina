@@ -1,0 +1,22 @@
+package at.ac.uibk.dps.cirrina.core.lang.keyword;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * Memory mode keyword.
+ *
+ * @since CSML 0.1.
+ */
+public enum MemoryMode {
+  /**
+   * Distributed memory mode.
+   */
+  @JsonProperty("distributed")
+  DISTRIBUTED,
+
+  /**
+   * Shared memory mode.
+   */
+  @JsonProperty("shared")
+  SHARED
+}
