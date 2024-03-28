@@ -1,5 +1,23 @@
 plugins {
     application
+
+    id("org.graalvm.buildtools.native") version "0.10.1"
+}
+
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName.set("cirrinart")
+            mainClass.set("at.ac.uibk.dps.cirrina.runtime.Main")
+            buildArgs.add("-O4")
+        }
+        named("test") {
+            buildArgs.add("-O0")
+        }
+    }
+    binaries.all {
+        buildArgs.add("--verbose")
+    }
 }
 
 repositories {
