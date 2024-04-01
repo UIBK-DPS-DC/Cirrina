@@ -76,6 +76,8 @@ public class PingPongTest {
 
       var thread = new Thread(runtime);
       thread.start();
+
+      thread.join();
     });
   }
 }

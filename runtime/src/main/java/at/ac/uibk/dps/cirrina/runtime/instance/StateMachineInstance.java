@@ -4,6 +4,8 @@ import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.core.object.event.Event;
+import at.ac.uibk.dps.cirrina.core.object.event.EventListener;
 import at.ac.uibk.dps.cirrina.core.object.state.State;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.Runtime;
@@ -21,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-public final class StateMachineInstance implements Scope {
+public final class StateMachineInstance implements Scope, EventListener {
 
   private final InstanceId id = new InstanceId();
 
@@ -102,6 +104,14 @@ public final class StateMachineInstance implements Scope {
     status.activeState = state;
   }
 
+  @Override
+  public void onReceiveEvent(Event event) {
+    // TODO: Gather transition for event (if any)
+    // TODO: Add transition command to queue
+
+    assert true;
+  }
+
   /**
    * Executes a command, the state machine instance must be locked through a call to getExecutableCommand(). This state machine instance
    * will be unlocked after the execution of the command.
@@ -160,7 +170,7 @@ public final class StateMachineInstance implements Scope {
     }
   }
 
-  public class Status {
+  public static class Status {
 
     private StateInstance activeState = null;
 
