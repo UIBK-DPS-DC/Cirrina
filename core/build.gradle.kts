@@ -1,7 +1,5 @@
 plugins {
     `java-library`
-
-    id("org.graalvm.buildtools.native") version "0.10.1"
 }
 
 repositories {
