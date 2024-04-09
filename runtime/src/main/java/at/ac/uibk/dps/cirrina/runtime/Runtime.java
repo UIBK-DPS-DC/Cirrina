@@ -3,7 +3,6 @@ package at.ac.uibk.dps.cirrina.runtime;
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
-import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
@@ -27,8 +26,6 @@ public final class Runtime implements Runnable, EventListener {
   private static final Logger logger = LogManager.getLogger();
 
   private final Queue<StateMachineInstance> instances = new ConcurrentLinkedQueue<>();
-
-  private final Context localContext = new InMemoryContext();
 
   private final Scheduler scheduler;
 
@@ -59,41 +56,41 @@ public final class Runtime implements Runnable, EventListener {
    */
   @Override
   public void run() {
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    try (ExecutorService executor = Executors.newFixedThreadPool(1)) {
+      while (!Thread.currentThread().isInterrupted()) {
+        try {
+          synchronized (this) {
+            // Consume the currently executable commands
+            Stream.iterate(scheduler.select(instances), Optional::isPresent, ignored -> scheduler.select(instances))
+                .map(Optional::get)
+                .forEach(instanceCommand -> {
+                  var instance = instanceCommand.instance();
+                  var command = instanceCommand.command();
 
-    while (!Thread.currentThread().isInterrupted()) {
-      try {
-        synchronized (this) {
-          // Consume the currently executable commands
-          Stream.iterate(scheduler.select(instances), Optional::isPresent, ignored -> scheduler.select(instances))
-              .map(Optional::get)
-              .forEach(instanceCommand -> {
-                var instance = instanceCommand.instance();
-                var command = instanceCommand.command();
+                  executor.submit(() -> {
+                    try {
+                      stateMachineInstanceCommandExecutionObservers
+                          .forEach(observer -> observer.update(instanceCommand));
 
-                executor.submit(() -> {
-                  try {
-                    stateMachineInstanceCommandExecutionObservers.stream()
-                        .forEach(observer -> observer.update(instanceCommand));
-
-                    instance.execute(command);
-                  } catch (RuntimeException e) {
-                    logger.error("Runtime error while executing command: {}", e.getMessage());
-                  }
+                      instance.execute(command);
+                    } catch (RuntimeException e) {
+                      logger.error("Runtime error while executing command: {}", e.getMessage());
+                    }
+                  });
                 });
-              });
 
-          // Wait until awoken
-          wait();
+            // Wait until awoken
+            wait();
+          }
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
         }
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
       }
     }
   }
 
   public Extent getExtent() {
-    return new Extent(persistentContext, localContext);
+    return new Extent(persistentContext);
   }
 
   public EventHandler getEventHandler() {

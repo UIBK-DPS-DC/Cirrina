@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.Assumptions;
 
-public class NatsPersistentContextTest extends ContextTest {
+public class NatsContextTest extends ContextTest {
 
   @Override
   protected Context createContext() {
@@ -12,6 +12,6 @@ public class NatsPersistentContextTest extends ContextTest {
 
     Assumptions.assumeFalse(natsServerURL == null, "Skipping NATS persistent context test");
 
-    return assertDoesNotThrow(() -> new NatsPersistentContext(natsServerURL, "persistent"));
+    return assertDoesNotThrow(() -> new NatsContext(natsServerURL, "persistent"));
   }
 }

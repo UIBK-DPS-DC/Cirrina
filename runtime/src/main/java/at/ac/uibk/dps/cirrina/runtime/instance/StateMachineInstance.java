@@ -2,8 +2,8 @@ package at.ac.uibk.dps.cirrina.runtime.instance;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
+import at.ac.uibk.dps.cirrina.core.object.context.ContextBuilder;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
-import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventListener;
 import at.ac.uibk.dps.cirrina.core.object.state.State;
@@ -32,25 +32,32 @@ public final class StateMachineInstance implements Scope, EventListener {
 
   private final Deque<Command> queue = new ConcurrentLinkedDeque<>();
 
-  private final Context localContext = new InMemoryContext();
-
   private final Status status = new Status();
 
   private final Runtime runtime;
 
   private final StateMachine stateMachine;
 
+  private final Context localContext;
+
   private final Optional<StateMachineInstance> parent;
 
   private final Map<String, StateInstance> states;
 
   public StateMachineInstance(Runtime runtime, StateMachine stateMachine) throws RuntimeException {
-    this(runtime, stateMachine, null);
+    this(runtime, stateMachine, Optional.empty());
   }
 
-  public StateMachineInstance(Runtime runtime, StateMachine stateMachine, Optional<StateMachineInstance> parent) throws RuntimeException {
+  public StateMachineInstance(Runtime runtime, StateMachine stateMachine, Optional<StateMachineInstance> parent)
+      throws RuntimeException {
     this.runtime = runtime;
     this.stateMachine = stateMachine;
+
+    this.localContext = stateMachine.getLocalContextClass()
+        .map(ContextBuilder::from)
+        .orElseGet(() -> ContextBuilder.from())
+        .inMemoryContext()
+        .build();
 
     this.parent = parent;
 

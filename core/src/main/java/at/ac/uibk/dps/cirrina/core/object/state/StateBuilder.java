@@ -49,6 +49,7 @@ public final class StateBuilder {
 
     var parameters = new State.Parameters(
         stateClass.name,
+        stateClass.localContext,
         stateClass.initial,
         stateClass.terminal,
         entryActions,

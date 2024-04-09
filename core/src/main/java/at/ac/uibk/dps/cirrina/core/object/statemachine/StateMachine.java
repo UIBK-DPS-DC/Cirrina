@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
+import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.core.object.action.RaiseAction;
@@ -27,16 +28,24 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   private final String name;
 
+  private final Optional<ContextClass> localContextClass;
+
   private final boolean abstractt;
 
   private final List<Guard> namedGuards;
 
   private final List<Action> namedActions;
 
-  StateMachine(String name, List<Guard> namedGuards, List<Action> actions, boolean abstractt, List<StateMachine> nestedStateMachines) {
+  StateMachine(String name,
+      Optional<ContextClass> localContextClass,
+      List<Guard> namedGuards,
+      List<Action> actions,
+      boolean abstractt,
+      List<StateMachine> nestedStateMachines) {
     super(Transition.class);
 
     this.name = name;
+    this.localContextClass = localContextClass;
     this.namedGuards = Collections.unmodifiableList(namedGuards);
     this.namedActions = Collections.unmodifiableList(actions);
     this.abstractt = abstractt;
@@ -100,6 +109,10 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   public String getName() {
     return name;
+  }
+
+  public Optional<ContextClass> getLocalContextClass() {
+    return localContextClass;
   }
 
   /**

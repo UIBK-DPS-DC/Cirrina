@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * A persistent context containing within a NATS bucket.
  */
-public final class NatsPersistentContext extends Context implements AutoCloseable {
+public final class NatsContext extends Context implements AutoCloseable {
 
   private static final Logger logger = LogManager.getLogger();
   private final Connection connection;
@@ -30,7 +30,8 @@ public final class NatsPersistentContext extends Context implements AutoCloseabl
    *
    * @param natsUrl NATS server URL.
    */
-  public NatsPersistentContext(String natsUrl, String bucketName) throws RuntimeException {
+  // TODO: Make default
+  public NatsContext(String natsUrl, String bucketName) throws RuntimeException {
     // Attempt to connect to the NATS server
     try {
       connection = Nats.connect(natsUrl);

@@ -15,6 +15,7 @@ public final class InMemoryContext extends Context {
   /**
    * Initializes an empty in-memory context.
    */
+  // TODO: Make default
   public InMemoryContext() {
   }
 

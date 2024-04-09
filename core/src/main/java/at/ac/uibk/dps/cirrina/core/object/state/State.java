@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.state;
 
+import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraphBuilder;
@@ -11,6 +12,7 @@ import java.util.stream.Stream;
 public final class State {
 
   private final String name;
+  private final Optional<ContextClass> localContextClass;
   private final boolean initial;
   private final boolean terminal;
   private final boolean abstractt;
@@ -22,6 +24,8 @@ public final class State {
   State(Parameters parameters) {
     if (parameters.baseState().isEmpty()) {
       this.name = parameters.name();
+
+      this.localContextClass = parameters.localContextClass();
 
       this.initial = parameters.initial();
       this.terminal = parameters.terminal();
@@ -36,6 +40,8 @@ public final class State {
       var baseState = parameters.baseState().get();
 
       this.name = baseState.name;
+
+      this.localContextClass = baseState.localContextClass;
 
       this.initial = parameters.initial() || baseState.initial;
       this.terminal = parameters.terminal() || baseState.terminal;
@@ -97,6 +103,7 @@ public final class State {
 
   record Parameters(
       String name,
+      Optional<ContextClass> localContextClass,
       boolean initial,
       boolean terminal,
       List<Action> entryActions,

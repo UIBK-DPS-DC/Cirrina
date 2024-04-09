@@ -55,7 +55,9 @@ public final class ChildStateMachineBuilder {
     addBaseActions();
     addBaseGuards();
 
-    StateMachine stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.abstractt,
+    // TODO: Add parameters
+    StateMachine stateMachine = new StateMachine(stateMachineClass.name, stateMachineClass.localContext, guards, actions,
+        stateMachineClass.abstractt,
         nestedStateMachines);
 
     addStates(stateMachine);

@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.object.context;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -8,6 +9,10 @@ import java.util.stream.Stream;
 public class Extent {
 
   private List<Context> extent;
+
+  public Extent() {
+    extent = new ArrayList<>();
+  }
 
   public Extent(Context low) {
     extent = List.of(low);

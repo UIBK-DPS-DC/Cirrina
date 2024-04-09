@@ -122,7 +122,9 @@ public final class StateMachineBuilder {
     var actions = buildActions();
     var nestedStateMachines = buildNestedStateMachines();
 
-    var stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.abstractt, nestedStateMachines);
+    // TODO: Add parameters
+    var stateMachine = new StateMachine(stateMachineClass.name, stateMachineClass.localContext, guards, actions,
+        stateMachineClass.abstractt, nestedStateMachines);
 
     var actionResolver = new ActionResolver(stateMachine);
 

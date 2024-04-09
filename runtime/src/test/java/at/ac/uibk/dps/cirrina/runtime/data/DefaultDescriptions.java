@@ -209,17 +209,17 @@ public class DefaultDescriptions {
           name: 'collaborativeStateMachine',
           version: '0.1',
           memoryMode: 'distributed',
-          localContext: {
-            variables: [
-              {
-                name: 'v',
-                value: '0'
-              }
-            ]
-          },
           stateMachines: [
             {
               name: 'stateMachine1',
+              localContext: {
+                variables: [
+                  {
+                    name: 'v',
+                    value: '0'
+                  }
+                ]
+              },
               states: [
                 {
                   name: 'a',
@@ -269,6 +269,14 @@ public class DefaultDescriptions {
             },
             {
               name: 'stateMachine2',
+              localContext: {
+                variables: [
+                  {
+                    name: 'v',
+                    value: '0'
+                  }
+                ]
+              },
               states: [
                 {
                   name: 'c',
