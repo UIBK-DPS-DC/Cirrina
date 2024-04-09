@@ -27,19 +27,19 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   private final String name;
 
-  private final boolean isAbstract;
+  private final boolean abstractt;
 
   private final List<Guard> namedGuards;
 
   private final List<Action> namedActions;
 
-  StateMachine(String name, List<Guard> namedGuards, List<Action> actions, boolean isAbstract, List<StateMachine> nestedStateMachines) {
+  StateMachine(String name, List<Guard> namedGuards, List<Action> actions, boolean abstractt, List<StateMachine> nestedStateMachines) {
     super(Transition.class);
 
     this.name = name;
     this.namedGuards = Collections.unmodifiableList(namedGuards);
     this.namedActions = Collections.unmodifiableList(actions);
-    this.isAbstract = isAbstract;
+    this.abstractt = abstractt;
     this.nestedStateMachines = Collections.unmodifiableList(nestedStateMachines);
   }
 
@@ -97,12 +97,31 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
     return name;
   }
 
+  /**
+   * Returns a boolean value which indicates whether this state machine is abstract.
+   *
+   * @return true, if this state machine is abstract.
+   */
   public boolean isAbstract() {
-    return isAbstract;
+    return abstractt;
   }
 
+  /**
+   * Returns the named actions of this state machine.
+   *
+   * @return named actions.
+   */
   public List<Action> getNamedActions() {
     return namedActions;
+  }
+
+  /**
+   * Returns the named guards of this state machine.
+   *
+   * @return named guards.
+   */
+  public List<Guard> getNamedGuards() {
+    return namedGuards;
   }
 
   /**

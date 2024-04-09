@@ -12,6 +12,7 @@ import at.ac.uibk.dps.cirrina.core.object.state.State;
 import at.ac.uibk.dps.cirrina.core.object.state.StateBuilder;
 import at.ac.uibk.dps.cirrina.core.object.transition.Transition;
 import at.ac.uibk.dps.cirrina.core.object.transition.TransitionBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +32,8 @@ public final class ChildStateMachineBuilder {
       List<StateMachine> nestedStateMachine) {
     this.stateMachineClass = stateMachineClass;
     this.baseStateMachine = baseStateMachine;
-    this.guards = guards;
-    this.actions = actions;
+    this.guards = new ArrayList<>(guards);
+    this.actions = new ArrayList<>(actions);
     this.nestedStateMachines = nestedStateMachine;
   }
 
@@ -52,8 +53,9 @@ public final class ChildStateMachineBuilder {
     checkOverriddenStates();
 
     addBaseActions();
+    addBaseGuards();
 
-    StateMachine stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.isAbstract,
+    StateMachine stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.abstractt,
         nestedStateMachines);
 
     addStates(stateMachine);
@@ -63,15 +65,13 @@ public final class ChildStateMachineBuilder {
   }
 
   /**
-   * Adds missing actions from the base state machine.
+   * Adds missing named actions defined in the base state machine.
    */
   private void addBaseActions() {
-    // TODO: Felix please implement guards/actions
-
-    /*List<Action> baseActions = baseStateMachine.getActions();
+    List<Action> baseActions = baseStateMachine.getNamedActions();
 
     if (actions.isEmpty() && !baseActions.isEmpty()) {
-      actions = baseActions;
+      actions.addAll(baseActions);
     } else if (!actions.isEmpty() && !baseActions.isEmpty()) {
       final List<Action> finalActions = actions;
 
@@ -79,7 +79,25 @@ public final class ChildStateMachineBuilder {
           .filter(baseAction -> finalActions.stream()
               .noneMatch(action -> action.getName().equals(baseAction.getName())))
           .forEach(finalActions::add);
-    }*/
+    }
+  }
+
+  /**
+   * Adds missing named guards defined in the base state machine.
+   */
+  private void addBaseGuards() {
+    List<Guard> baseGuards = baseStateMachine.getNamedGuards();
+
+    if (guards.isEmpty() && !baseGuards.isEmpty()) {
+      guards.addAll(baseGuards);
+    } else if (!guards.isEmpty() && !baseGuards.isEmpty()) {
+      final List<Guard> finalGuards = guards;
+
+      baseGuards.stream()
+          .filter(baseGuard -> finalGuards.stream()
+              .noneMatch(guard -> guard.getName().equals(baseGuard.getName())))
+          .forEach(finalGuards::add);
+    }
   }
 
   /**
@@ -107,7 +125,7 @@ public final class ChildStateMachineBuilder {
    * @throws IllegalArgumentException When at least one abstract state is not overridden.
    */
   private void checkAbstractStates() throws IllegalArgumentException {
-    if (!baseStateMachine.isAbstract() || stateMachineClass.isAbstract) {
+    if (!baseStateMachine.isAbstract() || stateMachineClass.abstractt) {
       return;
     }
 

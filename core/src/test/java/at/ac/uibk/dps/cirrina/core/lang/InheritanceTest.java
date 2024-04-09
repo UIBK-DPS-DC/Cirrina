@@ -71,22 +71,17 @@ public class InheritanceTest {
 
     var stateMachine1 = getStateMachine1(csm);
     assertEquals(3, stateMachine1.vertexSet().size());
-    assertDoesNotThrow(() -> {
-      stateMachine1.findStateByName("state1");
-      stateMachine1.findStateByName("state2");
-      stateMachine1.findStateByName("state3");
-    });
-    assertThrows(IllegalArgumentException.class,
-        () -> stateMachine1.findStateByName("state4"));
+    assertTrue(stateMachine1.findStateByName("state1").isPresent());
+    assertTrue(stateMachine1.findStateByName("state2").isPresent());
+    assertTrue(stateMachine1.findStateByName("state3").isPresent());
+    assertTrue(stateMachine1.findStateByName("state4").isEmpty());
 
     var stateMachine2 = getStateMachine2(csm);
     assertEquals(4, stateMachine2.vertexSet().size());
-    assertDoesNotThrow(() -> {
-      stateMachine2.findStateByName("state1");
-      stateMachine2.findStateByName("state2");
-      stateMachine2.findStateByName("state3");
-      stateMachine2.findStateByName("state4");
-    });
+    assertTrue(stateMachine2.findStateByName("state1").isPresent());
+    assertTrue(stateMachine2.findStateByName("state2").isPresent());
+    assertTrue(stateMachine2.findStateByName("state3").isPresent());
+    assertTrue(stateMachine2.findStateByName("state4").isPresent());
   }
 
   @Test
@@ -162,10 +157,33 @@ public class InheritanceTest {
   }
 
   @Test
+  public void testMergeAndOverrideGuards() throws Exception {
+    var csm = getCollaborativeStateMachine();
+
+    var stateMachine1 = getStateMachine1(csm);
+    assertDoesNotThrow(() -> {
+      var guard1 = stateMachine1.findGuardByName("guard1").get();
+      var guard2 = stateMachine1.findGuardByName("guard2").get();
+
+      assertEquals("true", guard1.getExpression().getSource());
+      assertEquals("false", guard2.getExpression().getSource());
+    });
+
+    var stateMachine2 = getStateMachine2(csm);
+    assertDoesNotThrow(() -> {
+      var guard1 = stateMachine2.findGuardByName("guard1").get();
+      var guard2 = stateMachine2.findGuardByName("guard2").get();
+
+      assertEquals("true", guard1.getExpression().getSource());
+      assertEquals("true", guard2.getExpression().getSource());
+    });
+  }
+
+  @Test
   public void testInvalidInheritance() {
     VerificationException exception = assertThrows(VerificationException.class,
         () -> tryCheckCollaborativeStateMachine(DefaultDescriptions.invalidInheritance));
-    assertEquals(Message.STATE_MACHINE_INHERITS_FROM_INVALID, exception.message);
+    assertEquals(Message.STATE_MACHINE_EXTENDS_INVALID, exception.message);
   }
 
   @Test

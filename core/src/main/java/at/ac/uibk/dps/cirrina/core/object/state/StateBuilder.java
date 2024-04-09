@@ -49,13 +49,13 @@ public final class StateBuilder {
 
     var parameters = new State.Parameters(
         stateClass.name,
-        stateClass.isInitial,
-        stateClass.isTerminal,
+        stateClass.initial,
+        stateClass.terminal,
         entryActions,
         exitActions,
         whileActions,
-        stateClass.isAbstract,
-        stateClass.isVirtual,
+        stateClass.abstractt,
+        stateClass.virtual,
         baseState
     );
 

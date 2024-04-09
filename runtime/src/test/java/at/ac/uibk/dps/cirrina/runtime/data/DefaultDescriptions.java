@@ -15,7 +15,7 @@ public class DefaultDescriptions {
             states: [
               {
                 name: 'state1',
-                isInitial: true,
+                initial: true,
                 entry: [
                   {
                     reference: 'action1'
@@ -116,12 +116,12 @@ public class DefaultDescriptions {
         stateMachines: [
           {
             name: 'stateMachine1',
-            isAbstract: true,
+            abstract: false,
             states: [
               {
                 name: 'state1',
-                isVirtual: true,
-                isInitial: true,
+                virtual: true,
+                initial: true,
                 on: [
                   {
                     target: 'state2',
@@ -131,11 +131,11 @@ public class DefaultDescriptions {
               },
               {
                 name: 'state2',
-                isAbstract: true
+                abstract: true
               },
               {
                 name: 'state3',
-                isTerminal: true
+                terminal: true
               }
             ],
             actions: [
@@ -159,7 +159,7 @@ public class DefaultDescriptions {
           },
           {
             name: 'stateMachine2',
-            inherit: 'stateMachine1',
+            extends: 'stateMachine1',
             states: [
               {
                 name: 'state1',
@@ -223,7 +223,7 @@ public class DefaultDescriptions {
               states: [
                 {
                   name: 'a',
-                  isInitial: true,
+                  initial: true,
                   entry: [
                     {
                       type: 'raise',
@@ -272,7 +272,7 @@ public class DefaultDescriptions {
               states: [
                 {
                   name: 'c',
-                  isInitial: true,
+                  initial: true,
                   entry: [
                     {
                       type: 'raise',
@@ -328,12 +328,12 @@ public class DefaultDescriptions {
         stateMachines: [
           {
             name: 'stateMachine1',
-            inherit: 'invalidStateMachine',
+            extends: 'invalidStateMachine',
             states: [
               {
                 name: 'state1',
-                isInitial: true,
-                isTerminal: true
+                initial: true,
+                terminal: true
               }
             ]
           }
@@ -352,14 +352,14 @@ public class DefaultDescriptions {
             states: [
               {
                 name: 'state1',
-                isInitial: true,
-                isTerminal: true
+                initial: true,
+                terminal: true
               }
             ]
           },
           {
             name: 'stateMachine2',
-            inherit: 'stateMachine1',
+            extends: 'stateMachine1',
             states: [
               {
                 name: 'state1'
@@ -378,22 +378,22 @@ public class DefaultDescriptions {
         stateMachines: [
           {
             name: 'stateMachine1',
-            isAbstract: true,
+            abstract: true,
             states: [
               {
                 name: 'state1',
-                isInitial: true,
-                isTerminal: true
+                initial: true,
+                terminal: true
               },
               {
                 name: 'state2',
-                isAbstract: true
+                abstract: true
               }
             ]
           },
           {
             name: 'stateMachine2',
-            inherit: 'stateMachine1',
+            extends: 'stateMachine1',
             states: [
               {
                 name: 'state3'
@@ -415,12 +415,12 @@ public class DefaultDescriptions {
             states: [
               {
                 name: 'state1',
-                isInitial: true,
-                isTerminal: true
+                initial: true,
+                terminal: true
               },
               {
                 name: 'state2',
-                isAbstract: true
+                abstract: true
               }
             ]
           }

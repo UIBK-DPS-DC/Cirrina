@@ -20,8 +20,8 @@ import java.util.Optional;
  * <table border="1">
  *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
  *  <tr><td>name</td><td>Unique name</td><td>Yes</td></tr>
- *  <tr><td>isInitial</td><td>Initial state flag</td><td>No</td></tr>
- *  <tr><td>isTerminal</td><td>Terminal state flag</td><td>No</td></tr>
+ *  <tr><td>initial</td><td>Initial state flag</td><td>No</td></tr>
+ *  <tr><td>terminal</td><td>Terminal state flag</td><td>No</td></tr>
  *  <tr><td>entry</td><td>On entry actions</td><td>No</td></tr>
  *  <tr><td>exit</td><td>On exit actions</td><td>No</td></tr>
  *  <tr><td>while</td><td>While actions</td><td>No</td></tr>
@@ -31,14 +31,16 @@ import java.util.Optional;
  *  <tr><td>localContext</td><td>Lexical description of the local context</td><td>No</td></tr>
  *  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
  *  <tr><td>staticContext</td><td>Lexical description of the static context</td><td>No</td></tr>
+ *  <tr><td>virtual</td><td>Virtual state flag</td><td>No</td></tr>
+ *  <tr><td>abstract</td><td>Abstract state flag</td><td>No</td></tr>
  * </table>
  * <p>
  * Example:
  * <pre>
  * {
  *   name: 'State Name',
- *   isInitial: true,
- *   isTerminal: false,
+ *   initial: true,
+ *   terminal: false,
  *   entry: [...],
  *   exit: [...],
  *   while: [...],
@@ -47,6 +49,8 @@ import java.util.Optional;
  *   localContext: [...],
  *   persistentContext: [...],
  *   staticContext: [...],
+ *   virtual: false,
+ *   abstract: false
  * }
  * </pre>
  *
@@ -70,13 +74,13 @@ public final class StateClass extends Construct implements StateOrStateMachineCl
    * state machine. If omitted, the state is not initial.
    */
   @JsonSetter(nulls = Nulls.SKIP)
-  public boolean isInitial = false;
+  public boolean initial = false;
 
   /**
    * The is terminal flag. Indicating if this is a terminal state of the state machine. If omitted, the state is not terminal.
    */
   @JsonSetter(nulls = Nulls.SKIP)
-  public boolean isTerminal = false;
+  public boolean terminal = false;
 
   /**
    * The optional entry actions. Can be provided as action references to previously declared actions, or inline actions.
@@ -129,14 +133,15 @@ public final class StateClass extends Construct implements StateOrStateMachineCl
   public Optional<ContextClass> staticContext = Optional.empty();
 
   /**
-   * The optional virtual modifier. If a state is defined as virtual, inherited state machines may override the state.
+   * The optional virtual modifier. If a state is defined as virtual, derived state machines may override the state.
    */
   @JsonSetter(nulls = Nulls.SKIP)
-  public boolean isVirtual = false;
+  public boolean virtual = false;
 
   /**
-   * The optional abstract modifier. If a state is defined as abstract, inherited state machines must override the state.
+   * The optional abstract modifier. If a state is defined as abstract, derived state machines must override the state.
    */
   @JsonSetter(nulls = Nulls.SKIP)
-  public boolean isAbstract = false;
+  @JsonProperty("abstract")
+  public boolean abstractt = false;
 }

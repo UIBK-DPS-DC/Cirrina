@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 public final class State {
 
   private final String name;
-  private final boolean isInitial;
-  private final boolean isTerminal;
-  private final boolean isAbstract;
-  private final boolean isVirtual;
+  private final boolean initial;
+  private final boolean terminal;
+  private final boolean abstractt;
+  private final boolean virtual;
   private final ActionGraph entryActionGraph;
   private final ActionGraph exitActionGraph;
   private final ActionGraph whileActionGraph;
@@ -23,31 +23,31 @@ public final class State {
     if (parameters.baseState().isEmpty()) {
       this.name = parameters.name();
 
-      this.isInitial = parameters.isInitial();
-      this.isTerminal = parameters.isTerminal();
+      this.initial = parameters.initial();
+      this.terminal = parameters.terminal();
 
       this.entryActionGraph = ActionGraphBuilder.from(parameters.entryActions()).build();
       this.exitActionGraph = ActionGraphBuilder.from(parameters.exitActions()).build();
       this.whileActionGraph = ActionGraphBuilder.from(parameters.whileActions()).build();
 
-      this.isAbstract = parameters.isAbstract();
-      this.isVirtual = parameters.isVirtual();
+      this.abstractt = parameters.abstractt();
+      this.virtual = parameters.virtual();
     } else {
       var baseState = parameters.baseState().get();
 
       this.name = baseState.name;
 
-      this.isInitial = parameters.isInitial() || baseState.isInitial;
-      this.isTerminal = parameters.isTerminal() || baseState.isTerminal;
+      this.initial = parameters.initial() || baseState.initial;
+      this.terminal = parameters.terminal() || baseState.terminal;
 
       this.entryActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.entryActionGraph), parameters.entryActions()).build();
       this.exitActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.exitActionGraph), parameters.exitActions()).build();
       this.whileActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.whileActionGraph), parameters.whileActions()).build();
 
-      this.isAbstract = parameters.isAbstract();
+      this.abstractt = parameters.abstractt();
 
       // Ensure overridden abstract states are virtual if they are no longer abstract, so they can be further overridden
-      this.isVirtual = (baseState.isAbstract && !isAbstract) || baseState.isVirtual;
+      this.virtual = (baseState.abstractt && !abstractt) || baseState.virtual;
     }
   }
 
@@ -56,19 +56,19 @@ public final class State {
   }
 
   public boolean isInitial() {
-    return isInitial;
+    return initial;
   }
 
   public boolean isTerminal() {
-    return isTerminal;
+    return terminal;
   }
 
   public boolean isAbstract() {
-    return isAbstract;
+    return abstractt;
   }
 
   public boolean isVirtual() {
-    return isVirtual;
+    return virtual;
   }
 
   public ActionGraph getEntryActionGraph() {
@@ -97,13 +97,13 @@ public final class State {
 
   record Parameters(
       String name,
-      boolean isInitial,
-      boolean isTerminal,
+      boolean initial,
+      boolean terminal,
       List<Action> entryActions,
       List<Action> exitActions,
       List<Action> whileActions,
-      boolean isAbstract,
-      boolean isVirtual,
+      boolean abstractt,
+      boolean virtual,
       Optional<State> baseState
   ) {
 
