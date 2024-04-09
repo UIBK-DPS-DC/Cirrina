@@ -101,9 +101,11 @@ public class StateMachineTest {
 
   public void testFindTransitionByEventName() {
     assertDoesNotThrow(() -> {
-      stateMachine.findTransitionByEventName("e1").get().getTarget().equals("state2");
+      var t = stateMachine.findTransitionsFromStateByEventName(stateMachine.findStateByName("state1").get(), "e1");
+      assertEquals(1, t.size());
+      assertEquals("state2", t.getFirst().getTarget());
 
-      assertFalse(stateMachine.findTransitionByEventName("nonExisting").isPresent());
+      assertEquals(0, stateMachine.findTransitionsFromStateByEventName(stateMachine.findStateByName("state1").get(), "nonExisting").size());
     });
   }
 
