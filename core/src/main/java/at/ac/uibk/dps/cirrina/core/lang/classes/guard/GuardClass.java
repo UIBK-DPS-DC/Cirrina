@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.lang.classes.guard;
 
 import at.ac.uibk.dps.cirrina.core.lang.classes.Construct;
+import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateMachineClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.helper.GuardOrGuardReferenceClass;
 import jakarta.validation.constraints.NotNull;
@@ -30,15 +31,6 @@ import java.util.Optional;
 public final class GuardClass extends Construct implements GuardOrGuardReferenceClass {
 
   /**
-   * An expression.
-   * <p>
-   * The expression must evaluate to a boolean value.
-   * </p>
-   */
-  @NotNull
-  public String expression;
-
-  /**
    * The optional name.
    * <p>
    * If present, can be referenced from within a state machine component when declared as part of the state machine's guards.
@@ -47,4 +39,13 @@ public final class GuardClass extends Construct implements GuardOrGuardReference
    * @see GuardReferenceClass
    */
   public Optional<String> name;
+
+  /**
+   * An expression.
+   * <p>
+   * The expression must evaluate to a boolean value.
+   * </p>
+   */
+  @NotNull
+  public ExpressionClass expression;
 }

@@ -26,8 +26,8 @@ public class PingPongTest {
     Assertions.assertDoesNotThrow(() -> {
       var collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
 
-      stateMachine1 = collaborativeStateMachine.getStateMachineByName("stateMachine1").get();
-      stateMachine2 = collaborativeStateMachine.getStateMachineByName("stateMachine2").get();
+      stateMachine1 = collaborativeStateMachine.findStateMachineByName("stateMachine1").get();
+      stateMachine2 = collaborativeStateMachine.findStateMachineByName("stateMachine2").get();
     });
   }
 

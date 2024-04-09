@@ -1,5 +1,7 @@
-package at.ac.uibk.dps.cirrina.core.lang.classes.action;
+package at.ac.uibk.dps.cirrina.core.lang.classes.helper;
 
+import at.ac.uibk.dps.cirrina.core.lang.classes.action.ActionClass;
+import at.ac.uibk.dps.cirrina.core.lang.classes.action.ActionReferenceClass;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 

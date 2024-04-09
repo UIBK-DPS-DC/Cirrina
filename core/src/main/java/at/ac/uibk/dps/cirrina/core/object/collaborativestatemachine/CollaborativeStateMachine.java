@@ -8,9 +8,9 @@ import org.jgrapht.graph.DirectedPseudograph;
 
 public final class CollaborativeStateMachine extends DirectedPseudograph<StateMachine, Event> {
 
-  public final String name;
+  private final String name;
 
-  public final MemoryMode memoryMode;
+  private final MemoryMode memoryMode;
 
   CollaborativeStateMachine(String name, MemoryMode memoryMode) {
     super(Event.class);
@@ -26,7 +26,7 @@ public final class CollaborativeStateMachine extends DirectedPseudograph<StateMa
    * @param name Name of the state machine to return.
    * @return The state machine with the supplied name or empty.
    */
-  public Optional<StateMachine> getStateMachineByName(String name) {
+  public Optional<StateMachine> findStateMachineByName(String name) {
     // Attempt to match the provided name to a known state machine
     var states = vertexSet().stream()
         .filter(state -> state.getName().equals(name))

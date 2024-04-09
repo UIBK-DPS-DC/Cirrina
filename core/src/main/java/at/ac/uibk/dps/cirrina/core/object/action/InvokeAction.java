@@ -11,15 +11,15 @@ import java.util.Optional;
  */
 public final class InvokeAction extends Action {
 
-  public final String serviceType;
+  private final String serviceType;
 
-  public final boolean isLocal;
+  private final boolean isLocal;
 
-  public final List<ContextVariable> input;
+  private final List<ContextVariable> input;
 
-  public final List<Event> done;
+  private final List<Event> done;
 
-  public final Optional<ContextVariableReference> output;
+  private final Optional<ContextVariableReference> output;
 
   InvokeAction(Parameters parameters) {
     super(parameters.name());
@@ -29,6 +29,26 @@ public final class InvokeAction extends Action {
     this.input = parameters.input();
     this.done = parameters.done();
     this.output = parameters.output();
+  }
+
+  public String getServiceType() {
+    return serviceType;
+  }
+
+  public boolean isLocal() {
+    return isLocal;
+  }
+
+  public List<ContextVariable> getInput() {
+    return input;
+  }
+
+  public List<Event> getDone() {
+    return done;
+  }
+
+  public Optional<ContextVariableReference> getOutput() {
+    return output;
   }
 
   public record Parameters(

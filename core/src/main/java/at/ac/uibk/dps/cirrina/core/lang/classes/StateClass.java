@@ -1,8 +1,8 @@
 package at.ac.uibk.dps.cirrina.core.lang.classes;
 
-import at.ac.uibk.dps.cirrina.core.lang.classes.action.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.action.RaiseActionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
+import at.ac.uibk.dps.cirrina.core.lang.classes.helper.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.helper.StateOrStateMachineClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.transition.TransitionClass;

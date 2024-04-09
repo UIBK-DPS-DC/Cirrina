@@ -2,8 +2,8 @@ package at.ac.uibk.dps.cirrina.core.lang.classes.transition;
 
 import at.ac.uibk.dps.cirrina.core.lang.classes.Construct;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateMachineClass;
-import at.ac.uibk.dps.cirrina.core.lang.classes.action.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.guard.GuardReferenceClass;
+import at.ac.uibk.dps.cirrina.core.lang.classes.helper.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.helper.GuardOrGuardReferenceClass;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

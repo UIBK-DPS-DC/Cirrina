@@ -10,7 +10,7 @@ public abstract class Action {
   /**
    * The action name. An action name can be omitted, in which case it is an inline action and cannot be referenced.
    */
-  public final Optional<String> name;
+  private final Optional<String> name;
 
   /**
    * Initializes this action.
@@ -19,6 +19,10 @@ public abstract class Action {
    */
   Action(Optional<String> name) {
     this.name = name;
+  }
+
+  public Optional<String> getName() {
+    return name;
   }
 
   /**

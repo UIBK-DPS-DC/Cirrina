@@ -1,7 +1,10 @@
 package at.ac.uibk.dps.cirrina.core.object.state;
 
+import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ACTION_NAME_DOES_NOT_EXIST;
+
+import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateClass;
-import at.ac.uibk.dps.cirrina.core.lang.classes.action.ActionOrActionReferenceClass;
+import at.ac.uibk.dps.cirrina.core.lang.classes.helper.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
 import java.util.List;
@@ -30,7 +33,14 @@ public final class StateBuilder {
     // Resolve actions
     Function<List<ActionOrActionReferenceClass>, List<Action>> resolveActions = (List<ActionOrActionReferenceClass> actions) ->
         actions.stream()
-            .map(actionResolver::resolve)
+            .map(actionOrActionClass -> {
+              var resolvedAction = actionResolver.resolve(actionOrActionClass);
+              if (resolvedAction.isEmpty()) {
+                throw new IllegalArgumentException(
+                    VerificationException.from(ACTION_NAME_DOES_NOT_EXIST));
+              }
+              return resolvedAction.get();
+            })
             .toList();
 
     var entryActions = resolveActions.apply(stateClass.entry);

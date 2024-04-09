@@ -33,7 +33,7 @@ public final class TransitionCommand implements Command {
     commands.add(new StateExitCommand(executionContext.stateMachineInstance().getStatus().getActivateState()));
 
     // Append the entry actions to the command list
-    new TopologicalOrderIterator<>(transition.getTransition().actions).forEachRemaining(
+    new TopologicalOrderIterator<>(transition.getTransition().getActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(stateMachineInstance, action, false)));
 
     // Change the active state

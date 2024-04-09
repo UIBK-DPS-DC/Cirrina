@@ -106,6 +106,8 @@ public final class StateMachineInstance implements Scope, EventListener {
 
   @Override
   public void onReceiveEvent(Event event) {
+    var transition = stateMachine.findTransitionByEventName(event.getName());
+
     // TODO: Gather transition for event (if any)
     // TODO: Add transition command to queue
 

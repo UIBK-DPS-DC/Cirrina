@@ -43,11 +43,11 @@ public final class StateEntryCommand implements Command {
     final var commands = new ArrayList<Command>();
 
     // Append the entry actions to the command list
-    new TopologicalOrderIterator<>(state.getState().getEntry()).forEachRemaining(
+    new TopologicalOrderIterator<>(state.getState().getEntryActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(state, action, false)));
 
     // Append the while actions to the command list
-    new TopologicalOrderIterator<>(state.getState().getWhile()).forEachRemaining(
+    new TopologicalOrderIterator<>(state.getState().getWhileActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(state, action, true)));
 
     // TODO: Start timeout actions

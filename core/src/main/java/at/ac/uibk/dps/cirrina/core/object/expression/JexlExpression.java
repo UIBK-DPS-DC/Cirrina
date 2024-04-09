@@ -19,6 +19,7 @@ public class JexlExpression extends Expression {
    */
   JexlExpression(String source) {
     super(source);
+
     this.jexlScript = getJexlEngine().createScript(source);
   }
 

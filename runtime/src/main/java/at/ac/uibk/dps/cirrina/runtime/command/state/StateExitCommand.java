@@ -43,7 +43,7 @@ public final class StateExitCommand implements Command {
     final var commands = new ArrayList<Command>();
 
     // Append the entry actions to the command list
-    new TopologicalOrderIterator<>(state.getState().getExit()).forEachRemaining(
+    new TopologicalOrderIterator<>(state.getState().getExitActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(state, action, false)));
 
     // TODO: Cancel timeout and while actions

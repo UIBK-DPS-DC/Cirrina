@@ -1,10 +1,17 @@
 package at.ac.uibk.dps.cirrina.core.object.transition;
 
-import at.ac.uibk.dps.cirrina.core.lang.classes.action.ActionOrActionReferenceClass;
+import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ACTION_NAME_DOES_NOT_EXIST;
+import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.GUARD_NAME_DOES_NOT_EXIST;
+
+import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
+import at.ac.uibk.dps.cirrina.core.lang.classes.helper.ActionOrActionReferenceClass;
+import at.ac.uibk.dps.cirrina.core.lang.classes.helper.GuardOrGuardReferenceClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.transition.TransitionClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
+import at.ac.uibk.dps.cirrina.core.object.guard.Guard;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
+import at.ac.uibk.dps.cirrina.core.object.helper.GuardResolver;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.ChildStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachineBuilder;
 import java.util.List;
@@ -15,8 +22,8 @@ import java.util.function.Function;
  */
 public abstract class TransitionBuilder {
 
-  public static TransitionBuilder from(TransitionClass transitionClass, ActionResolver actionResolver) {
-    return new TransitionFromClassBuilder(transitionClass, actionResolver);
+  public static TransitionBuilder from(TransitionClass transitionClass, GuardResolver guardResolver, ActionResolver actionResolver) {
+    return new TransitionFromClassBuilder(transitionClass, guardResolver, actionResolver);
   }
 
   public static TransitionBuilder from(Transition transition) {
@@ -39,29 +46,61 @@ public abstract class TransitionBuilder {
   private static final class TransitionFromClassBuilder extends TransitionBuilder {
 
     private final TransitionClass transitionClass;
+    private final GuardResolver guardResolver;
     private final ActionResolver actionResolver;
 
-    private TransitionFromClassBuilder(TransitionClass transitionClass, ActionResolver actionResolver) {
+    private TransitionFromClassBuilder(TransitionClass transitionClass, GuardResolver guardResolver, ActionResolver actionResolver) {
       this.transitionClass = transitionClass;
+      this.guardResolver = guardResolver;
       this.actionResolver = actionResolver;
     }
 
     @Override
     public Transition build() throws IllegalArgumentException {
+      // Resolve guards
+      Function<List<GuardOrGuardReferenceClass>, List<Guard>> resolveGuards = (List<GuardOrGuardReferenceClass> guards) ->
+          guards.stream()
+              .map(guardOrReferenceClass -> {
+                var resolvedGuard = guardResolver.resolve(guardOrReferenceClass);
+                if (resolvedGuard.isEmpty()) {
+                  throw new IllegalArgumentException(
+                      VerificationException.from(GUARD_NAME_DOES_NOT_EXIST));
+                }
+                return resolvedGuard.get();
+              })
+              .toList();
+
       // Resolve actions
       Function<List<ActionOrActionReferenceClass>, List<Action>> resolveActions = (List<ActionOrActionReferenceClass> actions) ->
           actions.stream()
-              .map(actionResolver::resolve)
+              .map(actionOrActionClass -> {
+                var resolvedAction = actionResolver.resolve(actionOrActionClass);
+                if (resolvedAction.isEmpty()) {
+                  throw new IllegalArgumentException(
+                      VerificationException.from(ACTION_NAME_DOES_NOT_EXIST));
+                }
+                return resolvedAction.get();
+              })
               .toList();
 
       // Create the appropriate transition
       switch (transitionClass) {
         case OnTransitionClass onTransitionClass -> {
-          return new OnTransition(onTransitionClass.target, transitionClass.elsee, resolveActions.apply(onTransitionClass.actions),
-              onTransitionClass.event);
+          return new OnTransition(
+              onTransitionClass.target,
+              transitionClass.elsee,
+              resolveGuards.apply(onTransitionClass.guards),
+              resolveActions.apply(onTransitionClass.actions),
+              onTransitionClass.event
+          );
         }
         default -> {
-          return new Transition(transitionClass.target, transitionClass.elsee, resolveActions.apply(transitionClass.actions));
+          return new Transition(
+              transitionClass.target,
+              transitionClass.elsee,
+              resolveGuards.apply(transitionClass.guards),
+              resolveActions.apply(transitionClass.actions)
+          );
         }
       }
     }
@@ -82,9 +121,22 @@ public abstract class TransitionBuilder {
 
     @Override
     public Transition build() {
-      return transition instanceof OnTransition onTransition
-          ? new OnTransition(onTransition.target, onTransition.elsee, onTransition.allActions(), onTransition.eventName)
-          : new Transition(transition.target, transition.elsee, transition.allActions());
+      if (transition instanceof OnTransition onTransition) {
+        return new OnTransition(
+            onTransition.getTarget(),
+            onTransition.getElse(),
+            onTransition.getGuards(),
+            onTransition.getActionGraph().getActions(),
+            onTransition.getEventName()
+        );
+      } else {
+        return new Transition(
+            transition.getTarget(),
+            transition.getElse(),
+            transition.getGuards(),
+            transition.getActionGraph().getActions()
+        );
+      }
     }
   }
 }

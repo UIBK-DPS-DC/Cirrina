@@ -17,9 +17,8 @@ public final class AssignAction extends Action {
    * Initializes this assign action.
    *
    * @param parameters Initialization parameters.
-   * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
-  AssignAction(Parameters parameters) throws IllegalArgumentException {
+  AssignAction(Parameters parameters) {
     super(parameters.name());
 
     this.variable = parameters.variable();

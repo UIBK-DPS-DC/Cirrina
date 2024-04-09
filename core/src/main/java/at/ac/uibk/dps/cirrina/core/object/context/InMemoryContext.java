@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class InMemoryContext extends Context {
 
-  protected final Map<String, Object> values = new ConcurrentHashMap<>();
+  private final Map<String, Object> values = new ConcurrentHashMap<>();
 
   /**
    * Initializes an empty in-memory context.

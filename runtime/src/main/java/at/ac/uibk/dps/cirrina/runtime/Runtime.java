@@ -15,8 +15,9 @@ import java.util.EventListener;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,6 +59,8 @@ public final class Runtime implements Runnable, EventListener {
    */
   @Override
   public void run() {
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+
     while (!Thread.currentThread().isInterrupted()) {
       try {
         synchronized (this) {
@@ -68,10 +71,10 @@ public final class Runtime implements Runnable, EventListener {
                 var instance = instanceCommand.instance();
                 var command = instanceCommand.command();
 
-                CompletableFuture.runAsync(() -> {
+                executor.submit(() -> {
                   try {
                     stateMachineInstanceCommandExecutionObservers.stream()
-                        .map(observer -> CompletableFuture.runAsync(() -> observer.update(instanceCommand)));
+                        .forEach(observer -> observer.update(instanceCommand));
 
                     instance.execute(command);
                   } catch (RuntimeException e) {

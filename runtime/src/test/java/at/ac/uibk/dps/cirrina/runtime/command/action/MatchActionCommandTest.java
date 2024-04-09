@@ -87,7 +87,7 @@ public class MatchActionCommandTest {
     doReturn(ExpressionBuilder.from(new ExpressionClass("v")).build()).when(matchAction).getValue();
     doReturn(Map.of(
         ExpressionBuilder.from(new ExpressionClass("5")).build(), assignAction1,
-        ExpressionBuilder.from(new ExpressionClass("6")).build(), assignAction2)).when(matchAction).getCasee();
+        ExpressionBuilder.from(new ExpressionClass("6")).build(), assignAction2)).when(matchAction).getCase();
 
     var matchActionCommand = new MatchActionCommand(stateMachine, matchAction, false);
 

@@ -53,4 +53,8 @@ public final class ActionGraph extends SimpleDirectedGraph<Action, DefaultEdge> 
         .map(type::cast)
         .toList();
   }
+
+  public List<Action> getActions() {
+    return vertexSet().stream().toList();
+  }
 }

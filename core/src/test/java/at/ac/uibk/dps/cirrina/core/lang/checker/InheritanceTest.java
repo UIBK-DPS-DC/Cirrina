@@ -42,12 +42,12 @@ public class InheritanceTest {
   }
 
   private StateMachine getStateMachine1(CollaborativeStateMachine csm) {
-    return csm.getStateMachineByName("stateMachine1")
+    return csm.findStateMachineByName("stateMachine1")
         .orElseThrow(() -> new AssertionError("stateMachine1 does not exist"));
   }
 
   private StateMachine getStateMachine2(CollaborativeStateMachine csm) {
-    return csm.getStateMachineByName("stateMachine2")
+    return csm.findStateMachineByName("stateMachine2")
         .orElseThrow(() -> new AssertionError("stateMachine2 does not exist"));
   }
 
@@ -70,20 +70,20 @@ public class InheritanceTest {
     var stateMachine1 = getStateMachine1(csm);
     assertEquals(3, stateMachine1.vertexSet().size());
     assertDoesNotThrow(() -> {
-      stateMachine1.getStateByName("state1");
-      stateMachine1.getStateByName("state2");
-      stateMachine1.getStateByName("state3");
+      stateMachine1.findStateByName("state1");
+      stateMachine1.findStateByName("state2");
+      stateMachine1.findStateByName("state3");
     });
     assertThrows(IllegalArgumentException.class,
-        () -> stateMachine1.getStateByName("state4"));
+        () -> stateMachine1.findStateByName("state4"));
 
     var stateMachine2 = getStateMachine2(csm);
     assertEquals(4, stateMachine2.vertexSet().size());
     assertDoesNotThrow(() -> {
-      stateMachine2.getStateByName("state1");
-      stateMachine2.getStateByName("state2");
-      stateMachine2.getStateByName("state3");
-      stateMachine2.getStateByName("state4");
+      stateMachine2.findStateByName("state1");
+      stateMachine2.findStateByName("state2");
+      stateMachine2.findStateByName("state3");
+      stateMachine2.findStateByName("state4");
     });
   }
 
@@ -94,22 +94,22 @@ public class InheritanceTest {
 
     var stateMachine1 = getStateMachine1(csm);
     assertDoesNotThrow(() -> {
-      var state1 = stateMachine1.getStateByName("state1");
+      var state1 = stateMachine1.findStateByName("state1").get();
       assertTrue(state1.isVirtual());
       assertFalse(state1.isAbstract());
 
-      var state2 = stateMachine1.getStateByName("state2");
+      var state2 = stateMachine1.findStateByName("state2").get();
       assertFalse(state2.isVirtual());
       assertTrue(state2.isAbstract());
     });
 
     var stateMachine2 = getStateMachine2(csm);
     assertDoesNotThrow(() -> {
-      var state1 = stateMachine2.getStateByName("state1");
+      var state1 = stateMachine2.findStateByName("state1").get();
       assertTrue(state1.isVirtual());
       assertFalse(state1.isAbstract());
 
-      var state2 = stateMachine2.getStateByName("state2");
+      var state2 = stateMachine2.findStateByName("state2").get();
       assertTrue(state2.isVirtual());
       assertFalse(state2.isAbstract());
     });
@@ -134,8 +134,8 @@ public class InheritanceTest {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);
 
-        var action1 = stateMachine1.getActionByName("action1");
-        var action2 = stateMachine1.getActionByName("action2");
+        var action1 = stateMachine1.findActionByName("action1").get();
+        var action2 = stateMachine1.findActionByName("action2").get();
 
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);
@@ -147,8 +147,8 @@ public class InheritanceTest {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);
 
-        var action1 = stateMachine2.getActionByName("action1");
-        var action2 = stateMachine2.getActionByName("action2");
+        var action1 = stateMachine2.findActionByName("action1").get();
+        var action2 = stateMachine2.findActionByName("action2").get();
 
         assertInstanceOf(AssignAction.class, action1);
         assertInstanceOf(AssignAction.class, action2);

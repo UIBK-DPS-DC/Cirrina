@@ -6,6 +6,7 @@ import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateMachineClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
+import at.ac.uibk.dps.cirrina.core.object.guard.Guard;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.core.object.state.State;
 import at.ac.uibk.dps.cirrina.core.object.state.StateBuilder;
@@ -22,19 +23,22 @@ public final class ChildStateMachineBuilder {
   private final StateMachineClass stateMachineClass;
   private final StateMachine baseStateMachine;
   private final List<StateMachine> nestedStateMachines;
-  private List<Action> actions;
+  private final List<Guard> guards;
+  private final List<Action> actions;
 
-  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine baseStateMachine, List<Action> actions,
+  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine baseStateMachine, List<Guard> guards,
+      List<Action> actions,
       List<StateMachine> nestedStateMachine) {
     this.stateMachineClass = stateMachineClass;
     this.baseStateMachine = baseStateMachine;
+    this.guards = guards;
     this.actions = actions;
     this.nestedStateMachines = nestedStateMachine;
   }
 
-  public static ChildStateMachineBuilder implement(StateMachineClass tthis, StateMachine base, List<Action> actions,
+  public static ChildStateMachineBuilder implement(StateMachineClass tthis, StateMachine base, List<Guard> guards, List<Action> actions,
       List<StateMachine> nestedStateMachine) {
-    return new ChildStateMachineBuilder(tthis, base, actions, nestedStateMachine);
+    return new ChildStateMachineBuilder(tthis, base, guards, actions, nestedStateMachine);
   }
 
   /**
@@ -49,7 +53,7 @@ public final class ChildStateMachineBuilder {
 
     addBaseActions();
 
-    StateMachine stateMachine = new StateMachine(stateMachineClass.name, actions, stateMachineClass.isAbstract,
+    StateMachine stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.isAbstract,
         nestedStateMachines);
 
     addStates(stateMachine);
@@ -62,7 +66,9 @@ public final class ChildStateMachineBuilder {
    * Adds missing actions from the base state machine.
    */
   private void addBaseActions() {
-    List<Action> baseActions = baseStateMachine.getActions();
+    // TODO: Felix please implement guards/actions
+
+    /*List<Action> baseActions = baseStateMachine.getActions();
 
     if (actions.isEmpty() && !baseActions.isEmpty()) {
       actions = baseActions;
@@ -71,9 +77,9 @@ public final class ChildStateMachineBuilder {
 
       baseActions.stream()
           .filter(baseAction -> finalActions.stream()
-              .noneMatch(action -> action.name.equals(baseAction.name)))
+              .noneMatch(action -> action.getName().equals(baseAction.getName())))
           .forEach(finalActions::add);
-    }
+    }*/
   }
 
   /**
@@ -91,7 +97,7 @@ public final class ChildStateMachineBuilder {
 
     if (cannotOverrideState) {
       throw new IllegalArgumentException(
-          VerificationException.from(VerificationException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, stateMachineClass.name));
+          VerificationException.from(VerificationException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, stateMachineClass));
     }
   }
 
@@ -115,7 +121,7 @@ public final class ChildStateMachineBuilder {
 
     if (isIncomplete) {
       throw new IllegalArgumentException(
-          VerificationException.from(STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES, stateMachineClass.name, baseStateMachine.getName()));
+          VerificationException.from(STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES, stateMachineClass));
     }
   }
 

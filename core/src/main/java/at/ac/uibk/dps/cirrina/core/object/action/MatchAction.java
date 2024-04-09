@@ -21,7 +21,7 @@ public final class MatchAction extends Action {
     return value;
   }
 
-  public Map<Expression, Action> getCasee() {
+  public Map<Expression, Action> getCase() {
     return casee;
   }
 

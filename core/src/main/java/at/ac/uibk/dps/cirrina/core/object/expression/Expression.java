@@ -11,7 +11,7 @@ public abstract class Expression {
   /**
    * The expression source string.
    */
-  public final String source;
+  private final String source;
 
   /**
    * Initializes the base expression.
@@ -22,10 +22,14 @@ public abstract class Expression {
     this.source = source;
   }
 
+  public String getSource() {
+    return source;
+  }
+
   /**
    * Executes this expression, producing a value.
    *
-   * @param context Context containing variables in scope.
+   * @param extent Extent describing variables in scope.
    * @return Result of the expression.
    * @throws RuntimeException In case of an error while executing the expression.
    */

@@ -2,7 +2,7 @@ package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.core.data.DefaultDescriptions;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class StateInstanceMachineTest {
+public class StateMachineTest {
 
   private static StateMachine stateMachine;
 
@@ -28,7 +28,7 @@ public class StateInstanceMachineTest {
     assertDoesNotThrow(() -> {
       var collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
 
-      stateMachine = collaborativeStateMachine.getStateMachineByName("stateMachine1").get();
+      stateMachine = collaborativeStateMachine.findStateMachineByName("stateMachine1").get();
     });
   }
 
@@ -44,10 +44,10 @@ public class StateInstanceMachineTest {
 
   @Test
   public void testGetActions() {
-    assertEquals(stateMachine.getActions().size(), 1);
+    assertEquals(stateMachine.getNamedActions().size(), 1);
 
-    var action = stateMachine.getActions().getFirst();
-    Assertions.assertEquals(action.name.get(), "action1");
+    var action = stateMachine.getNamedActions().getFirst();
+    Assertions.assertEquals(action.getName().get(), "action1");
     assertTrue(action instanceof CreateAction);
 
     var createAction = (CreateAction) action;
@@ -58,7 +58,7 @@ public class StateInstanceMachineTest {
     assertTrue(val instanceof Expression);
 
     var expression = (Expression) val;
-    assertEquals(expression.source, "5");
+    assertEquals(expression.getSource(), "5");
   }
 
   @Test
@@ -76,24 +76,35 @@ public class StateInstanceMachineTest {
   }
 
   @Test
-  public void testGetStateByNameExists() {
-    assertDoesNotThrow(() -> stateMachine.getStateByName("state1"));
-    assertDoesNotThrow(() -> stateMachine.getStateByName("state2"));
+  public void testGetStateByName() {
+    assertDoesNotThrow(() -> stateMachine.findStateByName("state1"));
+    assertDoesNotThrow(() -> stateMachine.findStateByName("state2"));
+
+    assertTrue(stateMachine.findStateByName("nonExisting").isEmpty());
   }
 
   @Test
-  public void testGetStateByNameDoesNotExist() {
-    assertThrows(IllegalArgumentException.class, () -> stateMachine.getStateByName("nonExisting"));
+  public void testGetActionByName() {
+    assertDoesNotThrow(() -> stateMachine.findStateByName("action1"));
+
+    assertTrue(stateMachine.findStateByName("nonExisting").isEmpty());
   }
 
   @Test
-  public void testGetActionByNameExists() {
-    assertDoesNotThrow(() -> stateMachine.getActionByName("action1"));
+  public void testFindStateByName() {
+    assertDoesNotThrow(() -> {
+      stateMachine.findStateByName("state1").get().getName().equals("state1");
+
+      assertFalse(stateMachine.findStateByName("nonExisting").isPresent());
+    });
   }
 
-  @Test
-  public void testGetActionByNameDoesNotExist() {
-    assertThrows(IllegalArgumentException.class, () -> stateMachine.getActionByName("nonExisting"));
+  public void testFindTransitionByEventName() {
+    assertDoesNotThrow(() -> {
+      stateMachine.findTransitionByEventName("e1").get().getTarget().equals("state2");
+
+      assertFalse(stateMachine.findTransitionByEventName("nonExisting").isPresent());
+    });
   }
 
   @Test

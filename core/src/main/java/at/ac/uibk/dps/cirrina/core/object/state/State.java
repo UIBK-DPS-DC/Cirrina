@@ -15,9 +15,9 @@ public final class State {
   private final boolean isTerminal;
   private final boolean isAbstract;
   private final boolean isVirtual;
-  private final ActionGraph entry;
-  private final ActionGraph exit;
-  private final ActionGraph whilee;
+  private final ActionGraph entryActionGraph;
+  private final ActionGraph exitActionGraph;
+  private final ActionGraph whileActionGraph;
 
   State(Parameters parameters) {
     if (parameters.baseState().isEmpty()) {
@@ -26,9 +26,9 @@ public final class State {
       this.isInitial = parameters.isInitial();
       this.isTerminal = parameters.isTerminal();
 
-      this.entry = ActionGraphBuilder.from(parameters.entryActions()).build();
-      this.exit = ActionGraphBuilder.from(parameters.exitActions()).build();
-      this.whilee = ActionGraphBuilder.from(parameters.whileActions()).build();
+      this.entryActionGraph = ActionGraphBuilder.from(parameters.entryActions()).build();
+      this.exitActionGraph = ActionGraphBuilder.from(parameters.exitActions()).build();
+      this.whileActionGraph = ActionGraphBuilder.from(parameters.whileActions()).build();
 
       this.isAbstract = parameters.isAbstract();
       this.isVirtual = parameters.isVirtual();
@@ -40,9 +40,9 @@ public final class State {
       this.isInitial = parameters.isInitial() || baseState.isInitial;
       this.isTerminal = parameters.isTerminal() || baseState.isTerminal;
 
-      this.entry = ActionGraphBuilder.extend(new ActionGraph(baseState.entry), parameters.entryActions()).build();
-      this.exit = ActionGraphBuilder.extend(new ActionGraph(baseState.exit), parameters.exitActions()).build();
-      this.whilee = ActionGraphBuilder.extend(new ActionGraph(baseState.whilee), parameters.whileActions()).build();
+      this.entryActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.entryActionGraph), parameters.entryActions()).build();
+      this.exitActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.exitActionGraph), parameters.exitActions()).build();
+      this.whileActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.whileActionGraph), parameters.whileActions()).build();
 
       this.isAbstract = parameters.isAbstract();
 
@@ -71,20 +71,20 @@ public final class State {
     return isVirtual;
   }
 
-  public ActionGraph getEntry() {
-    return entry;
+  public ActionGraph getEntryActionGraph() {
+    return entryActionGraph;
   }
 
-  public ActionGraph getExit() {
-    return exit;
+  public ActionGraph getExitActionGraph() {
+    return exitActionGraph;
   }
 
-  public ActionGraph getWhile() {
-    return whilee;
+  public ActionGraph getWhileActionGraph() {
+    return whileActionGraph;
   }
 
   public <T> List<T> getActionsOfType(Class<T> type) {
-    return Stream.of(entry, exit, whilee)
+    return Stream.of(entryActionGraph, exitActionGraph, whileActionGraph)
         .map(actionGraph -> actionGraph.getActionsOfType(type))
         .flatMap(Collection::stream)
         .toList();

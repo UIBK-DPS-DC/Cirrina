@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.lang.classes.action;
 
 import at.ac.uibk.dps.cirrina.core.lang.classes.Construct;
+import at.ac.uibk.dps.cirrina.core.lang.classes.helper.ActionOrActionReferenceClass;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

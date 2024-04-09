@@ -52,7 +52,7 @@ public final class MatchActionCommand extends ActionCommand {
 
     try {
       // Find matching conditions and append the commands to the set of new commands
-      for (var entry : matchAction.getCasee().entrySet()) {
+      for (var entry : matchAction.getCase().entrySet()) {
         final var caseValue = entry.getKey().execute(extent);
         final var caseAction = entry.getValue();
 

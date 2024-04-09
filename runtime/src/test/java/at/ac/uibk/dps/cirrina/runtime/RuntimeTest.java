@@ -26,7 +26,7 @@ public class RuntimeTest {
     assertDoesNotThrow(() -> {
       var collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
 
-      stateMachine = collaborativeStateMachine.getStateMachineByName("stateMachine1").get();
+      stateMachine = collaborativeStateMachine.findStateMachineByName("stateMachine1").get();
     });
   }
 
