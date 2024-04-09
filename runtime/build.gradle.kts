@@ -1,5 +1,18 @@
 plugins {
     application
+
+    jacoco
+    id("net.razvan.jacoco-to-cobertura") version "1.2.0"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.11"
 }
 
 repositories {
@@ -24,4 +37,19 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = false
+        csv.required = false
+    }
+}
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+tasks.jacocoTestReport {
+    finalizedBy(tasks.jacocoToCobertura)
 }

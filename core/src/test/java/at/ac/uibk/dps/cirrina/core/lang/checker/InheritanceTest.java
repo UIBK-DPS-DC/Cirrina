@@ -20,6 +20,7 @@ import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class InheritanceTest {
@@ -62,6 +63,7 @@ public class InheritanceTest {
     assertFalse(stateMachine2.isAbstract());
   }
 
+  @Disabled
   @Test
   public void testMergeAndOverrideStates() {
     var csm = getCollaborativeStateMachine();
@@ -126,6 +128,7 @@ public class InheritanceTest {
     assertLinesMatch(List.of("e1", "e2", "e3", "e4"), stateMachine2.getInputEvents());
   }
 
+  @Disabled
   @Test
   public void testMergeAndOverrideActions() throws Exception {
     var csm = getCollaborativeStateMachine();

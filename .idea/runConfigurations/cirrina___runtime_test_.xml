@@ -1,11 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cirrina [core:test]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="cirrina [:runtime:test]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
     <ExternalSystemSettings>
-      <option name="env">
-        <map>
-          <entry key="NATS_SERVER_URL" value="nats://localhost:4222" />
-        </map>
-      </option>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
@@ -15,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="core:test" />
+          <option value=":runtime:test" />
         </list>
       </option>
       <option name="vmOptions" />
