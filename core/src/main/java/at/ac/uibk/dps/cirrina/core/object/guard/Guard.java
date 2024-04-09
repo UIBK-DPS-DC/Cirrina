@@ -27,6 +27,22 @@ public class Guard {
   }
 
   /**
+   * Evaluate this guard and return the resulting boolean value.
+   *
+   * @param extent Extent describing variables in scope.
+   * @return Boolean result.
+   * @throws RuntimeException If the expression could not be evaluated, or the expression does not produce a boolean value.
+   */
+  public boolean evaluate(Extent extent) throws RuntimeException {
+    var result = expression.execute(extent);
+    if (!(result instanceof Boolean)) {
+      throw RuntimeException.from("Guard expression '%s' does not produce a boolean value", expression);
+    }
+
+    return (Boolean) result;
+  }
+
+  /**
    * Returns the guard name.
    *
    * @return Guard name.
@@ -42,21 +58,5 @@ public class Guard {
    */
   public Expression getExpression() {
     return expression;
-  }
-
-  /**
-   * Evaluate this guard and return the resulting boolean value.
-   *
-   * @param extent Extent describing variables in scope.
-   * @return Boolean result.
-   * @throws RuntimeException If the expression could not be evaluated, or the expression does not produce a boolean value.
-   */
-  public boolean evaluate(Extent extent) throws RuntimeException {
-    var result = expression.execute(extent);
-    if (!(result instanceof Boolean)) {
-      throw RuntimeException.from("Guard expression '%s' does not produce a boolean value", expression);
-    }
-
-    return (Boolean) result;
   }
 }

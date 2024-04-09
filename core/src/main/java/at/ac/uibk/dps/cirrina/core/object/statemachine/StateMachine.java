@@ -62,11 +62,16 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
     return Optional.of(states.getFirst());
   }
 
-  public Optional<Transition> findTransitionByEventName(String eventName) {
-    return edgeSet().stream()
+  /**
+   * @param fromState
+   * @param eventName
+   * @return
+   */
+  public List<Transition> findTransitionsFromStateByEventName(State fromState, String eventName) {
+    return outgoingEdgesOf(fromState).stream()
         .filter(transition -> transition instanceof OnTransition)
         .filter(transition -> ((OnTransition) transition).getEventName().equals(eventName))
-        .findFirst();
+        .toList();
   }
 
   /**

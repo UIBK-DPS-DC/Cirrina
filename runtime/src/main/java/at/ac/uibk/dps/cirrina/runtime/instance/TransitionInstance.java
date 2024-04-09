@@ -6,11 +6,8 @@ public final class TransitionInstance {
 
   private final Transition transition;
 
-  private final StateMachineInstance parent;
-
-  public TransitionInstance(Transition transition, StateMachineInstance parent) {
+  public TransitionInstance(Transition transition) {
     this.transition = transition;
-    this.parent = parent;
   }
 
   public Transition getTransition() {

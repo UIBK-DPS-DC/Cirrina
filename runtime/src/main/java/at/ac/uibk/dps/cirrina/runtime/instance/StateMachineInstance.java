@@ -13,6 +13,7 @@ import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 import at.ac.uibk.dps.cirrina.runtime.command.statemachine.InitialTransitionCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.statemachine.TransitionCommand;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -63,7 +64,9 @@ public final class StateMachineInstance implements Scope, EventListener {
 
   @Override
   public Extent getExtent() {
-    return runtime.getExtent().extend(localContext);
+    return parent
+        .map(parent -> parent.getExtent().extend(localContext))
+        .orElseGet(() -> runtime.getExtent().extend(localContext));
   }
 
   /**
@@ -106,12 +109,39 @@ public final class StateMachineInstance implements Scope, EventListener {
 
   @Override
   public void onReceiveEvent(Event event) {
-    var transition = stateMachine.findTransitionByEventName(event.getName());
+    try {
+      // Look up the transitions that are outwards from the current state
+      var transitions = stateMachine.findTransitionsFromStateByEventName(status.getActivateState().getState(), event.getName());
 
-    // TODO: Gather transition for event (if any)
-    // TODO: Add transition command to queue
+      // To check non-determinism
+      boolean tookTransition = false;
 
-    assert true;
+      // Find the transitions that can be taken (that have all their guards produce true values), for those, we add transition commands
+      // to this state machine instance's command queue
+      for (var transition : transitions) {
+        if (transition.evaluate(getExtent())) {
+          if (tookTransition) {
+            throw RuntimeException.from("Non-determinism detected!");
+          }
+
+          // Create the transition instance and look up the target state instance
+          var transitionInstance = new TransitionInstance(transition);
+          var targetStateInstance = states.get(transition.getTarget());
+
+          // Construct the transition comamnd
+          var transitionCommand = new TransitionCommand(transitionInstance, targetStateInstance);
+
+          // Append to the command queue.
+          appendCommand(transitionCommand);
+
+          tookTransition = true;
+        }
+      }
+    } catch (RuntimeException e) {
+      System.exit(1);
+
+      // TODO: Stop the state machine, escalate
+    }
   }
 
   /**

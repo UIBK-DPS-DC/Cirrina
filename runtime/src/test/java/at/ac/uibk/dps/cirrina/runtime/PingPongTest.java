@@ -11,7 +11,6 @@ import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinScheduler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PingPongTest {
@@ -32,7 +31,6 @@ public class PingPongTest {
     });
   }
 
-  @Disabled
   @Test
   public void testPingPongExecute() {
     Assertions.assertDoesNotThrow(() -> {
