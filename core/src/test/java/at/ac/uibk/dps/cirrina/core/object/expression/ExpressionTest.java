@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 public class ExpressionTest {
 
   @Test
-  public void testExpressionPositive() throws Exception {
+  public void testExpression() throws Exception {
     try (var context = new InMemoryContext()) {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);

@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.context;
 
-public class InContextTest extends ContextTest {
+public class InMemoryContextTest extends ContextTest {
 
   @Override
   protected Context createContext() {

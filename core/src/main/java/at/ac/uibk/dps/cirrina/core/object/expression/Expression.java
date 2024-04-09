@@ -34,4 +34,9 @@ public abstract class Expression {
    * @throws RuntimeException In case of an error while executing the expression.
    */
   public abstract Object execute(Extent extent) throws RuntimeException;
+
+  @Override
+  public String toString() {
+    return source;
+  }
 }

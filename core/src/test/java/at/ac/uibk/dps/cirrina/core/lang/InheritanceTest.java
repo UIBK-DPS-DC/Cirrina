@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.core.lang.checker;
+package at.ac.uibk.dps.cirrina.core.lang;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

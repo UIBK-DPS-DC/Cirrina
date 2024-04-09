@@ -4,17 +4,17 @@ import at.ac.uibk.dps.cirrina.core.lang.classes.guard.GuardClass;
 import at.ac.uibk.dps.cirrina.core.object.expression.ExpressionBuilder;
 
 /**
- * Action builder, used to build action objects.
+ * Guard builder, used to build guard objects.
  */
 public final class GuardBuilder {
 
   /**
-   * The action class to build from.
+   * The guard class to build from.
    */
   private final GuardClass guardClass;
 
   /**
-   * Initializes an action builder.
+   * Initializes a guard builder.
    *
    * @param guardClass Guard class.
    */
@@ -23,7 +23,7 @@ public final class GuardBuilder {
   }
 
   /**
-   * Creates an guard builder.
+   * Creates a guard builder.
    *
    * @param guardClass Guard class.
    * @return Guard builder.
@@ -36,12 +36,9 @@ public final class GuardBuilder {
    * Builds the guard.
    *
    * @return The built guard.
-   * @throws IllegalArgumentException In case the action could not be built.
-   * @throws IllegalStateException    In case of an unexpected state.
+   * @throws IllegalArgumentException In case the guard could not be built.
    */
-  public Guard build() throws IllegalArgumentException, IllegalStateException {
-    var guard = new Guard(guardClass.name, ExpressionBuilder.from(guardClass.expression).build());
-
-    return guard;
+  public Guard build() throws IllegalArgumentException {
+    return new Guard(guardClass.name, ExpressionBuilder.from(guardClass.expression).build());
   }
 }
