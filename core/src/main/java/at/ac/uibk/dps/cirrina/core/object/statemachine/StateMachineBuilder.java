@@ -4,7 +4,7 @@ import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Messag
 import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ILLEGAL_STATE_MACHINE_GRAPH;
 import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.MULTIPLE_TRANSITIONS_WITH_SAME_EVENT;
 import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES;
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.STATE_MACHINE_INHERITS_FROM_INVALID;
+import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.STATE_MACHINE_EXTENDS_INVALID;
 
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateClass;
@@ -112,7 +112,7 @@ public final class StateMachineBuilder {
   }
 
   /**
-   * Builds a state machine which does not inherit from another state machine.
+   * Builds a state machine which does not extend another state machine.
    *
    * @return The state machine.
    * @throws IllegalArgumentException In case the state machine could not be built.
@@ -122,7 +122,7 @@ public final class StateMachineBuilder {
     var actions = buildActions();
     var nestedStateMachines = buildNestedStateMachines();
 
-    var stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.isAbstract, nestedStateMachines);
+    var stateMachine = new StateMachine(stateMachineClass.name, guards, actions, stateMachineClass.abstractt, nestedStateMachines);
 
     var actionResolver = new ActionResolver(stateMachine);
 
@@ -137,20 +137,20 @@ public final class StateMachineBuilder {
   }
 
   /**
-   * Builds a state machine which inherits from another state machine given by its name.
+   * Builds a state machine which extends another state machine given by its name.
    *
-   * @param inheritName The name of the state machine to inherit from.
+   * @param extendsName The name of the state machine to extend.
    * @return The state machine.
    * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name is not known.
    * @see ChildStateMachineBuilder
    */
-  private StateMachine buildChild(String inheritName)
+  private StateMachine buildExtended(String extendsName)
       throws IllegalArgumentException {
     // Get the state machine to inherit from and throw an error if it does not exist
     var baseStateMachine = knownStateMachines.stream()
-        .filter(knownStateMachine -> knownStateMachine.getName().equals(inheritName))
+        .filter(knownStateMachine -> knownStateMachine.getName().equals(extendsName))
         .findFirst().orElseThrow(() -> new IllegalArgumentException(
-            VerificationException.from(STATE_MACHINE_INHERITS_FROM_INVALID, inheritName)));
+            VerificationException.from(STATE_MACHINE_EXTENDS_INVALID, extendsName)));
 
     var guards = buildGuards();
     var actions = buildActions();
@@ -167,8 +167,8 @@ public final class StateMachineBuilder {
    * @throws IllegalArgumentException In case the state machine could not be built.
    */
   public StateMachine build() throws IllegalArgumentException {
-    var stateMachine = stateMachineClass.inherit
-        .map(this::buildChild)
+    var stateMachine = stateMachineClass.extendss
+        .map(this::buildExtended)
         .orElseGet(this::buildBase);
 
     // If the state machine is not abstract but has abstract states, throw an error

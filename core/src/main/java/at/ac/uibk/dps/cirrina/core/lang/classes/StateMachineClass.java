@@ -6,6 +6,7 @@ import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.guard.GuardClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.guard.GuardReferenceClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.helper.StateOrStateMachineClass;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ import java.util.Optional;
  *  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
  *  <tr><td>guards</td><td>Named guards</td><td>No</td></tr>
  *  <tr><td>actions</td><td>Named actions</td><td>No</td></tr>
+ *  <tr><td>abstract</td><td>Abstract state machine flag</td><td>No</td></tr>
  * </table>
  * <p>
  * Example:
@@ -34,7 +36,8 @@ import java.util.Optional;
  *   localContext: [...],
  *   persistentContext: [...],
  *   guards: [],
- *   actions: []
+ *   actions: [],
+ *   abstract: false
  * }
  * </pre>
  *
@@ -91,25 +94,27 @@ public final class StateMachineClass extends Construct implements StateOrStateMa
   public List<ActionClass> actions = List.of();
 
   /**
-   * The optional inherited state machine name.
+   * The optional extended state machine name.
    * <p>
-   * The state machine inherits from this state machine, copies all its properties and allows them to be overwritten. States can only be
+   * The state machine extends this state machine, copies all its properties and allows them to be overridden. States can only be
    * overridden if they are defined as virtual or abstract.
    * </p>
    *
    * @see StateClass
    */
-  public Optional<String> inherit = Optional.empty();
+  @JsonProperty("extends")
+  public Optional<String> extendss = Optional.empty();
 
   /**
    * The optional abstract modifier.
    * <p>
    * If a state machine is defined as abstract, it cannot be instantiated and is never executed by nested state machines. Abstract state
-   * machines can be inherited and can have abstract states.
+   * machines can be extended and can have abstract states.
    * </p>
    *
    * @see StateClass
    */
   @JsonSetter(nulls = Nulls.SKIP)
-  public boolean isAbstract = false;
+  @JsonProperty("abstract")
+  public boolean abstractt = false;
 }

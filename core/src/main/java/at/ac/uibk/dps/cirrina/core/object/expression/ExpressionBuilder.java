@@ -12,8 +12,6 @@ import java.util.Map;
  */
 public final class ExpressionBuilder {
 
-  private static Map<Integer, Expression> cache = new HashMap<>();
-
   private ExpressionClass expressionClass;
 
   private ExpressionBuilder(ExpressionClass expressionClass) {
@@ -31,12 +29,6 @@ public final class ExpressionBuilder {
    * @throws IllegalArgumentException In case the expression could not be built.
    */
   public Expression build() throws IllegalArgumentException {
-    // Compute source hash
-    var hash = Hashing.sha256().hashString(expressionClass.expression, StandardCharsets.UTF_8).asInt();
-
-    // Construct a new expression if it did not exist in the cache yet
-    cache.computeIfAbsent(hash, (h) -> new JexlExpression(expressionClass.expression));
-
-    return cache.get(hash);
+    return new JexlExpression(expressionClass.expression);
   }
 }
