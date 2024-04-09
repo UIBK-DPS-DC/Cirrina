@@ -25,7 +25,7 @@ test:
   artifacts:
     when: always
     reports:
-      junit: "build/test-results/test/TEST-*.xml"
+      junit: "**/build/test-results/test/TEST-*.xml"
       coverage_report:
         coverage_format: cobertura
         path: "**/build/reports/jacoco/test/cobertura-jacocoTestReport.xml"
