@@ -36,6 +36,15 @@ public class Guard {
   }
 
   /**
+   * Returns the expression.
+   *
+   * @return Expression.
+   */
+  public Expression getExpression() {
+    return expression;
+  }
+
+  /**
    * Evaluate this guard and return the resulting boolean value.
    *
    * @param extent Extent describing variables in scope.
