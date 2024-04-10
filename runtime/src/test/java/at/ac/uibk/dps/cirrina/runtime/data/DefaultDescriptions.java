@@ -2,229 +2,26 @@ package at.ac.uibk.dps.cirrina.runtime.data;
 
 public class DefaultDescriptions {
 
-  public static final String empty = "{}";
-
-  public static final String complete = """
-      {
-        name: 'collaborativeStateMachine',
-        version: '0.1',
-        memoryMode: 'distributed',
-        stateMachines: [
-          {
-            name: 'stateMachine1',
-            states: [
-              {
-                name: 'state1',
-                initial: true,
-                entry: [
-                  {
-                    reference: 'action1'
-                  },
-                  {
-                    type: 'raise',
-                    event: {
-                      name: 'e1',
-                      channel: 'internal'
-                    }
-                  },
-                  {
-                    type: 'invoke',
-                    serviceType: 'serviceTypeName',
-                    isLocal: true,
-                    input: [
-                      {
-                        name: 'inV1',
-                        value: '5'
-                      },
-                      {
-                        name: 'inV2',
-                        value: '6'
-                      }
-                    ],
-                    done: [
-                      {
-                        name: 'e1',
-                        channel: 'internal'
-                      },
-                      {
-                        name: 'e2',
-                        channel: 'internal'
-                      }
-                    ]
-                  }
-                ],
-                on: [
-                  {
-                    target: 'state2',
-                    event: 'e1'
-                  }
-                ]
-              },
-              {
-                name: 'state2',
-                entry: [
-                  {
-                    type: 'assign',
-                    variable: {
-                      name: 'v',
-                      value: 'v+1'
-                    }
-                  },
-                  {
-                    type: 'assign',
-                    variable: {
-                      name: 'v',
-                      value: 'v+1'
-                     }
-                  },
-                  {
-                    type: 'raise',
-                    event: {
-                      name: 'e2',
-                      channel: 'internal'
-                    }
-                  }
-                ],
-                on: [
-                  {
-                    target: 'state2',
-                    event: 'e2'
-                  }
-                ]
-              }
-            ],
-            actions: [
-              {
-                name: 'action1',
-                type: 'create',
-                variable: {
-                  name: 'v',
-                  value: '5'
-                }
-              }
-            ]
-          }
-        ]
-      }
-      """;
-
-  public static final String completeInheritance = """
-      {
-        name: 'collaborativeStateMachine',
-        version: '0.1',
-        memoryMode: 'distributed',
-        stateMachines: [
-          {
-            name: 'stateMachine1',
-            abstract: false,
-            states: [
-              {
-                name: 'state1',
-                virtual: true,
-                initial: true,
-                on: [
-                  {
-                    target: 'state2',
-                    event: 'e1'
-                  }
-                ]
-              },
-              {
-                name: 'state2',
-                abstract: true
-              },
-              {
-                name: 'state3',
-                terminal: true
-              }
-            ],
-            actions: [
-              {
-                name: 'action1',
-                type: 'assign',
-                variable: {
-                  name: 'v1',
-                  value: '0'
-                }
-              },
-              {
-                name: 'action2',
-                type: 'assign',
-                variable: {
-                  name: 'v2',
-                  value: '1'
-                }
-              }
-            ]
-          },
-          {
-            name: 'stateMachine2',
-            extends: 'stateMachine1',
-            states: [
-              {
-                name: 'state1',
-                on: [
-                  {
-                    target: 'state2',
-                    event: 'e2'
-                  }
-                ]
-              },
-              {
-                name: 'state2',
-                on: [
-                  {
-                    target: 'state3',
-                    event: 'e3'
-                  }
-                ]
-              },
-              {
-                name: 'state4',
-                 on: [
-                  {
-                    target: 'state3',
-                    event: 'e4'
-                  }
-                ]
-              }
-            ],
-            actions: [
-              {
-                name: 'action2',
-                type: 'assign',
-                variable: {
-                  name: 'v2',
-                  value: '2'
-                }
-              }
-            ]
-          }
-        ]
-      }
-      """;
-
   public static String pingPong = """
         {
           name: 'collaborativeStateMachine',
           version: '0.1',
-          memoryMode: 'distributed',
+          memoryMode: 'shared',
           stateMachines: [
             {
               name: 'stateMachine1',
-              localContext: {
-                variables: [
-                  {
-                    name: 'v',
-                    value: '0'
-                  }
-                ]
-              },
               states: [
                 {
                   name: 'a',
                   initial: true,
                   entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v + 1'
+                      }
+                    },
                     {
                       type: 'raise',
                       event: {
@@ -244,13 +41,6 @@ public class DefaultDescriptions {
                   name: 'b',
                   entry: [
                     {
-                      type: 'assign',
-                      variable: {
-                        name: 'v',
-                        value: 'v + 1'
-                      }
-                    },
-                    {
                       type: 'raise',
                       event: {
                         name: 'e3',
@@ -263,23 +53,29 @@ public class DefaultDescriptions {
                       event: 'e4',
                       target: 'a'
                     }
+                  ],
+                  always: [
+                    {
+                      target: 'c',
+                      guards: [
+                        {
+                          expression: "v >= 100"
+                        }
+                      ]
+                    }
                   ]
+                },
+                {
+                  name: 'c',
+                  terminal: true
                 }
               ]
             },
             {
               name: 'stateMachine2',
-              localContext: {
-                variables: [
-                  {
-                    name: 'v',
-                    value: '0'
-                  }
-                ]
-              },
               states: [
                 {
-                  name: 'c',
+                  name: 'a',
                   initial: true,
                   entry: [
                     {
@@ -293,12 +89,12 @@ public class DefaultDescriptions {
                   on: [
                     {
                       event: 'e1',
-                      target: 'd'
+                      target: 'b'
                     }
                   ]
                 },
                 {
-                  name: 'd',
+                  name: 'b',
                   entry: [
                     {
                       type: 'assign',
@@ -318,121 +114,27 @@ public class DefaultDescriptions {
                   on: [
                     {
                       event: 'e3',
-                      target: 'c'
+                      target: 'a'
+                    }
+                  ],
+                  always: [
+                    {
+                      target: 'c',
+                      guards: [
+                        {
+                          expression: "v >= 100"
+                        }
+                      ]
                     }
                   ]
+                },
+                {
+                  name: 'c',
+                  terminal: true
                 }
               ]
             }
-          ] 
-        }  
-      """;
-
-  public static String invalidInheritance = """
-      {
-        name: 'collaborativeStateMachine',
-        version: '0.1',
-        memoryMode: 'distributed',
-        stateMachines: [
-          {
-            name: 'stateMachine1',
-            extends: 'invalidStateMachine',
-            states: [
-              {
-                name: 'state1',
-                initial: true,
-                terminal: true
-              }
-            ]
-          }
-        ]
-      }
-      """;
-
-  public static String invalidStateOverride = """
-      {
-        name: 'collaborativeStateMachine',
-        version: '0.1',
-        memoryMode: 'distributed',
-        stateMachines: [
-          {
-            name: 'stateMachine1',
-            states: [
-              {
-                name: 'state1',
-                initial: true,
-                terminal: true
-              }
-            ]
-          },
-          {
-            name: 'stateMachine2',
-            extends: 'stateMachine1',
-            states: [
-              {
-                name: 'state1'
-              }
-            ]
-          }
-        ]
-      }
-      """;
-
-  public static String invalidAbstraction = """
-      {
-        name: 'collaborativeStateMachine',
-        version: '0.1',
-        memoryMode: 'distributed',
-        stateMachines: [
-          {
-            name: 'stateMachine1',
-            abstract: true,
-            states: [
-              {
-                name: 'state1',
-                initial: true,
-                terminal: true
-              },
-              {
-                name: 'state2',
-                abstract: true
-              }
-            ]
-          },
-          {
-            name: 'stateMachine2',
-            extends: 'stateMachine1',
-            states: [
-              {
-                name: 'state3'
-              }
-            ]
-          }
-        ]
-      }
-      """;
-
-  public static String invalidAbstractStates = """
-      {
-        name: 'collaborativeStateMachine',
-        version: '0.1',
-        memoryMode: 'distributed',
-        stateMachines: [
-          {
-            name: 'stateMachine1',
-            states: [
-              {
-                name: 'state1',
-                initial: true,
-                terminal: true
-              },
-              {
-                name: 'state2',
-                abstract: true
-              }
-            ]
-          }
-        ]
-      }
+          ]
+        }
       """;
 }

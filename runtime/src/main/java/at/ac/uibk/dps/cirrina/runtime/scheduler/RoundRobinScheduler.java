@@ -31,7 +31,7 @@ public final class RoundRobinScheduler implements Scheduler {
       ++index;
 
       // Attempt to get an executable command
-      final var command = stateMachine.getExecutableCommand();
+      final var command = stateMachine.findExecutableCommand();
       if (command.isPresent()) {
         return Optional.of(new StateMachineInstanceCommand(stateMachine, command.get()));
       }

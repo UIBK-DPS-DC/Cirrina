@@ -36,20 +36,15 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
 
   private final List<Action> namedActions;
 
-  StateMachine(String name,
-      Optional<ContextClass> localContextClass,
-      List<Guard> namedGuards,
-      List<Action> actions,
-      boolean abstractt,
-      List<StateMachine> nestedStateMachines) {
+  StateMachine(Parameters parameters) {
     super(Transition.class);
 
-    this.name = name;
-    this.localContextClass = localContextClass;
-    this.namedGuards = Collections.unmodifiableList(namedGuards);
-    this.namedActions = Collections.unmodifiableList(actions);
-    this.abstractt = abstractt;
-    this.nestedStateMachines = Collections.unmodifiableList(nestedStateMachines);
+    this.name = parameters.name;
+    this.localContextClass = parameters.localContextClass;
+    this.namedGuards = Collections.unmodifiableList(parameters.namedGuards);
+    this.namedActions = Collections.unmodifiableList(parameters.namedActions);
+    this.abstractt = parameters.abstractt;
+    this.nestedStateMachines = Collections.unmodifiableList(parameters.nestedStateMachines);
   }
 
   /**
@@ -72,14 +67,29 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
   }
 
   /**
-   * @param fromState
-   * @param eventName
-   * @return
+   * Returns the transitions from a state that are triggered by a given event name.
+   *
+   * @param fromState From state.
+   * @param eventName The event name.
+   * @return The list of on-transitions.
    */
-  public List<Transition> findTransitionsFromStateByEventName(State fromState, String eventName) {
+  public List<OnTransition> findOnTransitionsFromStateByEventName(State fromState, String eventName) {
     return outgoingEdgesOf(fromState).stream()
         .filter(transition -> transition instanceof OnTransition)
-        .filter(transition -> ((OnTransition) transition).getEventName().equals(eventName))
+        .map(transition -> (OnTransition) transition)
+        .filter(transition -> transition.getEventName().equals(eventName))
+        .toList();
+  }
+
+  /**
+   * Returns the transitions from a state that are not event-triggered.
+   *
+   * @param fromState From state.
+   * @return The list of always-transitions.
+   */
+  public List<Transition> findAlwaysTransitionsFromState(State fromState) {
+    return outgoingEdgesOf(fromState).stream()
+        .filter(transition -> !(transition instanceof OnTransition))
         .toList();
   }
 
@@ -207,5 +217,14 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
   @Override
   public String toString() {
     return name;
+  }
+
+  record Parameters(String name,
+                    Optional<ContextClass> localContextClass,
+                    List<Guard> namedGuards,
+                    List<Action> namedActions,
+                    boolean abstractt,
+                    List<StateMachine> nestedStateMachines) {
+
   }
 }

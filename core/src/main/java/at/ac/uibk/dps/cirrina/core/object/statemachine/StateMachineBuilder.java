@@ -118,13 +118,20 @@ public final class StateMachineBuilder {
    * @throws IllegalArgumentException In case the state machine could not be built.
    */
   private StateMachine buildBase() throws IllegalArgumentException {
-    var guards = buildGuards();
-    var actions = buildActions();
+    var namedGuards = buildGuards();
+    var namedActions = buildActions();
     var nestedStateMachines = buildNestedStateMachines();
 
-    // TODO: Add parameters
-    var stateMachine = new StateMachine(stateMachineClass.name, stateMachineClass.localContext, guards, actions,
-        stateMachineClass.abstractt, nestedStateMachines);
+    var parameters = new StateMachine.Parameters(
+        stateMachineClass.name,
+        stateMachineClass.localContext,
+        namedGuards,
+        namedActions,
+        stateMachineClass.abstractt,
+        nestedStateMachines
+    );
+
+    var stateMachine = new StateMachine(parameters);
 
     var actionResolver = new ActionResolver(stateMachine);
 

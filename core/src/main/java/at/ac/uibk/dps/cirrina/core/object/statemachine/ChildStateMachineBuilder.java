@@ -24,16 +24,15 @@ public final class ChildStateMachineBuilder {
   private final StateMachineClass stateMachineClass;
   private final StateMachine baseStateMachine;
   private final List<StateMachine> nestedStateMachines;
-  private final List<Guard> guards;
-  private final List<Action> actions;
+  private final List<Guard> namedGuards;
+  private final List<Action> namedActions;
 
-  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine baseStateMachine, List<Guard> guards,
-      List<Action> actions,
-      List<StateMachine> nestedStateMachine) {
+  private ChildStateMachineBuilder(StateMachineClass stateMachineClass, StateMachine baseStateMachine, List<Guard> namedGuards,
+      List<Action> namedActions, List<StateMachine> nestedStateMachine) {
     this.stateMachineClass = stateMachineClass;
     this.baseStateMachine = baseStateMachine;
-    this.guards = new ArrayList<>(guards);
-    this.actions = new ArrayList<>(actions);
+    this.namedGuards = new ArrayList<>(namedGuards);
+    this.namedActions = new ArrayList<>(namedActions);
     this.nestedStateMachines = nestedStateMachine;
   }
 
@@ -55,10 +54,16 @@ public final class ChildStateMachineBuilder {
     addBaseActions();
     addBaseGuards();
 
-    // TODO: Add parameters
-    StateMachine stateMachine = new StateMachine(stateMachineClass.name, stateMachineClass.localContext, guards, actions,
+    var parameters = new StateMachine.Parameters(
+        stateMachineClass.name,
+        stateMachineClass.localContext,
+        namedGuards,
+        namedActions,
         stateMachineClass.abstractt,
-        nestedStateMachines);
+        nestedStateMachines
+    );
+
+    var stateMachine = new StateMachine(parameters);
 
     addStates(stateMachine);
     addBaseEdges(stateMachine);
@@ -72,10 +77,10 @@ public final class ChildStateMachineBuilder {
   private void addBaseActions() {
     List<Action> baseActions = baseStateMachine.getNamedActions();
 
-    if (actions.isEmpty() && !baseActions.isEmpty()) {
-      actions.addAll(baseActions);
-    } else if (!actions.isEmpty() && !baseActions.isEmpty()) {
-      final List<Action> finalActions = actions;
+    if (namedActions.isEmpty() && !baseActions.isEmpty()) {
+      namedActions.addAll(baseActions);
+    } else if (!namedActions.isEmpty() && !baseActions.isEmpty()) {
+      final List<Action> finalActions = namedActions;
 
       baseActions.stream()
           .filter(baseAction -> finalActions.stream()
@@ -90,10 +95,10 @@ public final class ChildStateMachineBuilder {
   private void addBaseGuards() {
     List<Guard> baseGuards = baseStateMachine.getNamedGuards();
 
-    if (guards.isEmpty() && !baseGuards.isEmpty()) {
-      guards.addAll(baseGuards);
-    } else if (!guards.isEmpty() && !baseGuards.isEmpty()) {
-      final List<Guard> finalGuards = guards;
+    if (namedGuards.isEmpty() && !baseGuards.isEmpty()) {
+      namedGuards.addAll(baseGuards);
+    } else if (!namedGuards.isEmpty() && !baseGuards.isEmpty()) {
+      final List<Guard> finalGuards = namedGuards;
 
       baseGuards.stream()
           .filter(baseGuard -> finalGuards.stream()

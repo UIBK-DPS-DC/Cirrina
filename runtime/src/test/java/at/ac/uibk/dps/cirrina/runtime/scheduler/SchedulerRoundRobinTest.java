@@ -26,7 +26,7 @@ public class SchedulerRoundRobinTest {
   @Test
   public void testSelectNoneExecutable() {
     var instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
-    Mockito.when(instanceWithoutCommand.getExecutableCommand()).thenReturn(Optional.empty());
+    Mockito.when(instanceWithoutCommand.findExecutableCommand()).thenReturn(Optional.empty());
 
     Queue<StateMachineInstance> mockQueue = new LinkedList<>();
 
@@ -48,13 +48,13 @@ public class SchedulerRoundRobinTest {
     var instancesWithCommand = IntStream.range(0, 3)
         .mapToObj(i -> {
           var instanceWithCommand = Mockito.mock(StateMachineInstance.class);
-          Mockito.when(instanceWithCommand.getExecutableCommand()).thenReturn(Optional.of(mockCommand));
+          Mockito.when(instanceWithCommand.findExecutableCommand()).thenReturn(Optional.of(mockCommand));
           return instanceWithCommand;
         })
         .toArray(StateMachineInstance[]::new);
 
     var instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
-    Mockito.when(instanceWithoutCommand.getExecutableCommand()).thenReturn(Optional.empty());
+    Mockito.when(instanceWithoutCommand.findExecutableCommand()).thenReturn(Optional.empty());
 
     Queue<StateMachineInstance> mockQueue = new LinkedList<>();
 

@@ -1,8 +1,9 @@
-package at.ac.uibk.dps.cirrina.runtime.command.statemachine;
+package at.ac.uibk.dps.cirrina.runtime.command.transition;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateEntryCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.statemachine.StateChangeCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,6 @@ public final class InitialTransitionCommand implements Command {
    * The target state.
    */
   private final StateInstance targetState;
-
 
   /**
    * Initializes this initial transition command.

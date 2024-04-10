@@ -3,7 +3,9 @@ package at.ac.uibk.dps.cirrina.runtime.command.state;
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.action.ActionCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.transition.TransitionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
+import at.ac.uibk.dps.cirrina.runtime.instance.TransitionInstance;
 import java.util.ArrayList;
 import java.util.List;
 import org.jgrapht.traverse.TopologicalOrderIterator;
@@ -42,6 +44,10 @@ public final class StateEntryCommand implements Command {
     // New commands
     final var commands = new ArrayList<Command>();
 
+    final var stateMachineInstance = executionContext.stateMachineInstance();
+    final var stateMachine = stateMachineInstance.getStateMachine();
+    final var status = stateMachineInstance.getStatus();
+
     // Append the entry actions to the command list
     new TopologicalOrderIterator<>(state.getState().getEntryActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(state, action, false)));
@@ -49,6 +55,29 @@ public final class StateEntryCommand implements Command {
     // Append the while actions to the command list
     new TopologicalOrderIterator<>(state.getState().getWhileActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(state, action, true)));
+
+    // Look up the always-transitions that are outwards from the current state
+    final var transitions = stateMachine.findAlwaysTransitionsFromState(status.getActivateState().getState());
+
+    boolean tookTransition = false;
+
+    for (var transition : transitions) {
+      if (transition.evaluate(stateMachineInstance.getExtent())) {
+        if (tookTransition) {
+          throw RuntimeException.from("Non-determinism detected!");
+        }
+
+        commands.add(
+            new TransitionCommand(
+                new TransitionInstance(transition),
+                stateMachineInstance.findStateInstanceByName(transition.getTarget())
+                    .orElseThrow(() -> RuntimeException.from("Target state cannot be found in state machine"))
+            )
+        );
+
+        tookTransition = true;
+      }
+    }
 
     // TODO: Start timeout actions
 

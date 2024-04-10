@@ -12,8 +12,8 @@ import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
-import at.ac.uibk.dps.cirrina.runtime.command.statemachine.InitialTransitionCommand;
-import at.ac.uibk.dps.cirrina.runtime.command.statemachine.TransitionCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.event.EventCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.transition.InitialTransitionCommand;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -48,8 +48,7 @@ public final class StateMachineInstance implements Scope, EventListener {
     this(runtime, stateMachine, Optional.empty());
   }
 
-  public StateMachineInstance(Runtime runtime, StateMachine stateMachine, Optional<StateMachineInstance> parent)
-      throws RuntimeException {
+  public StateMachineInstance(Runtime runtime, StateMachine stateMachine, Optional<StateMachineInstance> parent) throws RuntimeException {
     this.runtime = runtime;
     this.stateMachine = stateMachine;
 
@@ -70,85 +69,14 @@ public final class StateMachineInstance implements Scope, EventListener {
   }
 
   @Override
-  public Extent getExtent() {
-    return parent
-        .map(parent -> parent.getExtent().extend(localContext))
-        .orElseGet(() -> runtime.getExtent().extend(localContext));
-  }
-
-  /**
-   * Returns an executable command whenever it is available. An executable command is available whenever this state machine has commands in
-   * its queue and a lock can be acquired (i.e., the state machine instance is not locked).
-   * <p>
-   * In case a command is returned, the state machine instance will be locked and will need to be unlocked once the command has been
-   * executed. It is, therefore, expected that the command once acquired is executed.
-   *
-   * @return The next executable command.
-   */
-  public Optional<Command> getExecutableCommand() {
-    if (!queue.isEmpty()) {
-      if (lock.tryLock()) {
-        return Optional.ofNullable(queue.poll());
-      }
-    }
-
-    return Optional.empty();
-  }
-
-  public InstanceId getId() {
-    return id;
-  }
-
-  public Status getStatus() {
-    return status;
-  }
-
-  public void setActiveState(StateInstance state) throws RuntimeException {
-    if (!states.containsValue(state)) {
-      throw RuntimeException.from(
-          "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
-          state.getState().getName(), id);
-    }
-
-    // Update the active state
-    status.activeState = state;
-  }
-
-  @Override
   public void onReceiveEvent(Event event) {
-    try {
-      // Look up the transitions that are outwards from the current state
-      var transitions = stateMachine.findTransitionsFromStateByEventName(status.getActivateState().getState(), event.getName());
-
-      // To check non-determinism
-      boolean tookTransition = false;
-
-      // Find the transitions that can be taken (that have all their guards produce true values), for those, we add transition commands
-      // to this state machine instance's command queue
-      for (var transition : transitions) {
-        if (transition.evaluate(getExtent())) {
-          if (tookTransition) {
-            throw RuntimeException.from("Non-determinism detected!");
-          }
-
-          // Create the transition instance and look up the target state instance
-          var transitionInstance = new TransitionInstance(transition);
-          var targetStateInstance = states.get(transition.getTarget());
-
-          // Construct the transition comamnd
-          var transitionCommand = new TransitionCommand(transitionInstance, targetStateInstance);
-
-          // Append to the command queue.
-          appendCommand(transitionCommand);
-
-          tookTransition = true;
-        }
-      }
-    } catch (RuntimeException e) {
-      System.exit(1);
-
-      // TODO: Stop the state machine, escalate
+    // Nothing to do if the state machine is terminated
+    if (status.isTerminated()) {
+      return;
     }
+
+    // Append a new event command, this command may do nothing depending on the event
+    appendCommand(new EventCommand(this, event));
   }
 
   /**
@@ -156,17 +84,24 @@ public final class StateMachineInstance implements Scope, EventListener {
    * will be unlocked after the execution of the command.
    *
    * @param command The command to execute.
-   * @see StateMachineInstance#getExecutableCommand().
+   * @see StateMachineInstance#findExecutableCommand().
    */
   public void execute(Command command) throws RuntimeException {
     // When executing a command, this state machine instance must be locked, as the command should only be acquired along with a lock. This
     // must always hold, otherwise we made a programming error
     assert lock.isLocked();
 
-    // When executing a command, new commands replacing the currently executed command can be generated, insert those commands into the
-    // command queue at the beginning. The currently executing command is always the head of the queue, hence we can insert these commands
-    // as the new head
-    prependCommands(command.execute(new ExecutionContext(this, runtime.getEventHandler())));
+    if (!status.isTerminated()) {
+      // When executing a command, new commands replacing the currently executed command can be generated, insert those commands into the
+      // command queue at the beginning. The currently executing command is always the head of the queue, hence we can insert these commands
+      // as the new head
+      prependCommands(command.execute(new ExecutionContext(this, runtime.getEventHandler())));
+
+      // If we're in a terminal state, the state machine also terminates
+      if (status.getActivateState().getState().isTerminal()) {
+        status.terminate();
+      }
+    }
 
     // Unlock the state machine instance
     lock.unlock();
@@ -196,6 +131,59 @@ public final class StateMachineInstance implements Scope, EventListener {
     synchronized (runtime) {
       runtime.notify();
     }
+  }
+
+  /**
+   * Returns an executable command whenever it is available. An executable command is available whenever this state machine has commands in
+   * its queue and a lock can be acquired (i.e., the state machine instance is not locked).
+   * <p>
+   * In case a command is returned, the state machine instance will be locked and will need to be unlocked once the command has been
+   * executed. It is, therefore, expected that the command once acquired is executed.
+   *
+   * @return The next executable command.
+   */
+  public Optional<Command> findExecutableCommand() {
+    if (!queue.isEmpty()) {
+      if (lock.tryLock()) {
+        return Optional.ofNullable(queue.poll());
+      }
+    }
+
+    return Optional.empty();
+  }
+
+  public Optional<StateInstance> findStateInstanceByName(String name) {
+    return states.containsKey(name) ? Optional.of(states.get(name)) : Optional.empty();
+  }
+
+  @Override
+  public Extent getExtent() {
+    return parent
+        .map(parent -> parent.getExtent().extend(localContext))
+        .orElseGet(() -> runtime.getExtent().extend(localContext));
+  }
+
+  public InstanceId getId() {
+    return id;
+  }
+
+  public Status getStatus() {
+    return status;
+  }
+
+  public StateMachine getStateMachine() {
+    return stateMachine;
+  }
+
+  public void setActiveState(StateInstance state) throws RuntimeException {
+    if (!states.containsValue(state)) {
+      throw RuntimeException.from(
+          "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
+          state.getState().getName(), id);
+    }
+
+    // Update the active state
+    status.activeState = state;
   }
 
 

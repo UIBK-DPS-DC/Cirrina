@@ -1,10 +1,11 @@
-package at.ac.uibk.dps.cirrina.runtime.command.statemachine;
+package at.ac.uibk.dps.cirrina.runtime.command.transition;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.action.ActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateEntryCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateExitCommand;
+import at.ac.uibk.dps.cirrina.runtime.command.statemachine.StateChangeCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.TransitionInstance;
 import java.util.ArrayList;

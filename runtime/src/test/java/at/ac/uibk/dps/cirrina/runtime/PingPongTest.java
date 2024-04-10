@@ -1,5 +1,9 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
 import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
@@ -34,8 +38,6 @@ public class PingPongTest {
   @Test
   public void testPingPongExecute() {
     Assertions.assertDoesNotThrow(() -> {
-      var persistentContext = new InMemoryContext();
-
       var mockEventHandler = new EventHandler() {
 
         @Override
@@ -69,15 +71,41 @@ public class PingPongTest {
         }
       };
 
-      var runtime = new Runtime(new RoundRobinScheduler(), mockEventHandler, persistentContext);
+      // Mock a persistent context using an in-memory context
+      var mockPersistentContext = new InMemoryContext() {
+        private int next = 1;
 
+        @Override
+        public void assign(String name, Object value) throws RuntimeException {
+          // Don't expect any variables assigned except for v
+          assertEquals("v", name);
+
+          // Which is an integer
+          assertTrue(value instanceof Integer);
+
+          // And should count up to 100
+          assertEquals(next++, value);
+          assertTrue((Integer) value <= 100);
+
+          super.assign(name, value);
+        }
+      };
+
+      // Create the persistent context variable v
+      mockPersistentContext.create("v", 0);
+
+      // Create a runtime
+      var runtime = new Runtime(new RoundRobinScheduler(), mockEventHandler, mockPersistentContext);
+
+      // Create two state machines
       runtime.newInstance(stateMachine1);
       runtime.newInstance(stateMachine2);
 
+      // Run for five seconds
       var thread = new Thread(runtime);
       thread.start();
 
-      thread.join();
+      thread.join(5000);
     });
   }
 }
