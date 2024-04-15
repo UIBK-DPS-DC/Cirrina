@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.object.state;
 
+import at.ac.uibk.dps.cirrina.core.io.plantuml.Exportable;
+import at.ac.uibk.dps.cirrina.core.io.plantuml.PlantUmlVisitor;
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
@@ -7,10 +9,12 @@ import at.ac.uibk.dps.cirrina.core.object.action.ActionGraphBuilder;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
-public final class State {
+public final class State implements Exportable {
 
+  private final UUID parentStateMachineId;
   private final String name;
   private final Optional<ContextClass> localContextClass;
   private final boolean initial;
@@ -23,6 +27,7 @@ public final class State {
 
   State(Parameters parameters) {
     if (parameters.baseState().isEmpty()) {
+      this.parentStateMachineId = parameters.parentStateMachineId;
       this.name = parameters.name();
 
       this.localContextClass = parameters.localContextClass();
@@ -39,6 +44,7 @@ public final class State {
     } else {
       var baseState = parameters.baseState().get();
 
+      this.parentStateMachineId = baseState.parentStateMachineId;
       this.name = baseState.name;
 
       this.localContextClass = baseState.localContextClass;
@@ -55,6 +61,10 @@ public final class State {
       // Ensure overridden abstract states are virtual if they are no longer abstract, so they can be further overridden
       this.virtual = (baseState.abstractt && !abstractt) || baseState.virtual;
     }
+  }
+
+  public UUID getParentStateMachineId() {
+    return parentStateMachineId;
   }
 
   public String getName() {
@@ -101,7 +111,13 @@ public final class State {
     return name;
   }
 
+  @Override
+  public void accept(PlantUmlVisitor visitor) {
+    visitor.visit(this);
+  }
+
   record Parameters(
+      UUID parentStateMachineId,
       String name,
       Optional<ContextClass> localContextClass,
       boolean initial,

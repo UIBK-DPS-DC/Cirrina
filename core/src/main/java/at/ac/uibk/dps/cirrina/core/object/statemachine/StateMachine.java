@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
+import at.ac.uibk.dps.cirrina.core.io.plantuml.Exportable;
+import at.ac.uibk.dps.cirrina.core.io.plantuml.PlantUmlVisitor;
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.InvokeAction;
@@ -12,6 +14,7 @@ import at.ac.uibk.dps.cirrina.core.object.transition.Transition;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.jgrapht.graph.DirectedPseudograph;
 
@@ -22,9 +25,11 @@ import org.jgrapht.graph.DirectedPseudograph;
  * <p>
  * Formally, a state machine is a directed pseudograph, where states are vertices and transitions are edges.
  */
-public final class StateMachine extends DirectedPseudograph<State, Transition> {
+public final class StateMachine extends DirectedPseudograph<State, Transition> implements Exportable {
 
   private final List<StateMachine> nestedStateMachines;
+
+  private final UUID id = UUID.randomUUID();
 
   private final String name;
 
@@ -115,6 +120,14 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
     return namedActions.stream()
         .filter(action -> action.getName().equals(Optional.of(actionName)))
         .findFirst();
+  }
+
+  public List<StateMachine> getNestedStateMachines() {
+    return nestedStateMachines;
+  }
+
+  public UUID getId() {
+    return id;
   }
 
   public String getName() {
@@ -217,6 +230,11 @@ public final class StateMachine extends DirectedPseudograph<State, Transition> {
   @Override
   public String toString() {
     return name;
+  }
+
+  @Override
+  public void accept(PlantUmlVisitor visitor) {
+    visitor.visit(this);
   }
 
   record Parameters(String name,

@@ -108,6 +108,271 @@ public class DefaultDescriptions {
       }
       """;
 
+  public static final String completeNested = """
+        {
+          name: 'collaborativeStateMachine',
+          version: '0.1',
+          memoryMode: 'distributed',
+          stateMachines: [
+            {
+              name: 'stateMachine1',
+              states: [
+                {
+                  name: 'stateMachine1_1',
+                  states: [
+                    {
+                      name: 'state1_1',
+                      initial: true,
+                      exit: [
+                        {
+                          type: 'invoke',
+                          serviceType: 'patternRecognition',
+                          input: [
+                             {
+                               name: 'maxValue',
+                               value: '5'
+                             },
+                            {
+                              name: 'minValue',
+                              value: '0'
+                            }
+                          ]
+                        }
+                      ],
+                      on: [
+                        {
+                          target: 'state1_2',
+                          event: 'e1_1'
+                        }
+                      ]
+                    },
+                    {
+                      name: 'state1_2',
+                      terminal: true
+                    }
+                  ]
+                },
+                {
+                  name: 'stateMachine1_2',
+                  states: [
+                    {
+                      name: 'state1_3',
+                      initial: true,
+                      on: [
+                        {
+                          target: 'state1_4',
+                          event: 'e1_2',
+                          guards: [
+                            {
+                              expression: 'v > 5'
+                            },
+                            {
+                              expression: 'v < 10'
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      name: 'state1_4',
+                      terminal: true,
+                      entry: [
+                        {
+                          type: 'assign',
+                          variable: {
+                            name: 'v',
+                            value: 'v*2'
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  name: 'state1',
+                  initial: true,
+                  entry: [
+                    {
+                      reference: 'action1'
+                    },
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e1',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      target: 'state2',
+                      event: 'e1',
+                      guards: [
+                        {
+                          expression: 'v > 5'
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  name: 'state2',
+                  entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v+1'
+                      }
+                    },
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v+2'
+                      }
+                    },
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e2',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  while: [
+                    {
+                      type: 'invoke',
+                      serviceType: 'faceRecognition'
+                    }
+                  ],
+                  exit: [
+                    {
+                      type: 'create',
+                      variable: {
+                        name: 'v',
+                        value: '5'
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      target: 'state2',
+                      event: 'e2'
+                    },
+                    {
+                      target: 'state3',
+                      event: 'e3'
+                    }
+                  ]
+                },
+                {
+                  name: 'state3',
+                  terminal: true,
+                  entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v*2'
+                      }
+                    }
+                  ]
+                }
+              ],
+              actions: [
+                {
+                  name: 'action1',
+                  type: 'create',
+                  variable: {
+                    name: 'v',
+                    value: '5'
+                  }
+                }
+              ]
+            },
+            {
+              name: 'stateMachine2',
+              states: [
+                {
+                  name: 'state1',
+                  initial: true,
+                  entry: [
+                    {
+                      reference: 'action1'
+                    },
+                    {
+                      type: 'raise',
+                      event: {
+                        name: 'e1',
+                        channel: 'internal'
+                      }
+                    }
+                  ],
+                  exit: [
+                    {
+                      type: 'invoke',
+                      serviceType: 'patternRecognition'
+                    }
+                  ],
+                  on: [
+                    {
+                      target: 'state2',
+                      event: 'stop',
+                      guards: [
+                        {
+                          expression: 'v != 0'
+                        },
+                        {
+                          reference: 'guard1'
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  name: 'state2',
+                  terminal: true,
+                  entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: 'v*2 + 1'
+                      }
+                    }
+                  ]
+                }
+              ],
+              actions: [
+                {
+                  name: 'action1',
+                  type: 'create',
+                  variable: {
+                    name: 'v',
+                    value: '5'
+                  }
+                },
+                                {
+                  name: 'action1',
+                  type: 'create',
+                  variable: {
+                    name: 'b',
+                    value: 'true'
+                  }
+                }
+              ],
+              guards: [
+                {
+                  name: 'guard1',
+                  expression: 'v < 4 && b'
+                }
+              ]
+            }
+          ]
+        }
+      """;
+
   public static final String completeInheritance = """
       {
         name: 'collaborativeStateMachine',

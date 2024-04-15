@@ -58,4 +58,11 @@ public record ContextVariable(
       return this;
     }
   }
+
+
+  @Override
+  public String toString() {
+    return "{" + name + " = " + value.toString() + "}";
+  }
+
 }

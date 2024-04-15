@@ -1,10 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.expression;
 
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
-import com.google.common.hash.Hashing;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Expression builder, builds an expression based on an expression source string. Built expressions are cached, repeatedly building the same

@@ -67,10 +67,10 @@ public class JexlExpression extends Expression {
   }
 
   /**
-     * JEXL context, which has access to all variables within an Extent and a local expression-level context.
-     *
-     * @see Extent
-     */
+   * JEXL context, which has access to all variables within an Extent and a local expression-level context.
+   *
+   * @see Extent
+   */
   private record ExtentJexlContext(Extent extent) implements JexlContext {
 
     @Override

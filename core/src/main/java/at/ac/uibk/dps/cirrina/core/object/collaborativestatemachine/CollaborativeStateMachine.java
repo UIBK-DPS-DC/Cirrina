@@ -3,6 +3,7 @@ package at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine;
 import at.ac.uibk.dps.cirrina.core.lang.keyword.MemoryMode;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
+import java.util.List;
 import java.util.Optional;
 import org.jgrapht.graph.DirectedPseudograph;
 
@@ -37,6 +38,16 @@ public final class CollaborativeStateMachine extends DirectedPseudograph<StateMa
       return Optional.empty();
     }
     return Optional.of(states.getFirst());
+  }
+
+
+  /**
+   * Returns the collection of state machines.
+   *
+   * @return State machines.
+   */
+  public List<StateMachine> getStateMachines() {
+    return List.copyOf(vertexSet());
   }
 
   @Override

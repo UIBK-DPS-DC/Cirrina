@@ -1,11 +1,13 @@
 package at.ac.uibk.dps.cirrina.core.object.action;
 
+import at.ac.uibk.dps.cirrina.core.io.plantuml.Exportable;
+import at.ac.uibk.dps.cirrina.core.io.plantuml.PlantUmlVisitor;
 import java.util.Optional;
 
 /**
  * Base action, can represent and action.
  */
-public abstract class Action {
+public abstract class Action implements Exportable {
 
   /**
    * The action name. An action name can be omitted, in which case it is an inline action and cannot be referenced.
@@ -34,4 +36,10 @@ public abstract class Action {
   public String toString() {
     return name.orElse("Inline Action");
   }
+
+  @Override
+  public void accept(PlantUmlVisitor visitor) {
+    visitor.visit(this);
+  }
+
 }

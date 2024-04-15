@@ -9,9 +9,12 @@ import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public final class StateBuilder {
+
+  private final UUID parentStateMachineId;
 
   private final StateClass stateClass;
 
@@ -19,14 +22,16 @@ public final class StateBuilder {
 
   private final Optional<State> baseState;
 
-  private StateBuilder(StateClass stateClass, ActionResolver actionResolver, Optional<State> baseState) {
+  private StateBuilder(UUID parentStateMachineId, StateClass stateClass, ActionResolver actionResolver, Optional<State> baseState) {
+    this.parentStateMachineId = parentStateMachineId;
     this.stateClass = stateClass;
     this.actionResolver = actionResolver;
     this.baseState = baseState;
   }
 
-  public static StateBuilder from(StateClass stateClass, ActionResolver actionResolver, Optional<State> baseState) {
-    return new StateBuilder(stateClass, actionResolver, baseState);
+  public static StateBuilder from(UUID parentStateMachineId, StateClass stateClass, ActionResolver actionResolver,
+      Optional<State> baseState) {
+    return new StateBuilder(parentStateMachineId, stateClass, actionResolver, baseState);
   }
 
   public State build() throws IllegalArgumentException {
@@ -48,6 +53,7 @@ public final class StateBuilder {
     var whileActions = resolveActions.apply(stateClass.whilee);
 
     var parameters = new State.Parameters(
+        parentStateMachineId,
         stateClass.name,
         stateClass.localContext,
         stateClass.initial,
