@@ -41,7 +41,7 @@ public class EventCommand implements Command {
         commands.add(
             new TransitionCommand(
                 new TransitionInstance(transition),
-                stateMachineInstance.findStateInstanceByName(transition.getTarget())
+                stateMachineInstance.findStateInstanceByName(transition.getTargetName())
                     .orElseThrow(() -> RuntimeException.from("Target state cannot be found in state machine"))
             )
         );

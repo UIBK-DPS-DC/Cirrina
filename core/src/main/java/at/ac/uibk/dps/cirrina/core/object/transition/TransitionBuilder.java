@@ -123,7 +123,7 @@ public abstract class TransitionBuilder {
     public Transition build() {
       if (transition instanceof OnTransition onTransition) {
         return new OnTransition(
-            onTransition.getTarget(),
+            onTransition.getTargetName(),
             onTransition.getElse(),
             onTransition.getGuards(),
             onTransition.getActionGraph().getActions(),
@@ -131,7 +131,7 @@ public abstract class TransitionBuilder {
         );
       } else {
         return new Transition(
-            transition.getTarget(),
+            transition.getTargetName(),
             transition.getElse(),
             transition.getGuards(),
             transition.getActionGraph().getActions()

@@ -1,11 +1,14 @@
 package at.ac.uibk.dps.cirrina.core.object.transition;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.io.plantuml.Exportable;
+import at.ac.uibk.dps.cirrina.core.io.plantuml.PlantUmlVisitor;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
 import at.ac.uibk.dps.cirrina.core.object.action.ActionGraphBuilder;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.guard.Guard;
+import at.ac.uibk.dps.cirrina.core.object.state.State;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -17,9 +20,9 @@ import org.jgrapht.graph.DefaultEdge;
  * of the transition represents the target state whenever the transition is not taken (at least one of the guards do not produce a true
  * value).
  */
-public class Transition extends DefaultEdge {
+public class Transition extends DefaultEdge implements Exportable {
 
-  private final String target;
+  private final String targetName;
   private final List<Guard> guards;
   private final Optional<String> elsee;
   private final ActionGraph actionGraph;
@@ -27,13 +30,13 @@ public class Transition extends DefaultEdge {
   /**
    * Initializes this transition object.
    *
-   * @param target  Name of the target state.
-   * @param elsee   Name of the else state.
-   * @param guards  List of guards.
-   * @param actions List of actions.
+   * @param targetName Name of the target state.
+   * @param elsee      Name of the else state.
+   * @param guards     List of guards.
+   * @param actions    List of actions.
    */
-  Transition(String target, Optional<String> elsee, List<Guard> guards, List<Action> actions) {
-    this.target = target;
+  Transition(String targetName, Optional<String> elsee, List<Guard> guards, List<Action> actions) {
+    this.targetName = targetName;
     this.guards = guards;
     this.elsee = elsee;
 
@@ -79,11 +82,30 @@ public class Transition extends DefaultEdge {
   /**
    * Returns the name of the target state.
    *
-   * @return Name of target state.
+   * @return Name of the target state.
    */
   @Override
-  public String getTarget() {
-    return target;
+  public State getSource() {
+    return (State) super.getSource();
+  }
+
+  /**
+   * Returns the name of the target state.
+   *
+   * @return Name of the target state.
+   */
+  @Override
+  public State getTarget() {
+    return (State) super.getTarget();
+  }
+
+  /**
+   * Returns the name of the target state.
+   *
+   * @return Name of the target state.
+   */
+  public String getTargetName() {
+    return targetName;
   }
 
   /**
@@ -107,5 +129,10 @@ public class Transition extends DefaultEdge {
         .map(actionGraph -> actionGraph.getActionsOfType(type))
         .flatMap(s -> s.stream())
         .toList();
+  }
+
+  @Override
+  public void accept(PlantUmlVisitor visitor) {
+    visitor.visit(this);
   }
 }

@@ -165,7 +165,7 @@ public final class ChildStateMachineBuilder {
       Optional<State> childState = baseStateMachine.findStateByName(stateClass.name);
       childState.ifPresent(stateMachine::removeVertex);
 
-      stateMachine.addVertex(StateBuilder.from(stateClass, actionResolver, childState).build());
+      stateMachine.addVertex(StateBuilder.from(stateMachine.getId(), stateClass, actionResolver, childState).build());
     });
 
     // Add missing base states which were not overridden

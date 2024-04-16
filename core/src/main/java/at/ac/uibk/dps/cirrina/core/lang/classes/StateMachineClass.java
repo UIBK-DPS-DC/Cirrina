@@ -96,8 +96,8 @@ public final class StateMachineClass extends Construct implements StateOrStateMa
   /**
    * The optional extended state machine name.
    * <p>
-   * The state machine extends this state machine, copies all its properties and allows them to be overridden. States can only be
-   * overridden if they are defined as virtual or abstract.
+   * The state machine extends this state machine, copies all its properties and allows them to be overridden. States can only be overridden
+   * if they are defined as virtual or abstract.
    * </p>
    *
    * @see StateClass

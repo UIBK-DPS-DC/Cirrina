@@ -138,7 +138,7 @@ public final class StateMachineBuilder {
     // Attempt to add vertices
     stateMachineClass.states.stream()
         .filter(StateClass.class::isInstance)
-        .map(stateClass -> StateBuilder.from((StateClass) stateClass, actionResolver,
+        .map(stateClass -> StateBuilder.from(stateMachine.getId(), (StateClass) stateClass, actionResolver,
             Optional.empty()).build())
         .forEach(stateMachine::addVertex);
 

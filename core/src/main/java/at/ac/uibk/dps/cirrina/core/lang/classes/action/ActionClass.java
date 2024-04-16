@@ -19,7 +19,7 @@ public class ActionClass extends Construct implements ActionOrActionReferenceCla
   @NotNull
   public Type type;
 
-  public Optional<String> name;
+  public Optional<String> name = Optional.empty();
 
   public enum Type {
     @JsonProperty("invoke")
