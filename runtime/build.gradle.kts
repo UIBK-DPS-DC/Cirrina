@@ -24,7 +24,16 @@ dependencies {
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
 
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.15.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-jsonSchema:2.15.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.1")
+
     implementation("com.google.guava:guava:33.0.0-jre")
+
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
+    implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
     implementation("org.jgrapht:jgrapht-io:1.5.2")

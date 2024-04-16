@@ -24,8 +24,6 @@ dependencies {
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
 
-    implementation("dev.cel:cel:0.3.1")
-
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-jsonSchema:2.15.1")
