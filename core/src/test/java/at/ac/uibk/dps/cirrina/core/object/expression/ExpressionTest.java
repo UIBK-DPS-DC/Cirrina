@@ -8,10 +8,8 @@ import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
-import com.google.protobuf.ByteString;
 import java.nio.ByteBuffer;
 import java.util.List;
-import org.apache.commons.jexl3.JexlException;
 import org.junit.jupiter.api.Test;
 
 public class ExpressionTest {
@@ -22,7 +20,8 @@ public class ExpressionTest {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);
 
-        var bytes = ByteString.copyFrom(ByteBuffer.allocate(4).putInt(0xBAD1D).array());
+        var bytes = new byte[4];
+        ByteBuffer.wrap(bytes).putInt(0xBAD1D);
         var list = List.of(-1, 1, true, "foobar");
 
         context.create("varPlusOneInt", +1);
