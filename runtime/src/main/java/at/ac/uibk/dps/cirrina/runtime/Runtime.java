@@ -21,16 +21,39 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class Runtime implements Runnable, EventListener {
+/**
+ * Abstract runtime, provides the generic runtime behavior of running state machine instances. The abstract runtime is specialized as a
+ * shared runtime, providing the non-distributed execution of a collaborative state machine. The distributed runtime is a specialization of
+ * the abstract runtime that provides the distributed execution of a set of state machine instances.
+ *
+ * @see at.ac.uibk.dps.cirrina.runtime.shared.SharedRuntime
+ * @see at.ac.uibk.dps.cirrina.runtime.distributed.DistributedRuntime
+ */
+public abstract class Runtime implements Runnable, EventListener {
 
+  /**
+   * The runtime logger.
+   */
   private static final Logger logger = LogManager.getLogger();
 
+  /**
+   * The collection of executed state machine instances.
+   */
   private final Queue<StateMachineInstance> instances = new ConcurrentLinkedQueue<>();
 
+  /**
+   * The runtime scheduler.
+   */
   private final Scheduler scheduler;
 
+  /**
+   * The event handler.
+   */
   private final EventHandler eventHandler;
 
+  /**
+   * The persistent context.
+   */
   private final Context persistentContext;
 
   private List<StateMachineInstanceCommandExecutionObserver> stateMachineInstanceCommandExecutionObservers = new ArrayList<>();
@@ -42,7 +65,7 @@ public final class Runtime implements Runnable, EventListener {
     this.persistentContext = persistentContext;
   }
 
-  public InstanceId newInstance(StateMachine stateMachine) throws RuntimeException {
+  protected InstanceId newInstance(StateMachine stateMachine) throws RuntimeException {
     final var instance = new StateMachineInstance(this, stateMachine, Optional.empty());
     instances.add(instance);
 

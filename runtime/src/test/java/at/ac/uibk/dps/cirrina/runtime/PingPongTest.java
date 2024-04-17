@@ -6,21 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
 import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
+import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
-import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinScheduler;
+import at.ac.uibk.dps.cirrina.runtime.shared.SharedRuntime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class PingPongTest {
 
-  private static StateMachine stateMachine1;
-  private static StateMachine stateMachine2;
+  private static CollaborativeStateMachine collaborativeStateMachine;
 
   @BeforeAll
   public static void setUp() {
@@ -28,10 +28,7 @@ public class PingPongTest {
 
     var parser = new Parser(new Options());
     Assertions.assertDoesNotThrow(() -> {
-      var collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
-
-      stateMachine1 = collaborativeStateMachine.findStateMachineByName("stateMachine1").get();
-      stateMachine2 = collaborativeStateMachine.findStateMachineByName("stateMachine2").get();
+      collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
     });
   }
 
@@ -95,11 +92,10 @@ public class PingPongTest {
       mockPersistentContext.create("v", 0);
 
       // Create a runtime
-      var runtime = new Runtime(new RoundRobinScheduler(), mockEventHandler, mockPersistentContext);
+      var runtime = new SharedRuntime(new RoundRobinScheduler(), mockEventHandler, mockPersistentContext);
 
-      // Create two state machines
-      runtime.newInstance(stateMachine1);
-      runtime.newInstance(stateMachine2);
+      // Create a new collaborative state machine instance
+      runtime.newInstance(collaborativeStateMachine);
 
       // Run for five seconds
       var thread = new Thread(runtime);
