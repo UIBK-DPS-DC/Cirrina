@@ -5,6 +5,10 @@ plugins {
     id("net.razvan.jacoco-to-cobertura") version "1.2.0"
 }
 
+application {
+    mainClass = "at.ac.uibk.dps.cirrina.runtime.main.Main"
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -17,12 +21,17 @@ jacoco {
 
 repositories {
     mavenCentral()
+    maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
 }
 
 dependencies {
     implementation(project(":core"))
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+
+    implementation("org.apache.zookeeper:zookeeper-client:3.8.1.7.1.9.0-387")
+
+    implementation("com.beust:jcommander:1.82")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.15.1")

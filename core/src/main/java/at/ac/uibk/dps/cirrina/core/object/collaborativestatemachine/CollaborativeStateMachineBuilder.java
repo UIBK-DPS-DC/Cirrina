@@ -139,9 +139,7 @@ public final class CollaborativeStateMachineBuilder {
    */
   public CollaborativeStateMachine build() throws VerificationException {
     try {
-      var collaborativeStateMachine = new CollaborativeStateMachine(
-          collaborativeStateMachineClass.name,
-          collaborativeStateMachineClass.memoryMode);
+      var collaborativeStateMachine = new CollaborativeStateMachine(collaborativeStateMachineClass.name);
 
       buildVertices(collaborativeStateMachine);
       buildEdges(collaborativeStateMachine);

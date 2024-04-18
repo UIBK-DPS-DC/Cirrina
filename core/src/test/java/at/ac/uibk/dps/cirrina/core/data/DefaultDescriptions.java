@@ -8,7 +8,6 @@ public class DefaultDescriptions {
       {
         name: 'collaborativeStateMachine',
         version: '0.1',
-        memoryMode: 'distributed',
         stateMachines: [
           {
             name: 'stateMachine1',
@@ -112,7 +111,6 @@ public class DefaultDescriptions {
         {
           name: 'collaborativeStateMachine',
           version: '0.1',
-          memoryMode: 'distributed',
           stateMachines: [
             {
               name: 'stateMachine1',
@@ -377,7 +375,6 @@ public class DefaultDescriptions {
       {
         name: 'collaborativeStateMachine',
         version: '0.1',
-        memoryMode: 'distributed',
         stateMachines: [
           {
             name: 'stateMachine1',
@@ -489,7 +486,6 @@ public class DefaultDescriptions {
       {
         name: 'collaborativeStateMachine',
         version: '0.1',
-        memoryMode: 'distributed',
         stateMachines: [
           {
             name: 'stateMachine1',
@@ -510,7 +506,6 @@ public class DefaultDescriptions {
       {
         name: 'collaborativeStateMachine',
         version: '0.1',
-        memoryMode: 'distributed',
         stateMachines: [
           {
             name: 'stateMachine1',
@@ -539,7 +534,6 @@ public class DefaultDescriptions {
       {
         name: 'collaborativeStateMachine',
         version: '0.1',
-        memoryMode: 'distributed',
         stateMachines: [
           {
             name: 'stateMachine1',
@@ -573,7 +567,6 @@ public class DefaultDescriptions {
       {
         name: 'collaborativeStateMachine',
         version: '0.1',
-        memoryMode: 'distributed',
         stateMachines: [
           {
             name: 'stateMachine1',

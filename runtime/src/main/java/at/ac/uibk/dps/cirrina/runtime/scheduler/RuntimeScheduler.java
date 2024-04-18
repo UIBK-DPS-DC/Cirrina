@@ -5,7 +5,7 @@ import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import java.util.Optional;
 import java.util.Queue;
 
-public interface Scheduler {
+public interface RuntimeScheduler {
 
   Optional<StateMachineInstanceCommand> select(Queue<StateMachineInstance> instances);
 

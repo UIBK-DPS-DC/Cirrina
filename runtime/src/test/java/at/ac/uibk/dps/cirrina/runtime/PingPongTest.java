@@ -12,7 +12,7 @@ import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinScheduler;
+import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinRuntimeScheduler;
 import at.ac.uibk.dps.cirrina.runtime.shared.SharedRuntime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -92,7 +92,7 @@ public class PingPongTest {
       mockPersistentContext.create("v", 0);
 
       // Create a runtime
-      var runtime = new SharedRuntime(new RoundRobinScheduler(), mockEventHandler, mockPersistentContext);
+      var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
 
       // Create a new collaborative state machine instance
       runtime.newInstance(collaborativeStateMachine);

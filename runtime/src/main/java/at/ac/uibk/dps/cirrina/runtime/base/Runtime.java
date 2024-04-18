@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime;
+package at.ac.uibk.dps.cirrina.runtime.base;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
@@ -7,8 +7,8 @@ import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance.InstanceId;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.Scheduler;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.Scheduler.StateMachineInstanceCommand;
+import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler;
+import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler.StateMachineInstanceCommand;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
@@ -42,9 +42,9 @@ public abstract class Runtime implements Runnable, EventListener {
   private final Queue<StateMachineInstance> instances = new ConcurrentLinkedQueue<>();
 
   /**
-   * The runtime scheduler.
+   * The runtime runtimeScheduler.
    */
-  private final Scheduler scheduler;
+  private final RuntimeScheduler runtimeScheduler;
 
   /**
    * The event handler.
@@ -58,8 +58,8 @@ public abstract class Runtime implements Runnable, EventListener {
 
   private List<StateMachineInstanceCommandExecutionObserver> stateMachineInstanceCommandExecutionObservers = new ArrayList<>();
 
-  public Runtime(Scheduler scheduler, EventHandler eventHandler, Context persistentContext) throws RuntimeException {
-    this.scheduler = scheduler;
+  public Runtime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws RuntimeException {
+    this.runtimeScheduler = runtimeScheduler;
     this.eventHandler = eventHandler;
 
     this.persistentContext = persistentContext;
@@ -84,7 +84,7 @@ public abstract class Runtime implements Runnable, EventListener {
         try {
           synchronized (this) {
             // Consume the currently executable commands
-            Stream.iterate(scheduler.select(instances), Optional::isPresent, ignored -> scheduler.select(instances))
+            Stream.iterate(runtimeScheduler.select(instances), Optional::isPresent, ignored -> runtimeScheduler.select(instances))
                 .map(Optional::get)
                 .forEach(instanceCommand -> {
                   var instance = instanceCommand.instance();

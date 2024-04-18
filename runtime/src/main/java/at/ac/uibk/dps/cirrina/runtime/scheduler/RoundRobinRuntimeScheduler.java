@@ -9,7 +9,7 @@ import java.util.Queue;
  * Round-robin scheduler, schedules state machine executions in a round-robin pattern, finding the next state machine instance that can
  * execute a command.
  */
-public final class RoundRobinScheduler implements Scheduler {
+public final class RoundRobinRuntimeScheduler implements RuntimeScheduler {
 
   private int index = 0;
 

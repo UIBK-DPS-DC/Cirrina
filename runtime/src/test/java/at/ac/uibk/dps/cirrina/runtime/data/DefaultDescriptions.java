@@ -6,7 +6,6 @@ public class DefaultDescriptions {
         {
           name: 'collaborativeStateMachine',
           version: '0.1',
-          memoryMode: 'shared',
           stateMachines: [
             {
               name: 'stateMachine1',

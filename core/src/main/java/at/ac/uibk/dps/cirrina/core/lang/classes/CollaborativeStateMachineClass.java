@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.lang.classes;
 
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
-import at.ac.uibk.dps.cirrina.core.lang.keyword.MemoryMode;
 import at.ac.uibk.dps.cirrina.core.lang.keyword.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,7 +15,6 @@ import java.util.Optional;
  *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
  *  <tr><td>name</td><td>Unique name</td><td>Yes</td></tr>
  *  <tr><td>version</td><td>CSML version</td><td>Yes</td></tr>
- *  <tr><td>memoryMode</td><td>Memory mode</td><td>Yes</td></tr>
  *  <tr><td>stateMachines</td><td>State machines</td><td>Yes (at least one)</td></tr>
  *  <tr><td>localContext</td><td>Lexical description of the local context</td><td>No</td></tr>
  *  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
@@ -27,7 +25,6 @@ import java.util.Optional;
  * {
  *   name: 'Collaborative State Machine Name',
  *   version: '0.1',
- *   memoryMode: 'distributed',
  *   stateMachines: [...],
  *   localContext: [...],
  *   persistentContext: [...]
@@ -56,20 +53,6 @@ public final class CollaborativeStateMachineClass extends Construct {
    */
   @NotNull
   public Version version;
-
-  /**
-   * The memory mode.
-   * <p>
-   * The following memory modes are valid:
-   * <table border="1">
-   *   <tr><th>Memory mode</th><th>Value</th></tr>
-   *   <tr><td>Distributed memory mode</td><td>distributed</td></tr>
-   *   <tr><td>Shared memory mode</td><td>shared</td></tr>
-   *  </table>
-   * </p>
-   */
-  @NotNull
-  public MemoryMode memoryMode;
 
   /**
    * The state machines.

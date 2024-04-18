@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine;
 
-import at.ac.uibk.dps.cirrina.core.lang.keyword.MemoryMode;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import java.util.List;
@@ -11,13 +10,10 @@ public final class CollaborativeStateMachine extends DirectedPseudograph<StateMa
 
   private final String name;
 
-  private final MemoryMode memoryMode;
-
-  CollaborativeStateMachine(String name, MemoryMode memoryMode) {
+  CollaborativeStateMachine(String name) {
     super(Event.class);
 
     this.name = name;
-    this.memoryMode = memoryMode;
   }
 
 

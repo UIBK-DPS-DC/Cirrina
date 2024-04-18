@@ -8,7 +8,7 @@ import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventListener;
 import at.ac.uibk.dps.cirrina.core.object.state.State;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
-import at.ac.uibk.dps.cirrina.runtime.Runtime;
+import at.ac.uibk.dps.cirrina.runtime.base.Runtime;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;

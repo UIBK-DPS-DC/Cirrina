@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.Scheduler.StateMachineInstanceCommand;
+import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler.StateMachineInstanceCommand;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
@@ -12,13 +12,13 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class SchedulerRoundRobinTest {
+public class RuntimeSchedulerRoundRobinTest {
 
   @Test
   public void testSelectEmpty() {
     Queue<StateMachineInstance> mockQueue = new LinkedList<>();
 
-    var scheduler = new RoundRobinScheduler();
+    var scheduler = new RoundRobinRuntimeScheduler();
 
     assertEquals(Optional.empty(), scheduler.select(mockQueue));
   }
@@ -36,7 +36,7 @@ public class SchedulerRoundRobinTest {
     mockQueue.add(instanceWithoutCommand); // 4
     mockQueue.add(instanceWithoutCommand); // 5
 
-    var scheduler = new RoundRobinScheduler();
+    var scheduler = new RoundRobinRuntimeScheduler();
 
     assertEquals(Optional.empty(), scheduler.select(mockQueue));
   }
@@ -64,7 +64,7 @@ public class SchedulerRoundRobinTest {
     mockQueue.add(instanceWithoutCommand); // 4
     mockQueue.add(instancesWithCommand[2]); // 5
 
-    var scheduler = new RoundRobinScheduler();
+    var scheduler = new RoundRobinRuntimeScheduler();
 
     var expected = IntStream.range(0, 3)
         .mapToObj(i -> {
