@@ -33,7 +33,7 @@ public class ServiceImplementationBuilder {
   public ServiceImplementation build() {
     switch (serviceImplementationDescription) {
       case HttpServiceImplementationDescription s -> {
-        return new HttpServiceImplementation(new Parameters(s.name, s.cost, s.local, s.scheme, s.host, s.port, s.endPoint));
+        return new HttpServiceImplementation(new Parameters(s.name, s.cost, s.local, s.scheme, s.host, s.port, s.endPoint, s.method));
       }
       default -> throw new IllegalStateException(String.format("Unexpected value: %s", serviceImplementationDescription.type));
     }

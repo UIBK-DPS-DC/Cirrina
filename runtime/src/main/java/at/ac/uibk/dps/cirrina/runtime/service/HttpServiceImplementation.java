@@ -1,17 +1,58 @@
 package at.ac.uibk.dps.cirrina.runtime.service;
 
+import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
+import at.ac.uibk.dps.cirrina.core.object.context.ContextVariableBuilder;
+import at.ac.uibk.dps.cirrina.runtime.service.description.HttpServiceImplementationDescription.Method;
+import com.google.common.io.ByteStreams;
+import io.fury.Fury;
+import io.fury.config.Language;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * HTTP service implementation, a service implementation that is accessible through HTTP.
+ * <p>
+ * Input variables provided to the invoked service are provided as a map of string-object. Input may be deserialized cross-language inside
+ * an invoked service using Fury
+ * <p>
+ * Output variables received from the invoked service are provided as a map of string-object. Output is serialized cross-language using
+ * Fury.
+ *
+ * @see <a href="https://fury.apache.org>Fury</a>
  */
 public class HttpServiceImplementation extends ServiceImplementation {
 
+  /**
+   * HTTP scheme.
+   */
   private final String scheme;
 
+  /**
+   * HTTP host.
+   */
   private final String host;
 
+  /**
+   * HTTP port.
+   */
   private final int port;
 
+  /**
+   * HTTP end-point,
+   */
   private final String endPoint;
+
+  /**
+   * HTTP method.
+   */
+  private final Method method;
 
   /**
    * Initializes this HTTP service implementation.
@@ -25,14 +66,121 @@ public class HttpServiceImplementation extends ServiceImplementation {
     this.host = parameters.host;
     this.port = parameters.port;
     this.endPoint = parameters.endPoint;
+    this.method = parameters.method;
+  }
+
+  /**
+   * Handle a service invocation response.
+   *
+   * @param connection HTTP connection.
+   * @return Output variables.
+   * @throws RuntimeException In case of error.
+   */
+  private List<ContextVariable> handleResponse(HttpURLConnection connection) throws RuntimeException {
+    try {
+      final var fury = Fury.builder()
+          .withLanguage(Language.XLANG)
+          .requireClassRegistration(false)
+          .build();
+
+      // Get response
+      final var errorCode = connection.getResponseCode();
+
+      switch (errorCode) {
+        case HttpURLConnection.HTTP_OK -> {
+          try (final var inputStream = connection.getInputStream()) {
+            // Acquire the payload
+            final var payload = ByteStreams.toByteArray(inputStream);
+
+            // Perform deserialization
+            final var output = fury.deserialize(payload);
+
+            // Verify the output, we expect a map of string-object
+            if (!(output instanceof Map<?, ?> untypedMap)) {
+              throw RuntimeException.from("Unexpected HTTP service invocation type, expected map of string-object");
+            }
+            if (!untypedMap.isEmpty()) {
+              if (!untypedMap.entrySet().stream()
+                  .allMatch(entry -> entry.getKey() instanceof String
+                      && entry.getValue() != null)) {
+                throw RuntimeException.from("Unexpected HTTP service invocation type, expected map of string-object");
+              }
+            }
+
+            @SuppressWarnings("unchecked") final var map = (Map<String, Object>) output;
+
+            // Build the output variables
+            final var builder = ContextVariableBuilder.from();
+
+            return map.entrySet().stream()
+                .map(entry -> builder.name(entry.getKey()).value(entry.getValue()))
+                .map(ContextVariableBuilder::build)
+                .toList();
+          } catch (IOException e) {
+            throw RuntimeException.from("Could not read the response body: %s", e.getMessage());
+          }
+        }
+        default -> throw RuntimeException.from("Received HTTP error (%d)", errorCode);
+      }
+    } catch (IOException e) {
+      throw RuntimeException.from("Failed to handle response: %s", e.getMessage());
+    }
   }
 
   /**
    * Invoke this service implementation.
+   *
+   * @param input Input to the service invocation.
+   * @return The service invocation output.
+   * @throws RuntimeException If the service invocation failed.
    */
   @Override
-  public void invoke() {
-    // TODO: Implement
+  public List<ContextVariable> invoke(List<ContextVariable> input) throws RuntimeException {
+    HttpURLConnection connection = null;
+
+    try {
+      final var fury = Fury.builder()
+          .withLanguage(Language.XLANG)
+          .requireClassRegistration(false)
+          .build();
+
+      if (input.stream().anyMatch(ContextVariable::isLazy)) {
+        throw RuntimeException.from("All variables need to be evaluated before service input can be converted to bytes");
+      }
+
+      final var payload = fury.serialize(input.stream()
+          .collect(Collectors.toMap(ContextVariable::name, ContextVariable::value)));
+
+      // Create URL
+      final var url = new URI(scheme, "", host, port, endPoint, "", "").toURL();
+
+      connection = (HttpURLConnection) url.openConnection();
+
+      // Set HTTP method
+      switch (method) {
+        case GET -> connection.setRequestMethod("GET");
+        case POST -> connection.setRequestMethod("POST");
+      }
+
+      // Set request properties
+      connection.setDoOutput(true);
+      connection.setRequestProperty("Content-Type", "application/octet-stream");
+      connection.setRequestProperty("Content-Length", String.valueOf(payload.length));
+
+      // Write request body
+      try (OutputStream outputStream = connection.getOutputStream()) {
+        outputStream.write(payload);
+      }
+
+      return handleResponse(connection);
+    } catch (IOException | URISyntaxException e) {
+      throw RuntimeException.from("Failed to perform HTTP service invocation: %s", e.getMessage());
+    } finally {
+      // Close connection
+      if (connection != null) {
+        connection.disconnect();
+      }
+    }
   }
 
   /**
@@ -52,7 +200,8 @@ public class HttpServiceImplementation extends ServiceImplementation {
       String scheme,
       String host,
       int port,
-      String endPoint
+      String endPoint,
+      Method method
   ) {
 
   }

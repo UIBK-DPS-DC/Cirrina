@@ -1,5 +1,9 @@
 package at.ac.uibk.dps.cirrina.runtime.service;
 
+import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
+import java.util.List;
+
 /**
  * Abstract service implementation, needs to be specialized.
  *
@@ -26,8 +30,12 @@ public abstract class ServiceImplementation {
 
   /**
    * Invoke this service implementation.
+   *
+   * @param input Input to the service invocation.
+   * @return The service invocation output.
+   * @throws RuntimeException If the service invocation failed.
    */
-  public abstract void invoke();
+  public abstract List<ContextVariable> invoke(List<ContextVariable> input) throws RuntimeException;
 
 
   /**

@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.service.description;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -33,4 +34,17 @@ public class HttpServiceImplementationDescription extends ServiceImplementationD
    */
   @NotNull
   public String endPoint;
+
+  /**
+   * The HTTP method.
+   */
+  @NotNull
+  public Method method;
+
+  public enum Method {
+    @JsonProperty("get")
+    GET,
+    @JsonProperty("post")
+    POST
+  }
 }

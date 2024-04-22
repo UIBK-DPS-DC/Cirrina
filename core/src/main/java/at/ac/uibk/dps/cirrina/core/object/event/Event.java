@@ -50,7 +50,7 @@ public final class Event {
 
     var event = fury.deserialize(bytes);
     if (!(event instanceof Event)) {
-      throw RuntimeException.from("Received a cloud event that does not contain an event as its data");
+      throw RuntimeException.from("Received an event that does not contain an event as its data");
     }
 
     return (Event) event;

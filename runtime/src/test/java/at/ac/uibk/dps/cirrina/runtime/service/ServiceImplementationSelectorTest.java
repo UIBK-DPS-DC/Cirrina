@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class ServiceImplementationSelectorTest {
 
   @Test
-  public void selectMatchingServices() {
+  public void testSelectMatchingServices() {
     var servicesDescription = new ServiceImplementationsDescription();
 
     var serviceDescriptions = new ServiceImplementationDescription[5];

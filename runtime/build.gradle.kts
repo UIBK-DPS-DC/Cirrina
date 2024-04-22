@@ -39,6 +39,8 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.1")
 
+    implementation("org.furyio:fury-core:0.4.1")
+
     implementation("com.google.guava:guava:33.0.0-jre")
 
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")

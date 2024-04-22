@@ -59,10 +59,8 @@ public record ContextVariable(
     }
   }
 
-
   @Override
   public String toString() {
     return "{" + name + " = " + value.toString() + "}";
   }
-
 }
