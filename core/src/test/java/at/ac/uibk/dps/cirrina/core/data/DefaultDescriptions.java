@@ -256,7 +256,30 @@ public class DefaultDescriptions {
                   on: [
                     {
                       target: 'state2',
-                      event: 'e2'
+                      event: 'e2',
+                      actions: [
+                        {
+                          type: 'assign',
+                          variable: {
+                            name: 'v',
+                            value: 'v+1'
+                          }
+                        },
+                        {
+                          type: 'assign',
+                          variable: {
+                            name: 'v',
+                            value: 'v+1'
+                           }
+                        },
+                        {
+                          type: 'raise',
+                          event: {
+                            name: 'e2',
+                            channel: 'internal'
+                          }
+                        }
+                      ]
                     },
                     {
                       target: 'state3',
@@ -324,6 +347,11 @@ public class DefaultDescriptions {
                         {
                           reference: 'guard1'
                         }
+                      ],
+                      actions: [
+                        {
+                          reference: 'action1'
+                        }
                       ]
                     }
                   ]
@@ -351,8 +379,8 @@ public class DefaultDescriptions {
                     value: '5'
                   }
                 },
-                                {
-                  name: 'action1',
+                {
+                  name: 'action2',
                   type: 'create',
                   variable: {
                     name: 'b',

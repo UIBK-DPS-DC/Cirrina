@@ -131,10 +131,13 @@ public class PlantUmlVisitor {
       guardBuilder.append(guardList.getLast().getExpression().toString());
     }
 
-    var actionBuilder = new StringBuilder();
+    actionBuilder = new StringBuilder();
     if (!transition.getActionGraph().getActions().isEmpty()) {
       actionBuilder.append("\\n/ ");
-      transition.getActionGraph().getActions().forEach(action -> actionBuilder.append(action.toString()).append("(); "));
+      transition.getActionGraph().getActions().forEach(action -> {
+        visit(action);
+        actionBuilder.append("; ");
+      });
     }
 
     var eventNameBuilder = new StringBuilder();
