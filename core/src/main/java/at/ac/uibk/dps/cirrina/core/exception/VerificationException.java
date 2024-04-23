@@ -24,7 +24,7 @@ public final class VerificationException extends CirrinaException {
     ACTION_NAME_DOES_NOT_EXIST("Action with name '%s' does not exist"),
     STATE_MACHINE_EXTENDS_INVALID("Cannot extend '%s', state machine does not exist"),
     STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES("States overridden which are neither abstract nor virtual: %s"),
-    STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES("Not all abstract states of are overridden: %s"),
+    STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES("Not all abstract states are overridden: %s"),
     NON_ABSTRACT_STATE_MACHINE_HAS_ABSTRACT_STATES("States are abstract but state machine is not abstract: %s"),
     EXPRESSION_COULD_NOT_BE_PARSED("The expression '%s' could not be parsed: %s"),
     STATE_MACHINE_HAS_MULTIPLE_INITIAL_STATES("Multiple initial states '%s': %s"),

@@ -14,17 +14,15 @@ import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.runtime.command.Command.Scope;
 import at.ac.uibk.dps.cirrina.runtime.command.event.EventCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.transition.InitialTransitionCommand;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public final class StateMachineInstance implements Scope, EventListener {
+
+  public static final String EVENT_DATA_VARIABLE = "event_data";
 
   private final InstanceId id = new InstanceId();
 
@@ -44,10 +42,6 @@ public final class StateMachineInstance implements Scope, EventListener {
 
   private final Map<String, StateInstance> states;
 
-  public StateMachineInstance(Runtime runtime, StateMachine stateMachine) throws RuntimeException {
-    this(runtime, stateMachine, Optional.empty());
-  }
-
   public StateMachineInstance(Runtime runtime, StateMachine stateMachine, Optional<StateMachineInstance> parent) throws RuntimeException {
     this.runtime = runtime;
     this.stateMachine = stateMachine;
@@ -57,6 +51,9 @@ public final class StateMachineInstance implements Scope, EventListener {
         .orElseGet(() -> ContextBuilder.from())
         .inMemoryContext()
         .build();
+
+    // Create the event data variable
+    localContext.create(EVENT_DATA_VARIABLE, "");
 
     this.parent = parent;
 
@@ -194,6 +191,19 @@ public final class StateMachineInstance implements Scope, EventListener {
     @Override
     public String toString() {
       return uuid.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      var instanceId = (InstanceId) o;
+      return Objects.equals(uuid, instanceId.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(uuid);
     }
   }
 

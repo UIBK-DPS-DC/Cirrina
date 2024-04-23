@@ -26,8 +26,10 @@ public final class State implements Exportable {
   private final ActionGraph whileActionGraph;
 
   State(Parameters parameters) {
+
+    this.parentStateMachineId = parameters.parentStateMachineId;
+
     if (parameters.baseState().isEmpty()) {
-      this.parentStateMachineId = parameters.parentStateMachineId;
       this.name = parameters.name();
 
       this.localContextClass = parameters.localContextClass();
@@ -44,7 +46,6 @@ public final class State implements Exportable {
     } else {
       var baseState = parameters.baseState().get();
 
-      this.parentStateMachineId = baseState.parentStateMachineId;
       this.name = baseState.name;
 
       this.localContextClass = baseState.localContextClass;
@@ -69,6 +70,10 @@ public final class State implements Exportable {
 
   public String getName() {
     return name;
+  }
+
+  public Optional<ContextClass> getLocalContextClass() {
+    return localContextClass;
   }
 
   public boolean isInitial() {

@@ -27,7 +27,7 @@ public abstract class TransitionBuilder {
   }
 
   public static TransitionBuilder from(Transition transition) {
-    return new TransitionFromTransitionBuilder(transition);
+    return new TransitionFromObjectBuilder(transition);
   }
 
   /**
@@ -111,11 +111,11 @@ public abstract class TransitionBuilder {
    *
    * @see ChildStateMachineBuilder
    */
-  private static final class TransitionFromTransitionBuilder extends TransitionBuilder {
+  private static final class TransitionFromObjectBuilder extends TransitionBuilder {
 
     private final Transition transition;
 
-    private TransitionFromTransitionBuilder(Transition transition) {
+    private TransitionFromObjectBuilder(Transition transition) {
       this.transition = transition;
     }
 

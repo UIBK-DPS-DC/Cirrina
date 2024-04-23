@@ -1,40 +1,33 @@
-package at.ac.uibk.dps.cirrina.runtime.command.event;
+package at.ac.uibk.dps.cirrina.runtime.command.transition;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
-import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
-import at.ac.uibk.dps.cirrina.runtime.command.transition.TransitionCommand;
+import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.TransitionInstance;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class EventCommand implements Command {
+public class AlwaysTransitionsCommand implements Command {
 
   /**
-   * The current scope.
+   * The current state.
    */
-  private final Scope scope;
-
-  /**
-   * The event to process.
-   */
-  private final Event event;
+  private final StateInstance state;
 
   /**
    * Initializes this always transitions command.
    *
-   * @param scope The current scope.
-   * @param event The event to process.
+   * @param state The current state.
    */
-  public EventCommand(Scope scope, Event event) {
-    this.scope = scope;
-    this.event = event;
+  public AlwaysTransitionsCommand(StateInstance state) {
+    this.state = state;
   }
 
   /**
-   * Executes the event command. Gets all outgoing event-based transitions for the given event and current state, resolves guards and
-   * 'else' transitions and produces a transition command in case of a valid transition.
+   * Executes the 'always' transition command. Gets all outgoing 'always' transitions from the given state, resolves guards and 'else'
+   * transitions and produces a transition command in case of a valid transition.
    *
    * @param executionContext Execution context.
    * @return Command list containing the transition command if a transition should be taken or an empty list.
@@ -42,14 +35,15 @@ public class EventCommand implements Command {
    */
   @Override
   public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+    // New commands
     final var commands = new ArrayList<Command>();
 
     final var stateMachineInstance = executionContext.stateMachineInstance();
     final var stateMachine = stateMachineInstance.getStateMachine();
     final var status = stateMachineInstance.getStatus();
 
-    // Look up the transitions that are outwards from the current state
-    final var transitions = stateMachine.findOnTransitionsFromStateByEventName(status.getActivateState().getState(), event.getName());
+    // Look up the always-transitions that are outwards from the current state
+    final var transitions = stateMachine.findAlwaysTransitionsFromState(state.getState());
 
     boolean tookTransition = false;
 
@@ -59,7 +53,7 @@ public class EventCommand implements Command {
       boolean isElse = false;
 
       // Resolve the target state
-      if (transition.evaluate(scope.getExtent())) {
+      if (transition.evaluate(status.getActivateState().getExtent())) {
         targetName = Optional.of(transition.getTargetName());
       } else if (transition.getElse().isPresent()) {
         targetName = transition.getElse();
@@ -82,11 +76,6 @@ public class EventCommand implements Command {
               isElse
           )
       );
-
-      // Set event data variables
-      for (var contextVariable : event.getData()) {
-        status.getActivateState().getExtent().trySet(contextVariable.name(), contextVariable.value());
-      }
 
       tookTransition = true;
     }

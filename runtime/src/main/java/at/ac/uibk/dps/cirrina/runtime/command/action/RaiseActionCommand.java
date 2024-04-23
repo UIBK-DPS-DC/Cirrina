@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.runtime.command.action;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.lang.classes.event.EventChannel;
 import at.ac.uibk.dps.cirrina.core.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
@@ -53,11 +54,15 @@ public final class RaiseActionCommand extends ActionCommand {
     // Get the event, we make sure that it has been evaluated to avoid sending expressions instead of the expression-evaluated data
     final var event = Event.ensureHasEvaluatedData(raiseAction.getEvent(), extent);
 
-    try {
-      // Send the even through the event handler
-      eventHandler.sendEvent(event, source);
-    } catch (RuntimeException e) {
-      throw RuntimeException.from("Could not execute raise action command: %s", e.getMessage());
+    if (event.getChannel() == EventChannel.INTERNAL) {
+      executionContext.stateMachineInstance().onReceiveEvent(event);
+    } else {
+      try {
+        // Send the event through the event handler
+        eventHandler.sendEvent(event, source);
+      } catch (RuntimeException e) {
+        throw RuntimeException.from("Could not execute raise action command: %s", e.getMessage());
+      }
     }
 
     return List.of();

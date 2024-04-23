@@ -1,16 +1,18 @@
 package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
 import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES;
+import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES;
 
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateMachineClass;
+import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
 import at.ac.uibk.dps.cirrina.core.object.guard.Guard;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.core.object.state.State;
 import at.ac.uibk.dps.cirrina.core.object.state.StateBuilder;
-import at.ac.uibk.dps.cirrina.core.object.transition.Transition;
+import at.ac.uibk.dps.cirrina.core.object.transition.OnTransition;
 import at.ac.uibk.dps.cirrina.core.object.transition.TransitionBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,38 @@ public final class ChildStateMachineBuilder {
   }
 
   /**
+   * Merges two optional context classes into one, keeping the variables of the first context class in case of duplicates.
+   *
+   * @param contextClass The first context class.
+   * @param baseContextClass The second context class.
+   * @return The merged context class.
+   */
+  private static Optional<ContextClass> mergeContext(Optional<ContextClass> contextClass, Optional<ContextClass> baseContextClass) {
+    if (contextClass.isEmpty()) {
+      return baseContextClass;
+    }
+    if (baseContextClass.isEmpty()) {
+      return contextClass;
+    }
+
+    // Create a new list of variables, containing all variables of the first context class
+    var variables = new ArrayList<>(contextClass.get().variables);
+
+    // Add all variables of the second context class which are not part of the first context class
+    var variableNames = variables.stream()
+        .map(variable -> variable.name)
+        .toList();
+    variables.addAll(baseContextClass.get().variables.stream()
+        .filter(variable -> !variableNames.contains(variable.name))
+        .toList());
+
+    // Build a new context class
+    var mergedContextClass = new ContextClass();
+    mergedContextClass.variables = variables;
+    return Optional.of(mergedContextClass);
+  }
+
+  /**
    * Builds the child state machine.
    *
    * @return The child state machine.
@@ -54,9 +88,10 @@ public final class ChildStateMachineBuilder {
     addBaseActions();
     addBaseGuards();
 
+    Optional<ContextClass> localContext = mergeContext(stateMachineClass.localContext, baseStateMachine.getLocalContextClass());
     var parameters = new StateMachine.Parameters(
         stateMachineClass.name,
-        stateMachineClass.localContext,
+        localContext,
         namedGuards,
         namedActions,
         stateMachineClass.abstractt,
@@ -122,7 +157,7 @@ public final class ChildStateMachineBuilder {
 
     if (cannotOverrideState) {
       throw new IllegalArgumentException(
-          VerificationException.from(VerificationException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, stateMachineClass));
+          VerificationException.from(STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, stateMachineClass));
     }
   }
 
@@ -172,30 +207,50 @@ public final class ChildStateMachineBuilder {
     baseStateMachine.vertexSet().stream()
         .filter(state -> stateClasses.stream()
             .noneMatch(stateClass -> state.getName().equals(stateClass.name)))
-        .forEach(stateMachine::addVertex);
+        .forEach(state -> stateMachine.addVertex(StateBuilder.from(stateMachine.getId(), state).build()));
   }
 
   /**
-   * Recreates the edges.
+   * Recreates the edges which were not overridden.
    *
    * @param stateMachine The state machine.
    */
   private void addBaseEdges(StateMachine stateMachine) throws IllegalArgumentException {
+    var stateClasses = getStateClasses();
+
     // Recreate all base edges
     baseStateMachine.edgeSet()
         .forEach(transition -> {
-          // Get the transition source and target from either the base or child state machine (if overridden)
+          // Get the transition source from either the base or child state machine (if overridden)
           State source = baseStateMachine.getEdgeSource(transition);
           var overriddenSource = stateMachine.findStateByName(source.getName());
           source = overriddenSource.orElse(source);
 
+          // Check if the transition is event based and overridden in the child state
+          if (transition instanceof OnTransition onTransition) {
+            final var sourceName = source.getName();
+            boolean isOverriddenTransition = stateClasses.stream()
+                .filter(stateClass -> stateClass.name.equals(sourceName))
+                .findFirst()
+                .map(stateClass -> stateClass.on.stream()
+                    .anyMatch(onTransitionClass -> onTransitionClass.event.equals(onTransition.getEventName())))
+                .orElse(false);
+
+            // If overridden, skip recreating this edge
+            if (isOverriddenTransition) {
+              return;
+            }
+          }
+
+          // Get the transition target from either the base or child state machine (if overridden)
           State target = baseStateMachine.getEdgeTarget(transition);
           var overriddenTarget = stateMachine.findStateByName(target.getName());
           target = overriddenTarget.orElse(target);
 
           // Recreate the transition
-          Transition newTransition = TransitionBuilder.from(transition).build();
+          var newTransition = TransitionBuilder.from(transition).build();
 
+          // Add the edge
           stateMachine.addEdge(source, target, newTransition);
         });
   }

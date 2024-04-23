@@ -24,7 +24,7 @@ public final class InitialTransitionCommand implements Command {
    *
    * @param targetState The target state.
    */
-  public InitialTransitionCommand(StateInstance targetState) throws RuntimeException {
+  public InitialTransitionCommand(StateInstance targetState) {
     this.targetState = targetState;
   }
 

@@ -9,7 +9,7 @@ public final class StateChangeCommand implements Command {
 
   private final StateInstance targetState;
 
-  public StateChangeCommand(StateInstance targetState) throws RuntimeException {
+  public StateChangeCommand(StateInstance targetState) {
     this.targetState = targetState;
   }
 

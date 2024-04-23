@@ -149,12 +149,12 @@ public class PlantUmlVisitor {
     var sourceStateId = getStateId(transition.getSource());
     var targetStateId = getStateId(transition.getTarget());
 
+    descriptionBuilder.append(sourceStateId).append(getArrow(transition)).append(targetStateId);
     if (!guardBuilder.isEmpty()) {
-      descriptionBuilder.append(sourceStateId).append(getArrow(transition)).append(targetStateId).append(" : ").append(eventNameBuilder)
-          .append("\\n[").append(guardBuilder).append("]").append(actionBuilder);
-    } else {
-      descriptionBuilder.append(sourceStateId).append(getArrow(transition)).append(targetStateId).append(" : ").append(eventNameBuilder)
+      descriptionBuilder.append(" : ").append(eventNameBuilder).append("\\n[").append(guardBuilder).append("]")
           .append(actionBuilder);
+    } else if (!eventNameBuilder.isEmpty() || !actionBuilder.isEmpty()) {
+      descriptionBuilder.append(" : ").append(eventNameBuilder).append(actionBuilder);
     }
 
     return descriptionBuilder;

@@ -17,6 +17,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +67,20 @@ public abstract class Runtime implements Runnable, EventListener {
   }
 
   protected InstanceId newInstance(StateMachine stateMachine) throws RuntimeException {
-    final var instance = new StateMachineInstance(this, stateMachine, Optional.empty());
+    return newInstance(stateMachine, Optional.empty());
+  }
+
+  protected InstanceId newInstance(StateMachine stateMachine, Optional<InstanceId> parentId) throws RuntimeException {
+
+    // Find the actual parent state machine instance
+    final var parentInstance = parentId.flatMap(this::findInstance);
+    if (parentInstance.isEmpty() && parentId.isPresent()) {
+      throw RuntimeException.from("The parent state machine instance with id '%s' could not be found", parentId.get());
+    }
+
+    // Create the state machine instance
+    final var instance = new StateMachineInstance(this, stateMachine, parentInstance);
+
     instances.add(instance);
 
     eventHandler.addListener(instance);
@@ -110,6 +124,18 @@ public abstract class Runtime implements Runnable, EventListener {
         }
       }
     }
+  }
+
+  /**
+   * Find a state machine instance based on its instance id.
+   *
+   * @param instanceId State machine instance id.
+   * @return The state machine instance or an empty optional if no state machine instance was found for the given instance id.
+   */
+  public Optional<StateMachineInstance> findInstance(InstanceId instanceId) {
+    return instances.stream()
+        .filter(instance -> instance.getId().equals(instanceId))
+        .findFirst();
   }
 
   public Extent getExtent() {

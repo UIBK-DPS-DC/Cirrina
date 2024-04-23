@@ -18,10 +18,12 @@ public final class TransitionCommand implements Command {
 
   private final StateInstance targetState;
 
+  private final boolean isElse;
 
-  public TransitionCommand(TransitionInstance transition, StateInstance targetState) throws RuntimeException {
+  public TransitionCommand(TransitionInstance transition, StateInstance targetState, boolean isElse) {
     this.transition = transition;
     this.targetState = targetState;
+    this.isElse = isElse;
   }
 
   @Override
@@ -33,9 +35,11 @@ public final class TransitionCommand implements Command {
     // Exit the currently active state
     commands.add(new StateExitCommand(executionContext.stateMachineInstance().getStatus().getActivateState()));
 
-    // Append the entry actions to the command list
-    new TopologicalOrderIterator<>(transition.getTransition().getActionGraph()).forEachRemaining(
-        action -> commands.add(ActionCommand.from(stateMachineInstance, action, false)));
+    if (!isElse) {
+      // Append the entry actions to the command list
+      new TopologicalOrderIterator<>(transition.getTransition().getActionGraph()).forEachRemaining(
+          action -> commands.add(ActionCommand.from(stateMachineInstance, action, false)));
+    }
 
     // Change the active state
     commands.add(new StateChangeCommand(targetState));

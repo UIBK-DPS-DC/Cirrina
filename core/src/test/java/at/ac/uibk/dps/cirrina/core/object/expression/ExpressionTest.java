@@ -2,7 +2,9 @@ package at.ac.uibk.dps.cirrina.core.object.expression;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
@@ -59,6 +61,13 @@ public class ExpressionTest {
             new ExpressionClass("let varExpressionLocal = 1; varExpressionLocal += varOneInt; varExpressionLocal");
         assertEquals(2, ExpressionBuilder.from(multiLineExpression).build().execute(extent));
       });
+    }
+  }
+
+  @Test
+  public void testExpressionUsingNamespace() throws Exception {
+    try (var context = new InMemoryContext()) {
+      assertEquals(1, ExpressionBuilder.from(new ExpressionClass("math:abs(-1)")).build().execute(new Extent(context)));
     }
   }
 

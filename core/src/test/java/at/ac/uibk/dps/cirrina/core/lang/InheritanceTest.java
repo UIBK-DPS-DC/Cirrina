@@ -20,6 +20,7 @@ import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -63,25 +64,44 @@ public class InheritanceTest {
     assertFalse(stateMachine2.isAbstract());
   }
 
-  @Disabled
   @Test
   public void testMergeAndOverrideStates() {
     var csm = getCollaborativeStateMachine();
     assertEquals(2, csm.vertexSet().size());
 
+    // Test overridden states
     var stateMachine1 = getStateMachine1(csm);
     assertEquals(3, stateMachine1.vertexSet().size());
-    assertTrue(stateMachine1.findStateByName("state1").isPresent());
+    var stateMachine1State1 = stateMachine1.findStateByName("state1");
+    assertTrue(stateMachine1State1.isPresent());
     assertTrue(stateMachine1.findStateByName("state2").isPresent());
     assertTrue(stateMachine1.findStateByName("state3").isPresent());
     assertTrue(stateMachine1.findStateByName("state4").isEmpty());
 
     var stateMachine2 = getStateMachine2(csm);
     assertEquals(4, stateMachine2.vertexSet().size());
-    assertTrue(stateMachine2.findStateByName("state1").isPresent());
+    var stateMachine2State1 = stateMachine2.findStateByName("state1");
+    assertTrue(stateMachine2State1.isPresent());
     assertTrue(stateMachine2.findStateByName("state2").isPresent());
     assertTrue(stateMachine2.findStateByName("state3").isPresent());
     assertTrue(stateMachine2.findStateByName("state4").isPresent());
+
+    // Test overridden state transitions
+    assertEquals(1, stateMachine1.edgeSet().stream()
+        .filter(transition -> stateMachine1.getEdgeSource(transition).getName().equals("state1"))
+        .count());
+
+    assertEquals(2, stateMachine2.edgeSet().stream()
+        .filter(transition -> stateMachine2.getEdgeSource(transition).getName().equals("state1"))
+        .count());
+
+    var transitions1 = stateMachine1.findOnTransitionsFromStateByEventName(stateMachine1State1.get(), "e1");
+    assertEquals(1, transitions1.size());
+    assertEquals("state2", transitions1.getFirst().getTargetName());
+
+    var transitions2 = stateMachine2.findOnTransitionsFromStateByEventName(stateMachine2State1.get(), "e1");
+    assertEquals(1, transitions2.size());
+    assertEquals("state3", transitions2.getFirst().getTargetName());
   }
 
   @Test
@@ -113,6 +133,31 @@ public class InheritanceTest {
   }
 
   @Test
+  public void testMergeAndOverrideContext() {
+    var csm = getCollaborativeStateMachine();
+
+    var stateMachine1Context = getStateMachine1(csm).getLocalContextClass();
+    assertTrue(stateMachine1Context.isPresent());
+    var stateMachine1Variables = stateMachine1Context.get().variables.stream()
+        .toList();
+    assertEquals(2, stateMachine1Variables.size());
+    assertLinesMatch(Stream.of("v1", "v2"), stateMachine1Variables.stream()
+        .map(variable -> variable.name));
+    assertLinesMatch(Stream.of("0", "0"), stateMachine1Variables.stream()
+        .map(variable -> variable.value.expression));
+
+    var stateMachine2Context = getStateMachine2(csm).getLocalContextClass();
+    assertTrue(stateMachine2Context.isPresent());
+    var stateMachine2Variables = stateMachine2Context.get().variables.stream()
+        .toList();
+    assertEquals(3, stateMachine2Variables.size());
+    assertLinesMatch(Stream.of("v1", "v3", "v2"), stateMachine2Variables.stream()
+        .map(variable -> variable.name));
+    assertLinesMatch(Stream.of("1", "1", "0"), stateMachine2Variables.stream()
+        .map(variable -> variable.value.expression));
+  }
+
+  @Test
   public void testMergeHandledEvents() {
     var csm = getCollaborativeStateMachine();
 
@@ -123,7 +168,6 @@ public class InheritanceTest {
     assertLinesMatch(List.of("e1", "e2", "e3", "e4"), stateMachine2.getInputEvents());
   }
 
-  @Disabled
   @Test
   public void testMergeAndOverrideActions() throws Exception {
     var csm = getCollaborativeStateMachine();

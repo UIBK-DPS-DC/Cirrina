@@ -24,21 +24,21 @@ public class Transition extends DefaultEdge implements Exportable {
 
   private final String targetName;
   private final List<Guard> guards;
-  private final Optional<String> elsee;
+  private final Optional<String> elseTargetName;
   private final ActionGraph actionGraph;
 
   /**
    * Initializes this transition object.
    *
    * @param targetName Name of the target state.
-   * @param elsee      Name of the else state.
+   * @param elseTargetName      Name of the else state.
    * @param guards     List of guards.
    * @param actions    List of actions.
    */
-  Transition(String targetName, Optional<String> elsee, List<Guard> guards, List<Action> actions) {
+  Transition(String targetName, Optional<String> elseTargetName, List<Guard> guards, List<Action> actions) {
     this.targetName = targetName;
     this.guards = guards;
-    this.elsee = elsee;
+    this.elseTargetName = elseTargetName;
 
     this.actionGraph = ActionGraphBuilder.from(actions).build();
   }
@@ -60,6 +60,7 @@ public class Transition extends DefaultEdge implements Exportable {
 
     return true;
   }
+
 
   /**
    * Returns the guards.
@@ -114,7 +115,7 @@ public class Transition extends DefaultEdge implements Exportable {
    * @return Name of the else state.
    */
   public Optional<String> getElse() {
-    return elsee;
+    return elseTargetName;
   }
 
   /**

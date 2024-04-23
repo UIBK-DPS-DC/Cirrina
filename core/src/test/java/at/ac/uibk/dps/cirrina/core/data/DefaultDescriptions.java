@@ -407,6 +407,18 @@ public class DefaultDescriptions {
           {
             name: 'stateMachine1',
             abstract: true,
+            localContext: {
+              variables: [
+                {
+                  name: 'v1',
+                  value: '0'
+                },
+                {
+                  name: 'v2',
+                  value: '0'
+                }
+              ]
+            },
             states: [
               {
                 name: 'state1',
@@ -460,10 +472,26 @@ public class DefaultDescriptions {
           {
             name: 'stateMachine2',
             extends: 'stateMachine1',
+            localContext: {
+              variables: [
+                {
+                  name: 'v1',
+                  value: '1'
+                },
+                {
+                  name: 'v3',
+                  value: '1'
+                }
+              ]
+            },
             states: [
               {
                 name: 'state1',
                 on: [
+                  {
+                    target: 'state3',
+                    event: 'e1' // Override
+                  },
                   {
                     target: 'state2',
                     event: 'e2'

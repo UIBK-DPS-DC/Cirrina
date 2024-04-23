@@ -4,12 +4,12 @@ import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlFeatures;
-import org.apache.commons.jexl3.JexlScript;
+
+import org.apache.commons.jexl3.*;
 
 /**
  * JEXL expression, an expression based on Apache Commons Java Expression Language (JEXL).
@@ -19,6 +19,7 @@ import org.apache.commons.jexl3.JexlScript;
 public class JexlExpression extends Expression {
 
   private static final JexlEngine JEXL_ENGINE = getJexlEngine();
+  private static final int CACHE_SIZE = 512; //TODO Determine the maximum amount of cached expressions
 
   private final JexlScript jexlScript;
 
@@ -43,11 +44,19 @@ public class JexlExpression extends Expression {
    * @return JEXL engine.
    */
   private static JexlEngine getJexlEngine() {
-    JexlFeatures features = new JexlFeatures()
+
+    Map<String, Object> namespaces = new HashMap<>();
+    namespaces.put("math", Math.class); // Enable math methods, e.g. math:sin(x), math:min(x, y), math:random()
+
+    var features = new JexlFeatures()
         .sideEffectGlobal(false)
         .sideEffect(true);
 
-    return new JexlBuilder().features(features).create();
+    return new JexlBuilder()
+        .features(features)
+        .cache(CACHE_SIZE)
+        .namespaces(namespaces)
+        .create();
   }
 
   /**
@@ -67,7 +76,7 @@ public class JexlExpression extends Expression {
   }
 
   /**
-   * JEXL context, which has access to all variables within an Extent and a local expression-level context.
+   * JEXL context, which has access to all variables within an Extent.
    *
    * @see Extent
    */
