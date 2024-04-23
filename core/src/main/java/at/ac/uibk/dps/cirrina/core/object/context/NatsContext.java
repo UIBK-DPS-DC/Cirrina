@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.context;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import io.fury.Fury;
 import io.fury.config.Language;
 import io.nats.client.Connection;
@@ -31,14 +31,14 @@ public final class NatsContext extends Context implements AutoCloseable {
    * @param natsUrl NATS server URL.
    */
   // TODO: Make default
-  public NatsContext(String natsUrl, String bucketName) throws RuntimeException {
+  public NatsContext(String natsUrl, String bucketName) throws CirrinaException {
     // Attempt to connect to the NATS server
     try {
       connection = Nats.connect(natsUrl);
     } catch (InterruptedException | IOException e) {
       Thread.currentThread().interrupt();
 
-      throw RuntimeException.from("Could not connect to the NATS server: %s", e.getMessage());
+      throw CirrinaException.from("Could not connect to the NATS server: %s", e.getMessage());
     }
 
     // Attempt to retrieve the bucket, which is expected to be pre-created. We do not manage the creation/deletion of
@@ -59,7 +59,7 @@ public final class NatsContext extends Context implements AutoCloseable {
       // Retrieve the bucket
       keyValue = connection.keyValue(bucketName);
     } catch (IOException | JetStreamApiException e) {
-      throw RuntimeException.from("Failed to create the persistent context bucket, make sure that it has been created");
+      throw CirrinaException.from("Failed to create the persistent context bucket, make sure that it has been created");
     }
   }
 
@@ -69,20 +69,20 @@ public final class NatsContext extends Context implements AutoCloseable {
    *
    * @param name Name of the context variable.
    * @return The retrieved context variable.
-   * @throws RuntimeException If the context variable could not be retrieved.
+   * @throws CirrinaException If the context variable could not be retrieved.
    */
   @Override
-  public Object get(String name) throws RuntimeException {
+  public Object get(String name) throws CirrinaException {
     try {
       if (!knownKeys.contains(name)) {
-        throw RuntimeException.from("A variable with the name '%s' does not exist", name);
+        throw CirrinaException.from("A variable with the name '%s' does not exist", name);
       }
 
       var entry = keyValue.get(name);
 
       return fromBytes(entry.getValue());
     } catch (IOException | JetStreamApiException e) {
-      throw RuntimeException.from("Failed to retrieve the variable '%s': %s", name, e.getMessage());
+      throw CirrinaException.from("Failed to retrieve the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -91,20 +91,20 @@ public final class NatsContext extends Context implements AutoCloseable {
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
-   * @throws RuntimeException If the variable could not be created.
+   * @throws CirrinaException If the variable could not be created.
    */
   @Override
-  public void create(String name, Object value) throws RuntimeException {
+  public void create(String name, Object value) throws CirrinaException {
     try {
       if (knownKeys.contains(name)) {
-        RuntimeException.from("A variable with the name '%s' already exists", name);
+        CirrinaException.from("A variable with the name '%s' already exists", name);
       }
 
       keyValue.create(name, toBytes(value));
 
       knownKeys.add(name);
     } catch (IOException | JetStreamApiException e) {
-      throw RuntimeException.from("Failed to create variable '%s': %s", name, e.getMessage());
+      throw CirrinaException.from("Failed to create variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -113,20 +113,20 @@ public final class NatsContext extends Context implements AutoCloseable {
    *
    * @param name  Name of the context variable.
    * @param value New value of the context variable.
-   * @throws RuntimeException If the variable could not be assigned to.
+   * @throws CirrinaException If the variable could not be assigned to.
    */
   @Override
-  public void assign(String name, Object value) throws RuntimeException {
+  public void assign(String name, Object value) throws CirrinaException {
     try {
       if (!knownKeys.contains(name)) {
-        throw RuntimeException.from("A variable with the name '%s' does not exist", name);
+        throw CirrinaException.from("A variable with the name '%s' does not exist", name);
       }
 
       keyValue.put(name, toBytes(value));
     } catch (IOException | JetStreamApiException e) {
       Thread.currentThread().interrupt();
 
-      throw RuntimeException.from("Failed to assign to the variable '%s': %s", name, e.getMessage());
+      throw CirrinaException.from("Failed to assign to the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -134,20 +134,20 @@ public final class NatsContext extends Context implements AutoCloseable {
    * Deletes a context variable.
    *
    * @param name Name of the context variable.
-   * @throws RuntimeException If the variable could not be deleted.
+   * @throws CirrinaException If the variable could not be deleted.
    */
   @Override
-  public void delete(String name) throws RuntimeException {
+  public void delete(String name) throws CirrinaException {
     try {
       if (!knownKeys.contains(name)) {
-        throw RuntimeException.from("A variable with the name '%s' does not exist", name);
+        throw CirrinaException.from("A variable with the name '%s' does not exist", name);
       }
 
       keyValue.delete(name);
 
       knownKeys.remove(name);
     } catch (IOException | JetStreamApiException e) {
-      throw RuntimeException.from("Failed to delete the variable '%s': %s", name, e.getMessage());
+      throw CirrinaException.from("Failed to delete the variable '%s': %s", name, e.getMessage());
     }
   }
 
@@ -155,10 +155,10 @@ public final class NatsContext extends Context implements AutoCloseable {
    * Returns all context variables.
    *
    * @return Context variables.
-   * @throws RuntimeException If the variables could not be retrieved.
+   * @throws CirrinaException If the variables could not be retrieved.
    */
   @Override
-  public List<ContextVariable> getAll() throws RuntimeException {
+  public List<ContextVariable> getAll() throws CirrinaException {
     var ret = new ArrayList<ContextVariable>();
 
     try {
@@ -167,24 +167,24 @@ public final class NatsContext extends Context implements AutoCloseable {
 
         // This would be unexpected
         if (entry == null) {
-          throw RuntimeException.from("Could not retrieve the value of the variable '%s'", key);
+          throw CirrinaException.from("Could not retrieve the value of the variable '%s'", key);
         }
 
         ret.add(new ContextVariable(entry.getKey(), entry.getValue()));
       }
     } catch (IOException | JetStreamApiException e) {
-      throw new java.lang.RuntimeException(e);
+      throw CirrinaException.from("Failed to retrieve variables from context: %s", e);
     }
 
     return ret;
   }
 
-  private byte[] toBytes(Object value) throws RuntimeException {
+  private byte[] toBytes(Object value) throws CirrinaException {
     Fury fury = Fury.builder().withLanguage(Language.XLANG).build();
     return fury.serialize(value);
   }
 
-  private Object fromBytes(byte[] bytes) throws RuntimeException {
+  private Object fromBytes(byte[] bytes) throws CirrinaException {
     Fury fury = Fury.builder().withLanguage(Language.XLANG).build();
     return fury.deserialize(bytes);
   }
@@ -199,7 +199,7 @@ public final class NatsContext extends Context implements AutoCloseable {
 
       connection.close();
     } catch (IOException | JetStreamApiException | InterruptedException e) {
-      throw RuntimeException.from("Failed to close NATS persistent context: %s", e.getMessage());
+      throw CirrinaException.from("Failed to close NATS persistent context: %s", e.getMessage());
     }
   }
 }

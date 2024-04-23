@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.transition;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateEntryCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.statemachine.StateChangeCommand;
@@ -34,10 +34,10 @@ public final class InitialTransitionCommand implements Command {
    *
    * @param executionContext Execution context.
    * @return Commands to execute when transitioning into the state.
-   * @throws RuntimeException In case the command could not be executed.
+   * @throws CirrinaException In case the command could not be executed.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // New commands
     final var commands = new ArrayList<Command>();
 

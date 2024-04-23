@@ -24,9 +24,9 @@ public final class State implements Exportable {
   private final ActionGraph entryActionGraph;
   private final ActionGraph exitActionGraph;
   private final ActionGraph whileActionGraph;
+  private final ActionGraph afterActionGraph;
 
   State(Parameters parameters) {
-
     this.parentStateMachineId = parameters.parentStateMachineId;
 
     if (parameters.baseState().isEmpty()) {
@@ -40,6 +40,7 @@ public final class State implements Exportable {
       this.entryActionGraph = ActionGraphBuilder.from(parameters.entryActions()).build();
       this.exitActionGraph = ActionGraphBuilder.from(parameters.exitActions()).build();
       this.whileActionGraph = ActionGraphBuilder.from(parameters.whileActions()).build();
+      this.afterActionGraph = ActionGraphBuilder.from(parameters.afterActions()).build();
 
       this.abstractt = parameters.abstractt();
       this.virtual = parameters.virtual();
@@ -56,6 +57,7 @@ public final class State implements Exportable {
       this.entryActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.entryActionGraph), parameters.entryActions()).build();
       this.exitActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.exitActionGraph), parameters.exitActions()).build();
       this.whileActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.whileActionGraph), parameters.whileActions()).build();
+      this.afterActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.afterActionGraph), parameters.whileActions()).build();
 
       this.abstractt = parameters.abstractt();
 
@@ -104,8 +106,12 @@ public final class State implements Exportable {
     return whileActionGraph;
   }
 
+  public ActionGraph getAfterActionGraph() {
+    return afterActionGraph;
+  }
+
   public <T> List<T> getActionsOfType(Class<T> type) {
-    return Stream.of(entryActionGraph, exitActionGraph, whileActionGraph)
+    return Stream.of(entryActionGraph, exitActionGraph, whileActionGraph, afterActionGraph)
         .map(actionGraph -> actionGraph.getActionsOfType(type))
         .flatMap(Collection::stream)
         .toList();
@@ -130,6 +136,7 @@ public final class State implements Exportable {
       List<Action> entryActions,
       List<Action> exitActions,
       List<Action> whileActions,
+      List<Action> afterActions,
       boolean abstractt,
       boolean virtual,
       Optional<State> baseState

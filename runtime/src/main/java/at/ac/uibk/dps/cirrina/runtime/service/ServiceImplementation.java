@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.service;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import java.util.List;
 
@@ -33,9 +33,9 @@ public abstract class ServiceImplementation {
    *
    * @param input Input to the service invocation.
    * @return The service invocation output.
-   * @throws RuntimeException If the service invocation failed.
+   * @throws CirrinaException If the service invocation failed.
    */
-  public abstract List<ContextVariable> invoke(List<ContextVariable> input) throws RuntimeException;
+  public abstract List<ContextVariable> invoke(List<ContextVariable> input) throws CirrinaException;
 
 
   /**

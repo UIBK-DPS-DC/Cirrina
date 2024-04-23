@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.state;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.action.ActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
@@ -35,10 +35,10 @@ public final class StateExitCommand implements Command {
    *
    * @param executionContext Execution context.
    * @return Commands to execute when exiting the state.
-   * @throws RuntimeException In case the command could not be executed.
+   * @throws CirrinaException In case the command could not be executed.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // New commands
     final var commands = new ArrayList<Command>();
 
@@ -46,7 +46,8 @@ public final class StateExitCommand implements Command {
     new TopologicalOrderIterator<>(state.getState().getExitActionGraph()).forEachRemaining(
         action -> commands.add(ActionCommand.from(state, action, false)));
 
-    // TODO: Cancel timeout and while actions
+    // Stop all current timeout actions
+    executionContext.stateMachineInstance().stopAllTimeoutActions();
 
     return commands;
   }

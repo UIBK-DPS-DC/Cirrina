@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.service;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.runtime.service.description.HttpServiceImplementationDescription.Method;
@@ -74,9 +74,9 @@ public class HttpServiceImplementation extends ServiceImplementation {
    *
    * @param connection HTTP connection.
    * @return Output variables.
-   * @throws RuntimeException In case of error.
+   * @throws CirrinaException In case of error.
    */
-  private List<ContextVariable> handleResponse(HttpURLConnection connection) throws RuntimeException {
+  private List<ContextVariable> handleResponse(HttpURLConnection connection) throws CirrinaException {
     try {
       final var fury = Fury.builder()
           .withLanguage(Language.XLANG)
@@ -97,13 +97,13 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
             // Verify the output, we expect a map of string-object
             if (!(output instanceof Map<?, ?> untypedMap)) {
-              throw RuntimeException.from("Unexpected HTTP service invocation type, expected map of string-object");
+              throw CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object");
             }
             if (!untypedMap.isEmpty()) {
               if (!untypedMap.entrySet().stream()
                   .allMatch(entry -> entry.getKey() instanceof String
                       && entry.getValue() != null)) {
-                throw RuntimeException.from("Unexpected HTTP service invocation type, expected map of string-object");
+                throw CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object");
               }
             }
 
@@ -117,13 +117,13 @@ public class HttpServiceImplementation extends ServiceImplementation {
                 .map(ContextVariableBuilder::build)
                 .toList();
           } catch (IOException e) {
-            throw RuntimeException.from("Could not read the response body: %s", e.getMessage());
+            throw CirrinaException.from("Could not read the response body: %s", e.getMessage());
           }
         }
-        default -> throw RuntimeException.from("Received HTTP error (%d)", errorCode);
+        default -> throw CirrinaException.from("Received HTTP error (%d)", errorCode);
       }
     } catch (IOException e) {
-      throw RuntimeException.from("Failed to handle response: %s", e.getMessage());
+      throw CirrinaException.from("Failed to handle response: %s", e.getMessage());
     }
   }
 
@@ -132,10 +132,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
    *
    * @param input Input to the service invocation.
    * @return The service invocation output.
-   * @throws RuntimeException If the service invocation failed.
+   * @throws CirrinaException If the service invocation failed.
    */
   @Override
-  public List<ContextVariable> invoke(List<ContextVariable> input) throws RuntimeException {
+  public List<ContextVariable> invoke(List<ContextVariable> input) throws CirrinaException {
     HttpURLConnection connection = null;
 
     try {
@@ -145,7 +145,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       if (input.stream().anyMatch(ContextVariable::isLazy)) {
-        throw RuntimeException.from("All variables need to be evaluated before service input can be converted to bytes");
+        throw CirrinaException.from("All variables need to be evaluated before service input can be converted to bytes");
       }
 
       final var payload = fury.serialize(input.stream()
@@ -174,7 +174,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
       return handleResponse(connection);
     } catch (IOException | URISyntaxException e) {
-      throw RuntimeException.from("Failed to perform HTTP service invocation: %s", e.getMessage());
+      throw CirrinaException.from("Failed to perform HTTP service invocation: %s", e.getMessage());
     } finally {
       // Close connection
       if (connection != null) {

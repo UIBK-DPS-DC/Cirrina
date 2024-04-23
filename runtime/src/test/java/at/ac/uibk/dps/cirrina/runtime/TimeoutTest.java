@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
@@ -18,24 +19,24 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class PingPongTest {
+public class TimeoutTest {
 
   private static CollaborativeStateMachine collaborativeStateMachine;
 
   @BeforeAll
   public static void setUp() {
-    var json = DefaultDescriptions.pingPong;
+    final var json = DefaultDescriptions.timeout;
 
-    var parser = new Parser(new Options());
+    final var parser = new Parser(new Options());
     Assertions.assertDoesNotThrow(() -> {
       collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
     });
   }
 
   @Test
-  public void testPingPongExecute() {
+  public void testTimeoutExecute() {
     Assertions.assertDoesNotThrow(() -> {
-      var mockEventHandler = new EventHandler() {
+      final var mockEventHandler = new EventHandler() {
 
         @Override
         public void close() throws Exception {
@@ -78,11 +79,11 @@ public class PingPongTest {
           assertEquals("v", name);
 
           // Which is an integer
-          assertTrue(value instanceof Integer);
+          assertInstanceOf(Integer.class, value);
 
           // And should count up to 100
           assertEquals(next++, value);
-          assertTrue((Integer) value <= 100);
+          assertTrue((Integer) value <= 10);
 
           super.assign(name, value);
         }
@@ -92,16 +93,24 @@ public class PingPongTest {
       mockPersistentContext.create("v", 0);
 
       // Create a runtime
-      var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
+      final var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
 
       // Create a new collaborative state machine instance
-      runtime.newInstance(collaborativeStateMachine);
+      final var instances = runtime.newInstance(collaborativeStateMachine);
+
+      assertEquals(instances.size(), 1);
+
+      final var instance = runtime.findInstance(instances.getFirst()).get();
 
       // Run for five seconds
       var thread = new Thread(runtime);
       thread.start();
 
       thread.join(5000);
+
+      assertEquals(10, mockPersistentContext.get("v"));
+      assertEquals("b", instance.getStatus().getActivateState().getState().getName());
+      assertTrue(instance.getStatus().isTerminated());
     });
   }
 }

@@ -7,4 +7,9 @@ public final class ActionReferenceClass implements ActionOrActionReferenceClass 
 
   @NotNull
   public String reference;
+
+  @Override
+  public String toString() {
+    return reference;
+  }
 }

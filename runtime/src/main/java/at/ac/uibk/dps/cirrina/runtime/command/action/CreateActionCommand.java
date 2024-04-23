@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.action;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
@@ -37,10 +37,10 @@ public final class CreateActionCommand extends ActionCommand {
    *
    * @param executionContext Execution context.
    * @return Empty list.
-   * @throws RuntimeException In case the command could not be executed.
+   * @throws CirrinaException In case the command could not be executed.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // Acquire the is persistent flag
     final var isPersistent = createAction.isPersistent();
 
@@ -71,8 +71,8 @@ public final class CreateActionCommand extends ActionCommand {
 
       // Attempt to create the variable
       targetContext.create(variable.name(), value);
-    } catch (RuntimeException e) {
-      throw RuntimeException.from("Could not execute create action command: %s", e.getMessage());
+    } catch (CirrinaException e) {
+      throw CirrinaException.from("Could not execute create action command: %s", e.getMessage());
     }
 
     return List.of();

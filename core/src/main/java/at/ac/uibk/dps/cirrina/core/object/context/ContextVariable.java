@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.context;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 
 /**
@@ -43,7 +43,7 @@ public record ContextVariable(
     this(name, value, false);
   }
 
-  public ContextVariable evaluate(Extent extent) throws RuntimeException {
+  public ContextVariable evaluate(Extent extent) throws CirrinaException {
     if (isLazy) {
       var expression = value;
 
@@ -51,8 +51,8 @@ public record ContextVariable(
 
       try {
         return new ContextVariable(name, ((Expression) expression).execute(extent));
-      } catch (RuntimeException e) {
-        throw RuntimeException.from("Could not evaluate variable: %s", e.getMessage());
+      } catch (CirrinaException e) {
+        throw CirrinaException.from("Could not evaluate variable: %s", e.getMessage());
       }
     } else {
       return this;

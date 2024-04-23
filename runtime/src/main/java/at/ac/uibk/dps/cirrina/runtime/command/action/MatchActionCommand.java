@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.action;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.MatchAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.ArrayList;
@@ -37,10 +37,10 @@ public final class MatchActionCommand extends ActionCommand {
    *
    * @param executionContext Execution context.
    * @return Empty list.
-   * @throws RuntimeException In case the command could not be executed.
+   * @throws CirrinaException In case the command could not be executed.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // New commands
     final var commands = new ArrayList<Command>();
 
@@ -60,8 +60,8 @@ public final class MatchActionCommand extends ActionCommand {
           commands.add(ActionCommand.from(scope, caseAction, false));
         }
       }
-    } catch (RuntimeException e) {
-      throw RuntimeException.from("Could not execute match action command: %s", e.getMessage());
+    } catch (CirrinaException e) {
+      throw CirrinaException.from("Could not execute match action command: %s", e.getMessage());
     }
 
     return commands;

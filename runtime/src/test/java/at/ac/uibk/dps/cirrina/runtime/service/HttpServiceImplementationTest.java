@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextVariableClass;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
@@ -168,7 +168,7 @@ public class HttpServiceImplementationTest {
           });
 
           // HTTP error
-          assertThrows(RuntimeException.class, () -> {
+          assertThrows(CirrinaException.class, () -> {
             final var service = new HttpServiceImplementation(new Parameters(
                 "http",
                 1.0f,
@@ -183,7 +183,7 @@ public class HttpServiceImplementationTest {
           });
 
           // Invalid response type
-          assertThrows(RuntimeException.class, () -> {
+          assertThrows(CirrinaException.class, () -> {
             final var service = new HttpServiceImplementation(new Parameters(
                 "http",
                 1.0f,
@@ -198,7 +198,7 @@ public class HttpServiceImplementationTest {
           });
 
           // Invalid response type
-          assertThrows(RuntimeException.class, () -> {
+          assertThrows(CirrinaException.class, () -> {
             final var service = new HttpServiceImplementation(new Parameters(
                 "http",
                 1.0f,

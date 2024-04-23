@@ -199,8 +199,10 @@ public final class StateMachineBuilder {
 
           Consumer<List<? extends TransitionClass>> processTransitions = (on) -> {
             for (var transitionClass : on) {
-              // Acquire the target node
-              var target = stateMachine.findStateByName(transitionClass.target).get();
+              // Acquire the target node, if the target is not provided, this is a self-transition
+              var target = transitionClass.target == null
+                  ? source
+                  : stateMachine.findStateByName(transitionClass.target).get();
 
               // Attempt to add an edge to the state machine graph that resembles the transition
               if (!stateMachine.addEdge(source, target, TransitionBuilder.from(transitionClass, guardResolver, actionResolver).build())) {

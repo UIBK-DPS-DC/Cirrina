@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.expression;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 
 /**
@@ -31,9 +31,9 @@ public abstract class Expression {
    *
    * @param extent Extent describing variables in scope.
    * @return Result of the expression.
-   * @throws RuntimeException In case of an error while executing the expression.
+   * @throws CirrinaException In case of an error while executing the expression.
    */
-  public abstract Object execute(Extent extent) throws RuntimeException;
+  public abstract Object execute(Extent extent) throws CirrinaException;
 
   @Override
   public String toString() {

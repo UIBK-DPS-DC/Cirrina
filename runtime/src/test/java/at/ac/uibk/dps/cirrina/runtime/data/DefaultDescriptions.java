@@ -2,6 +2,80 @@ package at.ac.uibk.dps.cirrina.runtime.data;
 
 public class DefaultDescriptions {
 
+  public static String timeout = """
+              {
+          name: 'collaborativeStateMachine',
+          version: '0.1',
+          stateMachines: [
+            {
+              name: 'stateMachine1',
+              states: [
+                {
+                  name: 'a',
+                  initial: true,
+                  after: [
+                    {
+                      type: 'timeout',
+                      name: 'timeout',
+                      delay: '100',
+                      action: {
+                        type: 'raise',
+                        event: {
+                          name: 'update',
+                          channel: 'internal'
+                        }
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      event: 'update',
+                      target: 'a',
+                      actions: [
+                        {
+                          type: 'match',
+                          value: 'v < 10',
+                          cases: [
+                            {
+                              case: 'true',
+                              action: {
+                                type: 'assign',
+                                variable: {
+                                  name: 'v',
+                                  value: 'v + 1'
+                                }
+                              }
+                            },
+                            {
+                              case: 'false',
+                              action: {
+                                type: 'raise',
+                                event: {
+                                  name: 'tob',
+                                  channel: 'internal'
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      event: 'tob',
+                      target: 'b'
+                    }
+                  ]
+                },
+                {
+                  name: 'b',
+                  terminal: true
+                }
+              ]
+            }
+          ]
+        }
+      """;
+
   public static String pingPong = """
         {
           name: 'collaborativeStateMachine',

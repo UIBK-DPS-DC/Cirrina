@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.guard;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 import java.util.Optional;
@@ -31,12 +31,12 @@ public class Guard {
    *
    * @param extent Extent describing variables in scope.
    * @return Boolean result.
-   * @throws RuntimeException If the expression could not be evaluated, or the expression does not produce a boolean value.
+   * @throws CirrinaException If the expression could not be evaluated, or the expression does not produce a boolean value.
    */
-  public boolean evaluate(Extent extent) throws RuntimeException {
+  public boolean evaluate(Extent extent) throws CirrinaException {
     var result = expression.execute(extent);
     if (!(result instanceof Boolean)) {
-      throw RuntimeException.from("Guard expression '%s' does not produce a boolean value", expression);
+      throw CirrinaException.from("Guard expression '%s' does not produce a boolean value", expression);
     }
 
     return (Boolean) result;

@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
@@ -119,7 +119,7 @@ public class CreateActionCommandTest {
 
     var createActionCommand = new CreateActionCommand(stateMachine, createAction, false);
 
-    assertThrows(RuntimeException.class, () -> {
+    assertThrows(CirrinaException.class, () -> {
       createActionCommand.execute(new ExecutionContext(stateMachine, null));
 
       var value = localContext.get("var");

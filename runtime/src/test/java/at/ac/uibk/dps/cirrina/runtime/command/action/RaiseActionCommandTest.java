@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.doReturn;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextVariableClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.event.EventChannel;
@@ -41,7 +41,7 @@ public class RaiseActionCommandTest {
       }
 
       @Override
-      public void sendEvent(Event event, String source) throws RuntimeException {
+      public void sendEvent(Event event, String source) throws CirrinaException {
         events.add(event);
         latch.countDown();
       }
@@ -76,7 +76,7 @@ public class RaiseActionCommandTest {
 
     var stateMachine = Mockito.mock(StateMachineInstance.class);
     doReturn(new Extent(persistentContext, localContext)).when(stateMachine).getExtent();
-    doReturn(new InstanceId()).when(stateMachine).getId();
+    doReturn(new InstanceId()).when(stateMachine).getInstanceId();
 
     var expressionClass = new ExpressionClass("5");
 

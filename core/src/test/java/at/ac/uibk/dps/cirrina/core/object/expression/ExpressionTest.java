@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
@@ -85,15 +85,15 @@ public class ExpressionTest {
           () -> ExpressionBuilder.from(new ExpressionClass("varOneInt = 2")).build().execute(extent));
 
       // Throws at runtime
-      assertThrows(RuntimeException.class,
+      assertThrows(CirrinaException.class,
           () -> ExpressionBuilder.from(new ExpressionClass("varInvalid")).build().execute(extent));
-      assertThrows(RuntimeException.class,
+      assertThrows(CirrinaException.class,
           () -> ExpressionBuilder.from(new ExpressionClass("!varInvalid")).build().execute(extent));
-      assertThrows(RuntimeException.class,
+      assertThrows(CirrinaException.class,
           () -> ExpressionBuilder.from(new ExpressionClass("varInvalid.varInvalidSub")).build().execute(extent));
-      assertThrows(RuntimeException.class,
+      assertThrows(CirrinaException.class,
           () -> ExpressionBuilder.from(new ExpressionClass("varInvalid + 1")).build().execute(extent));
-      assertThrows(RuntimeException.class,
+      assertThrows(CirrinaException.class,
           () -> ExpressionBuilder.from(new ExpressionClass("let varTemp = varInvalid; varTemp")).build().execute(extent));
     }
   }

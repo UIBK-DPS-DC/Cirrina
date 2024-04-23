@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.base;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
@@ -17,7 +17,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,23 +58,23 @@ public abstract class Runtime implements Runnable, EventListener {
 
   private List<StateMachineInstanceCommandExecutionObserver> stateMachineInstanceCommandExecutionObservers = new ArrayList<>();
 
-  public Runtime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws RuntimeException {
+  public Runtime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws CirrinaException {
     this.runtimeScheduler = runtimeScheduler;
     this.eventHandler = eventHandler;
 
     this.persistentContext = persistentContext;
   }
 
-  protected InstanceId newInstance(StateMachine stateMachine) throws RuntimeException {
+  protected InstanceId newInstance(StateMachine stateMachine) throws CirrinaException {
     return newInstance(stateMachine, Optional.empty());
   }
 
-  protected InstanceId newInstance(StateMachine stateMachine, Optional<InstanceId> parentId) throws RuntimeException {
+  protected InstanceId newInstance(StateMachine stateMachine, Optional<InstanceId> parentId) throws CirrinaException {
 
     // Find the actual parent state machine instance
     final var parentInstance = parentId.flatMap(this::findInstance);
     if (parentInstance.isEmpty() && parentId.isPresent()) {
-      throw RuntimeException.from("The parent state machine instance with id '%s' could not be found", parentId.get());
+      throw CirrinaException.from("The parent state machine instance with id '%s' could not be found", parentId.get());
     }
 
     // Create the state machine instance
@@ -85,7 +84,7 @@ public abstract class Runtime implements Runnable, EventListener {
 
     eventHandler.addListener(instance);
 
-    return instance.getId();
+    return instance.getInstanceId();
   }
 
   /**
@@ -110,7 +109,7 @@ public abstract class Runtime implements Runnable, EventListener {
                           .forEach(observer -> observer.update(instanceCommand));
 
                       instance.execute(command);
-                    } catch (RuntimeException e) {
+                    } catch (CirrinaException e) {
                       logger.error("Runtime error while executing command: {}", e.getMessage());
                     }
                   });
@@ -134,7 +133,7 @@ public abstract class Runtime implements Runnable, EventListener {
    */
   public Optional<StateMachineInstance> findInstance(InstanceId instanceId) {
     return instances.stream()
-        .filter(instance -> instance.getId().equals(instanceId))
+        .filter(instance -> instance.getInstanceId().equals(instanceId))
         .findFirst();
   }
 

@@ -1,15 +1,14 @@
 package at.ac.uibk.dps.cirrina.core.object.state;
 
 import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ACTION_NAME_DOES_NOT_EXIST;
+import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.AFTER_ACTION_IS_NOT_A_TIMEOUT_ACTION;
 
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.StateClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.helper.ActionOrActionReferenceClass;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
-import at.ac.uibk.dps.cirrina.core.object.action.ActionGraph;
+import at.ac.uibk.dps.cirrina.core.object.action.TimeoutAction;
 import at.ac.uibk.dps.cirrina.core.object.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachineBuilder;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,6 +40,7 @@ public abstract class StateBuilder {
    * State builder implementation. Builds a state based on a state class.
    */
   private static final class StateFromClassBuilder extends StateBuilder {
+
     private final UUID parentStateMachineId;
 
     private final StateClass stateClass;
@@ -49,7 +49,8 @@ public abstract class StateBuilder {
 
     private final Optional<State> baseState;
 
-    private StateFromClassBuilder(UUID parentStateMachineId, StateClass stateClass, ActionResolver actionResolver, Optional<State> baseState) {
+    private StateFromClassBuilder(UUID parentStateMachineId, StateClass stateClass, ActionResolver actionResolver,
+        Optional<State> baseState) {
       this.parentStateMachineId = parentStateMachineId;
       this.stateClass = stateClass;
       this.actionResolver = actionResolver;
@@ -64,8 +65,7 @@ public abstract class StateBuilder {
               .map(actionOrActionClass -> {
                 var resolvedAction = actionResolver.resolve(actionOrActionClass);
                 if (resolvedAction.isEmpty()) {
-                  throw new IllegalArgumentException(
-                      VerificationException.from(ACTION_NAME_DOES_NOT_EXIST));
+                  throw new IllegalArgumentException(VerificationException.from(ACTION_NAME_DOES_NOT_EXIST));
                 }
                 return resolvedAction.get();
               })
@@ -74,6 +74,11 @@ public abstract class StateBuilder {
       var entryActions = resolveActions.apply(stateClass.entry);
       var exitActions = resolveActions.apply(stateClass.exit);
       var whileActions = resolveActions.apply(stateClass.whilee);
+      var afterActions = resolveActions.apply(stateClass.after);
+
+      if (!afterActions.stream().allMatch(action -> action instanceof TimeoutAction)) {
+        throw new IllegalArgumentException(VerificationException.from(AFTER_ACTION_IS_NOT_A_TIMEOUT_ACTION));
+      }
 
       var parameters = new State.Parameters(
           parentStateMachineId,
@@ -84,6 +89,7 @@ public abstract class StateBuilder {
           entryActions,
           exitActions,
           whileActions,
+          afterActions,
           stateClass.abstractt,
           stateClass.virtual,
           baseState
@@ -110,7 +116,6 @@ public abstract class StateBuilder {
 
     @Override
     public State build() throws IllegalArgumentException {
-
       var parameters = new State.Parameters(
           parentStateMachineId,
           state.getName(),
@@ -120,6 +125,7 @@ public abstract class StateBuilder {
           state.getEntryActionGraph().getActions(),
           state.getExitActionGraph().getActions(),
           state.getWhileActionGraph().getActions(),
+          state.getAfterActionGraph().getActions(),
           state.isAbstract(),
           state.isVirtual(),
           Optional.empty()

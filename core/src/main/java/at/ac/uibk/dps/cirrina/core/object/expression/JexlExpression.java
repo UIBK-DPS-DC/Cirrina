@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.expression;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
@@ -18,9 +18,8 @@ import org.apache.commons.jexl3.*;
  */
 public class JexlExpression extends Expression {
 
-  private static final JexlEngine JEXL_ENGINE = getJexlEngine();
   private static final int CACHE_SIZE = 512; //TODO Determine the maximum amount of cached expressions
-
+  private static final JexlEngine JEXL_ENGINE = getJexlEngine();
   private final JexlScript jexlScript;
 
   /**
@@ -64,14 +63,14 @@ public class JexlExpression extends Expression {
    *
    * @param extent Extent for resolving variables.
    * @return Result of the expression.
-   * @throws RuntimeException In case of an error while executing the expression.
+   * @throws CirrinaException In case of an error while executing the expression.
    */
   @Override
-  public Object execute(Extent extent) throws RuntimeException {
+  public Object execute(Extent extent) throws CirrinaException {
     try {
       return jexlScript.execute(new ExtentJexlContext(extent));
     } catch (Exception e) {
-      throw RuntimeException.from("Could not execute the expression '%s': %s", jexlScript.getSourceText(), e.getMessage());
+      throw CirrinaException.from("Could not execute the expression '%s': %s", jexlScript.getSourceText(), e.getMessage());
     }
   }
 

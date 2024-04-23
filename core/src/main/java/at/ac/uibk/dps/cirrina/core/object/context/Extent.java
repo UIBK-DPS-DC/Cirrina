@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.context;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +29,13 @@ public class Extent {
         .toList();
   }
 
-  public void trySet(String name, Object value) throws RuntimeException {
+  public void trySet(String name, Object value) throws CirrinaException {
     var exceptions = extent.reversed().stream()
         .map(context -> {
           try {
             context.assign(name, value);
-            return Optional.<RuntimeException>empty();
-          } catch (RuntimeException e) {
+            return Optional.<CirrinaException>empty();
+          } catch (CirrinaException e) {
             return Optional.of(e);
           }
         })
@@ -64,7 +64,7 @@ public class Extent {
         .map(context -> {
           try {
             return Optional.ofNullable(context.get(name));
-          } catch (RuntimeException e) {
+          } catch (CirrinaException e) {
             return Optional.empty();
           }
         })

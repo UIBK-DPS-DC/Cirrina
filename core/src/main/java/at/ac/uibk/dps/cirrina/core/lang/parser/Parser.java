@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.lang.parser;
 
-import at.ac.uibk.dps.cirrina.core.exception.ParserException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.CollaborativeStateMachineClass;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.io.IOException;
@@ -28,7 +29,14 @@ import java.util.stream.Collectors;
  */
 public final class Parser {
 
+  /**
+   * Parser options.
+   */
   private final Options options;
+
+  /**
+   * Mapper from a serialized format to objects.
+   */
   private final ObjectMapper mapper;
 
   /**
@@ -61,13 +69,13 @@ public final class Parser {
    *
    * @param json JSON description.
    * @return Collaborative state machine model.
-   * @throws ParserException In case an error occurs during parsing or validation.
+   * @throws CirrinaException In case an error occurs during parsing or validation.
    */
-  public CollaborativeStateMachineClass parse(String json) throws ParserException {
+  public CollaborativeStateMachineClass parse(String json) throws CirrinaException {
     try {
       return mapper.readValue(json, CollaborativeStateMachineClass.class);
     } catch (JsonProcessingException | IllegalArgumentException e) {
-      throw ParserException.from("Parsing error: %s", e.getMessage());
+      throw CirrinaException.from("Parsing error: %s", e.getMessage());
     }
   }
 
@@ -81,7 +89,7 @@ public final class Parser {
   /**
    * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a bean deserializer.
    */
-  class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
+  static class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
 
     /**
      * Provides a bean deserializer with validation in the place of a bean deserializer.
@@ -106,7 +114,7 @@ public final class Parser {
   /**
    * Bean deserializer with validation. Provides additional bean validation after deserialization.
    */
-  class BeanDeserializerWithValidation extends BeanDeserializer {
+  static class BeanDeserializerWithValidation extends BeanDeserializer {
 
     private final Validator validator;
 
@@ -142,7 +150,7 @@ public final class Parser {
       var violations = validator.validate(instance);
       if (!violations.isEmpty()) {
         throw new IllegalArgumentException(violations.stream()
-            .map(v -> v.getMessage())
+            .map(ConstraintViolation::getMessage)
             .collect(Collectors.joining(",")));
       }
 

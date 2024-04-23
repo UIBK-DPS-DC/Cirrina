@@ -5,7 +5,7 @@ import at.ac.uibk.dps.cirrina.core.io.plantuml.PlantUmlVisitor;
 import java.util.Optional;
 
 /**
- * Base action, can represent and action.
+ * Base action, can represent any action.
  */
 public abstract class Action implements Exportable {
 
@@ -37,9 +37,13 @@ public abstract class Action implements Exportable {
     return name.orElse("Inline Action");
   }
 
+  /**
+   * Visitor accept for PlantUML exporting.
+   *
+   * @param visitor Visitor.
+   */
   @Override
   public void accept(PlantUmlVisitor visitor) {
     visitor.visit(this);
   }
-
 }

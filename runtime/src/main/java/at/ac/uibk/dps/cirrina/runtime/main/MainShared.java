@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.main;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.runtime.shared.SharedRuntime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,9 +29,9 @@ public final class MainShared extends Main {
   /**
    * Run the runtime.
    *
-   * @throws RuntimeException In case of an error during execution or initialization.
+   * @throws CirrinaException In case of an error during execution or initialization.
    */
-  public void run() throws RuntimeException {
+  public void run() throws CirrinaException {
     final var runtimeScheduler = newRuntimeScheduler();
 
     try (final var eventHandler = newEventHandler()) {
@@ -39,7 +39,7 @@ public final class MainShared extends Main {
         new SharedRuntime(runtimeScheduler, eventHandler, persistentContext);
       }
     } catch (Exception e) {
-      throw new java.lang.RuntimeException(e);
+      throw CirrinaException.from("Failed to run shared runtime: %s", e);
     }
   }
 

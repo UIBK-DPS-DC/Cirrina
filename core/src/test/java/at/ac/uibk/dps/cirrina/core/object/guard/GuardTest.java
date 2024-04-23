@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.guard.GuardClass;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
@@ -41,7 +41,7 @@ public class GuardTest {
         assertFalse(guard.evaluate(extent));
       });
 
-      assertThrows(RuntimeException.class, () -> {
+      assertThrows(CirrinaException.class, () -> {
         var guardClass = new GuardClass();
 
         guardClass.name = Optional.of("name");

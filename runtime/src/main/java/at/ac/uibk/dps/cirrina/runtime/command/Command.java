@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface Command {
 
-  List<Command> execute(ExecutionContext executionContext) throws RuntimeException;
+  List<Command> execute(ExecutionContext executionContext) throws CirrinaException;
 
   interface Scope {
 

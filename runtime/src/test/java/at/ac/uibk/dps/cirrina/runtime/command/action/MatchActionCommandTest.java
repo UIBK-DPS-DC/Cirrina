@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.core.object.action.MatchAction;
@@ -39,7 +39,7 @@ public class MatchActionCommandTest {
       }
 
       @Override
-      public void sendEvent(Event event, String source) throws RuntimeException {
+      public void sendEvent(Event event, String source) throws CirrinaException {
 
       }
 

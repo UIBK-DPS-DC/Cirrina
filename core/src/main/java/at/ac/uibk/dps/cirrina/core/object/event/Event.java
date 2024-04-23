@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.event;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.event.EventChannel;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
@@ -40,9 +40,9 @@ public final class Event {
    *
    * @param bytes Byte data.
    * @return Event.
-   * @throws RuntimeException In case the event could not be retrieved from the CloudEvents event.
+   * @throws CirrinaException In case the event could not be retrieved from the CloudEvents event.
    */
-  public static Event fromBytes(byte[] bytes) throws RuntimeException {
+  public static Event fromBytes(byte[] bytes) throws CirrinaException {
     Fury fury = Fury.builder()
         .withLanguage(Language.XLANG)
         .requireClassRegistration(false)
@@ -50,13 +50,13 @@ public final class Event {
 
     var event = fury.deserialize(bytes);
     if (!(event instanceof Event)) {
-      throw RuntimeException.from("Received an event that does not contain an event as its data");
+      throw CirrinaException.from("Received an event that does not contain an event as its data");
     }
 
     return (Event) event;
   }
 
-  public static Event ensureHasEvaluatedData(Event event, Extent extent) throws RuntimeException {
+  public static Event ensureHasEvaluatedData(Event event, Extent extent) throws CirrinaException {
     var data = new ArrayList<ContextVariable>();
 
     for (var variable : event.getData()) {
@@ -127,9 +127,9 @@ public final class Event {
    *
    * @return Byte data.
    */
-  public byte[] toBytes() throws RuntimeException {
+  public byte[] toBytes() throws CirrinaException {
     if (data.stream().anyMatch(ContextVariable::isLazy)) {
-      throw RuntimeException.from("All variables need to be evaluated before an event can be converted to bytes");
+      throw CirrinaException.from("All variables need to be evaluated before an event can be converted to bytes");
     }
 
     Fury fury = Fury.builder()

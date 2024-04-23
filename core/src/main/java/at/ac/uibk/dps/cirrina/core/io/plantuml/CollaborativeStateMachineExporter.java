@@ -17,9 +17,8 @@ public class CollaborativeStateMachineExporter {
       PlantUmlExporter plantUmlExporter = PlantUmlExporter.from(collaborativeStateMachine);
       out.write(plantUmlExporter.getPlantUml());
     } catch (IOException e) {
-      throw new CirrinaException(
-          String.format("Unexpected error while exporting a collaborative state machine object to puml: %s",
-              e.getMessage()));
+      throw CirrinaException.from("Unexpected error while exporting a collaborative state machine object to PlantUML: %s",
+          e.getMessage());
     }
   }
 
@@ -29,9 +28,8 @@ public class CollaborativeStateMachineExporter {
       PlantUmlExporter plantUmlExporter = PlantUmlExporter.from(stateMachine);
       out.write(plantUmlExporter.getPlantUml());
     } catch (IOException e) {
-      throw new CirrinaException(
-          String.format("Unexpected error while exporting a state machine object to puml: %s",
-              e.getMessage()));
+      throw CirrinaException.from("Unexpected error while exporting a state machine object to PlantUML: %s",
+          e.getMessage());
     }
   }
 }

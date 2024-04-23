@@ -20,7 +20,7 @@ public final class ActionResolver {
     switch (actionOrActionReferenceClass) {
       // An inline action is provided as an action class, since this action is inline it needs to be constructed
       case ActionClass actionClass -> {
-        return Optional.of(ActionBuilder.from(actionClass, null /* TODO: Make me optional */).build());
+        return Optional.of(ActionBuilder.from(actionClass, this).build());
       }
       // An action reference is a reference to a named action contained within the state machine, we provide this action
       case ActionReferenceClass actionReferenceClass -> {

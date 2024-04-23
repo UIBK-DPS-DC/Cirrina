@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.shared;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
@@ -14,15 +14,15 @@ import java.util.Optional;
 
 public final class SharedRuntime extends Runtime {
 
-  public SharedRuntime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws RuntimeException {
+  public SharedRuntime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws CirrinaException {
     super(runtimeScheduler, eventHandler, persistentContext);
   }
 
-  public List<InstanceId> newInstance(CollaborativeStateMachine collaborativeStateMachine) throws RuntimeException {
+  public List<InstanceId> newInstance(CollaborativeStateMachine collaborativeStateMachine) throws CirrinaException {
     return newInstances(collaborativeStateMachine.getStateMachines(), Optional.empty());
   }
 
-  private List<InstanceId> newInstances(List<StateMachine> stateMachines, Optional<InstanceId> parentInstanceId) throws RuntimeException {
+  private List<InstanceId> newInstances(List<StateMachine> stateMachines, Optional<InstanceId> parentInstanceId) throws CirrinaException {
     var instanceIds = new ArrayList<InstanceId>();
 
     for (var stateMachine : stateMachines) {

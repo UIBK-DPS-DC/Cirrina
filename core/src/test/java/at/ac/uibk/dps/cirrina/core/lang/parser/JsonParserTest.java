@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import at.ac.uibk.dps.cirrina.core.data.DefaultDescriptions;
-import at.ac.uibk.dps.cirrina.core.exception.ParserException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ public class JsonParserTest {
     var json = DefaultDescriptions.empty;
 
     var parser = new Parser(new Options());
-    assertThrows(ParserException.class, () -> {
+    assertThrows(CirrinaException.class, () -> {
       var csm = parser.parse(json);
       System.out.println(csm);
     });

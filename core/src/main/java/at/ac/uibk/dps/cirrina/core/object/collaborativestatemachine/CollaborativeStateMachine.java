@@ -16,7 +16,6 @@ public final class CollaborativeStateMachine extends DirectedPseudograph<StateMa
     this.name = name;
   }
 
-
   /**
    * Returns a state machine by its name. If no state machine is known with the supplied name, empty is returned.
    *
@@ -35,8 +34,7 @@ public final class CollaborativeStateMachine extends DirectedPseudograph<StateMa
     }
     return Optional.of(states.getFirst());
   }
-
-
+  
   /**
    * Returns the collection of state machines.
    *

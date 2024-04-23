@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.core.object.transition;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.io.plantuml.Exportable;
 import at.ac.uibk.dps.cirrina.core.io.plantuml.PlantUmlVisitor;
 import at.ac.uibk.dps.cirrina.core.object.action.Action;
@@ -30,10 +30,10 @@ public class Transition extends DefaultEdge implements Exportable {
   /**
    * Initializes this transition object.
    *
-   * @param targetName Name of the target state.
-   * @param elseTargetName      Name of the else state.
-   * @param guards     List of guards.
-   * @param actions    List of actions.
+   * @param targetName     Name of the target state.
+   * @param elseTargetName Name of the else state.
+   * @param guards         List of guards.
+   * @param actions        List of actions.
    */
   Transition(String targetName, Optional<String> elseTargetName, List<Guard> guards, List<Action> actions) {
     this.targetName = targetName;
@@ -49,9 +49,9 @@ public class Transition extends DefaultEdge implements Exportable {
    *
    * @param extent Extent describing variables in scope.
    * @return True if the transition can be taken based on the guards, otherwise false.
-   * @throws RuntimeException If some guard expression could not be evaluated, or some guard expression does not produce a boolean value.
+   * @throws CirrinaException If some guard expression could not be evaluated, or some guard expression does not produce a boolean value.
    */
-  public boolean evaluate(Extent extent) throws RuntimeException {
+  public boolean evaluate(Extent extent) throws CirrinaException {
     for (var guard : guards) {
       if (!guard.evaluate(extent)) {
         return false;

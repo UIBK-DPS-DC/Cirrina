@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.action;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
@@ -37,10 +37,10 @@ public final class AssignActionCommand extends ActionCommand {
    *
    * @param executionContext Execution context.
    * @return Empty list.
-   * @throws RuntimeException In case the command could not be executed.
+   * @throws CirrinaException In case the command could not be executed.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // Acquire the extent
     var extent = scope.getExtent();
 
@@ -61,8 +61,8 @@ public final class AssignActionCommand extends ActionCommand {
 
       // Attempt to set the variable
       extent.trySet(variable.name(), value);
-    } catch (RuntimeException e) {
-      throw RuntimeException.from("Could not execute assign action command: %s", e.getMessage());
+    } catch (CirrinaException e) {
+      throw CirrinaException.from("Could not execute assign action command: %s", e.getMessage());
     }
 
     return List.of();

@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.main;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.context.NatsContext;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
@@ -66,9 +66,9 @@ public abstract class Main {
           new MainShared(args, sharedArgs).run();
           break;
         default:
-          throw RuntimeException.from("Unknown command '%s'", command);
+          throw CirrinaException.from("Unknown command '%s'", command);
       }
-    } catch (RuntimeException e) {
+    } catch (CirrinaException e) {
       logger.error("Failed to run runtime: {}", e.getMessage());
     } catch (ParameterException e) {
       logger.error(e.getMessage());
@@ -78,63 +78,63 @@ public abstract class Main {
   /**
    * Run the runtime.
    *
-   * @throws RuntimeException In case of an error during execution or initialization.
+   * @throws CirrinaException In case of an error during execution or initialization.
    */
-  public abstract void run() throws RuntimeException;
+  public abstract void run() throws CirrinaException;
 
   /**
    * Constructs a new runtime scheduler according to the requested arguments.
    *
    * @return Runtime scheduler.
-   * @throws RuntimeException If the runtime scheduler could not be constructed.
+   * @throws CirrinaException If the runtime scheduler could not be constructed.
    */
-  public RuntimeScheduler newRuntimeScheduler() throws RuntimeException {
+  public RuntimeScheduler newRuntimeScheduler() throws CirrinaException {
     switch (args.scheduler) {
       case RoundRobin -> {
         return new RoundRobinRuntimeScheduler();
       }
     }
 
-    throw RuntimeException.from("Unknown scheduler '%s'", args.scheduler);
+    throw CirrinaException.from("Unknown scheduler '%s'", args.scheduler);
   }
 
   /**
    * Constructs a new event handler according to the requested arguments.
    *
    * @return Event handler.
-   * @throws RuntimeException If the event handler could not be constructed.
+   * @throws CirrinaException If the event handler could not be constructed.
    */
-  public EventHandler newEventHandler() throws RuntimeException {
+  public EventHandler newEventHandler() throws CirrinaException {
     switch (args.eventHandler) {
       case Nats -> {
         return newNatsEventHandler();
       }
     }
 
-    throw RuntimeException.from("Unknown event handler '%s'", args.eventHandler);
+    throw CirrinaException.from("Unknown event handler '%s'", args.eventHandler);
   }
 
   /**
    * Constructs a new persistent context according to the requested arguments.
    *
    * @return Persistent context.
-   * @throws RuntimeException If the persistent context could not be constructed.
+   * @throws CirrinaException If the persistent context could not be constructed.
    */
-  public Context newPersistentContext() throws RuntimeException {
+  public Context newPersistentContext() throws CirrinaException {
     switch (args.persistentContext) {
       case Nats -> {
         return newNatsPersistentContext();
       }
     }
 
-    throw RuntimeException.from("Unknown persistent context '%s'", args.eventHandler);
+    throw CirrinaException.from("Unknown persistent context '%s'", args.eventHandler);
   }
 
-  private NatsEventHandler newNatsEventHandler() throws RuntimeException {
+  private NatsEventHandler newNatsEventHandler() throws CirrinaException {
     return new NatsEventHandler(args.natsEventHandlerArgs.natsUrl);
   }
 
-  private NatsContext newNatsPersistentContext() throws RuntimeException {
+  private NatsContext newNatsPersistentContext() throws CirrinaException {
     return new NatsContext(args.natsPersistentContextArgs.natsUrl, args.natsPersistentContextArgs.bucketName);
   }
 

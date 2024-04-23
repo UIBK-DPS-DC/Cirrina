@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.action;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import java.util.List;
@@ -16,7 +16,7 @@ public final class InvokeActionCommand extends ActionCommand {
   }
 
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     return null;
   }
 }

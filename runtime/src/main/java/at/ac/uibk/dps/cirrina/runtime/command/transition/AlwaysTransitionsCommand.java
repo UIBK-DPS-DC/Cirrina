@@ -1,10 +1,9 @@
 package at.ac.uibk.dps.cirrina.runtime.command.transition;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
 import at.ac.uibk.dps.cirrina.runtime.instance.TransitionInstance;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,15 +30,15 @@ public class AlwaysTransitionsCommand implements Command {
    *
    * @param executionContext Execution context.
    * @return Command list containing the transition command if a transition should be taken or an empty list.
-   * @throws RuntimeException In case the command could not be executed due to non-determinism or an invalid target state.
+   * @throws CirrinaException In case the command could not be executed due to non-determinism or an invalid target state.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // New commands
     final var commands = new ArrayList<Command>();
 
     final var stateMachineInstance = executionContext.stateMachineInstance();
-    final var stateMachine = stateMachineInstance.getStateMachine();
+    final var stateMachine = stateMachineInstance.getStateMachineObject();
     final var status = stateMachineInstance.getStatus();
 
     // Look up the always-transitions that are outwards from the current state
@@ -65,14 +64,14 @@ public class AlwaysTransitionsCommand implements Command {
       }
 
       if (tookTransition) {
-        throw RuntimeException.from("Non-determinism detected!");
+        throw CirrinaException.from("Non-determinism detected!");
       }
 
       commands.add(
           new TransitionCommand(
               new TransitionInstance(transition),
               stateMachineInstance.findStateInstanceByName(targetName.get())
-                  .orElseThrow(() -> RuntimeException.from("Target state cannot be found in state machine")),
+                  .orElseThrow(() -> CirrinaException.from("Target state cannot be found in state machine")),
               isElse
           )
       );

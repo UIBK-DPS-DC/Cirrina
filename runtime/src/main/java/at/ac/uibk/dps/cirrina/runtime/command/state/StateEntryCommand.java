@@ -1,12 +1,11 @@
 package at.ac.uibk.dps.cirrina.runtime.command.state;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
+import at.ac.uibk.dps.cirrina.core.object.action.TimeoutAction;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.action.ActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.transition.AlwaysTransitionsCommand;
-import at.ac.uibk.dps.cirrina.runtime.command.transition.TransitionCommand;
 import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
-import at.ac.uibk.dps.cirrina.runtime.instance.TransitionInstance;
 import java.util.ArrayList;
 import java.util.List;
 import org.jgrapht.traverse.TopologicalOrderIterator;
@@ -38,12 +37,14 @@ public final class StateEntryCommand implements Command {
    *
    * @param executionContext Execution context.
    * @return Commands to execute when entering the state.
-   * @throws RuntimeException In case the command could not be executed.
+   * @throws CirrinaException In case the command could not be executed.
    */
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     // New commands
     final var commands = new ArrayList<Command>();
+
+    final var stateMachineInstance = executionContext.stateMachineInstance();
 
     // Append the entry actions to the command list
     new TopologicalOrderIterator<>(state.getState().getEntryActionGraph()).forEachRemaining(
@@ -56,7 +57,15 @@ public final class StateEntryCommand implements Command {
     // Append the always transitions to the command list
     commands.add(new AlwaysTransitionsCommand(state));
 
-    // TODO: Start timeout actions
+    // Start all timeout actions
+    {
+      final var it = new TopologicalOrderIterator<>(state.getState().getAfterActionGraph());
+      while (it.hasNext()) {
+        final var action = it.next();
+
+        stateMachineInstance.startTimeoutAction((TimeoutAction) action);
+      }
+    }
 
     return commands;
   }

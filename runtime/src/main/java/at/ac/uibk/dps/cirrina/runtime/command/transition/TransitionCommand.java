@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.command.transition;
 
-import at.ac.uibk.dps.cirrina.core.exception.RuntimeException;
+import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.runtime.command.Command;
 import at.ac.uibk.dps.cirrina.runtime.command.action.ActionCommand;
 import at.ac.uibk.dps.cirrina.runtime.command.state.StateEntryCommand;
@@ -27,7 +27,7 @@ public final class TransitionCommand implements Command {
   }
 
   @Override
-  public List<Command> execute(ExecutionContext executionContext) throws RuntimeException {
+  public List<Command> execute(ExecutionContext executionContext) throws CirrinaException {
     final var commands = new ArrayList<Command>();
 
     final var stateMachineInstance = executionContext.stateMachineInstance();
