@@ -4,16 +4,19 @@ import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
-import com.google.common.io.ByteStreams;
 import io.fury.Fury;
 import io.fury.config.Language;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 /**
@@ -72,59 +75,52 @@ public class HttpServiceImplementation extends ServiceImplementation {
   /**
    * Handle a service invocation response.
    *
-   * @param connection HTTP connection.
+   * @param response HTTP response.
    * @return Output variables.
-   * @throws CirrinaException In case of error.
+   * @throws CompletionException In case of error.
    */
-  private List<ContextVariable> handleResponse(HttpURLConnection connection) throws CirrinaException {
-    try {
-      final var fury = Fury.builder()
-          .withLanguage(Language.XLANG)
-          .requireClassRegistration(false)
-          .build();
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
+    final var fury = Fury.builder()
+        .withLanguage(Language.XLANG)
+        .requireClassRegistration(false)
+        .build();
 
-      // Get response
-      final var errorCode = connection.getResponseCode();
+    // Require HTTP OK
+    final var errorCode = response.statusCode();
 
-      switch (errorCode) {
-        case HttpURLConnection.HTTP_OK -> {
-          try (final var inputStream = connection.getInputStream()) {
-            // Acquire the payload
-            final var payload = ByteStreams.toByteArray(inputStream);
-
-            // Perform deserialization
-            final var output = fury.deserialize(payload);
-
-            // Verify the output, we expect a map of string-object
-            if (!(output instanceof Map<?, ?> untypedMap)) {
-              throw CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object");
-            }
-            if (!untypedMap.isEmpty()) {
-              if (!untypedMap.entrySet().stream()
-                  .allMatch(entry -> entry.getKey() instanceof String
-                      && entry.getValue() != null)) {
-                throw CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object");
-              }
-            }
-
-            @SuppressWarnings("unchecked") final var map = (Map<String, Object>) output;
-
-            // Build the output variables
-            final var builder = ContextVariableBuilder.from();
-
-            return map.entrySet().stream()
-                .map(entry -> builder.name(entry.getKey()).value(entry.getValue()))
-                .map(ContextVariableBuilder::build)
-                .toList();
-          } catch (IOException e) {
-            throw CirrinaException.from("Could not read the response body: %s", e.getMessage());
-          }
-        }
-        default -> throw CirrinaException.from("Received HTTP error (%d)", errorCode);
-      }
-    } catch (IOException e) {
-      throw CirrinaException.from("Failed to handle response: %s", e.getMessage());
+    if (errorCode != HttpURLConnection.HTTP_OK) {
+      throw new CompletionException(CirrinaException.from("Received HTTP error (%d)", errorCode));
     }
+
+    // Acquire the payload
+    final var payload = response.body();
+
+    // Perform deserialization
+    final var output = fury.deserialize(payload);
+
+    // Verify the output, we expect a map of string-object
+    if (!(output instanceof Map<?, ?> untypedMap)) {
+      throw new CompletionException(
+          CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object"));
+    }
+    if (!untypedMap.isEmpty()) {
+      if (!untypedMap.entrySet().stream()
+          .allMatch(entry -> entry.getKey() instanceof String
+              && entry.getValue() != null)) {
+        throw new CompletionException(
+            CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object"));
+      }
+    }
+
+    @SuppressWarnings("unchecked") final var map = (Map<String, Object>) output;
+
+    // Build the output variables
+    final var builder = ContextVariableBuilder.from();
+
+    return map.entrySet().stream()
+        .map(entry -> builder.name(entry.getKey()).value(entry.getValue()))
+        .map(ContextVariableBuilder::build)
+        .toList();
   }
 
   /**
@@ -135,10 +131,8 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws CirrinaException If the service invocation failed.
    */
   @Override
-  public List<ContextVariable> invoke(List<ContextVariable> input) throws CirrinaException {
-    HttpURLConnection connection = null;
-
-    try {
+  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws CirrinaException {
+    try (final var client = HttpClient.newHttpClient()) {
       final var fury = Fury.builder()
           .withLanguage(Language.XLANG)
           .requireClassRegistration(false)
@@ -152,34 +146,17 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .collect(Collectors.toMap(ContextVariable::name, ContextVariable::value)));
 
       // Create URL
-      final var url = new URI(scheme, "", host, port, endPoint, "", "").toURL();
+      final var uri = new URI(scheme, "", host, port, endPoint, "", "");
 
-      connection = (HttpURLConnection) url.openConnection();
+      final var request = HttpRequest.newBuilder()
+          .version(HttpClient.Version.HTTP_2)
+          .method(method.toString(), BodyPublishers.ofByteArray(payload))
+          .uri(uri)
+          .build();
 
-      // Set HTTP method
-      switch (method) {
-        case GET -> connection.setRequestMethod("GET");
-        case POST -> connection.setRequestMethod("POST");
-      }
-
-      // Set request properties
-      connection.setDoOutput(true);
-      connection.setRequestProperty("Content-Type", "application/octet-stream");
-      connection.setRequestProperty("Content-Length", String.valueOf(payload.length));
-
-      // Write request body
-      try (OutputStream outputStream = connection.getOutputStream()) {
-        outputStream.write(payload);
-      }
-
-      return handleResponse(connection);
-    } catch (IOException | URISyntaxException e) {
+      return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApplyAsync(HttpServiceImplementation::handleResponse);
+    } catch (URISyntaxException e) {
       throw CirrinaException.from("Failed to perform HTTP service invocation: %s", e.getMessage());
-    } finally {
-      // Close connection
-      if (connection != null) {
-        connection.disconnect();
-      }
     }
   }
 

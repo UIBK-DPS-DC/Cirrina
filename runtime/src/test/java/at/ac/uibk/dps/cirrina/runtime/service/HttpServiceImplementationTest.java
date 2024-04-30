@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.ExpressionClass;
 import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextVariableClass;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
@@ -25,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -159,7 +159,7 @@ public class HttpServiceImplementationTest {
                 "/plus",
                 Method.POST));
 
-            final var output = service.invoke(variables);
+            final var output = service.invoke(variables).get();
 
             assertEquals(output.size(), 1);
 
@@ -169,7 +169,7 @@ public class HttpServiceImplementationTest {
           });
 
           // HTTP error
-          assertThrows(CirrinaException.class, () -> {
+          assertThrows(ExecutionException.class, () -> {
             final var service = new HttpServiceImplementation(new Parameters(
                 "http",
                 1.0f,
@@ -180,11 +180,11 @@ public class HttpServiceImplementationTest {
                 "/error",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>());
+            service.invoke(new ArrayList<ContextVariable>()).get();
           });
 
           // Invalid response type
-          assertThrows(CirrinaException.class, () -> {
+          assertThrows(ExecutionException.class, () -> {
             final var service = new HttpServiceImplementation(new Parameters(
                 "http",
                 1.0f,
@@ -195,11 +195,11 @@ public class HttpServiceImplementationTest {
                 "/broken-response1",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>());
+            service.invoke(new ArrayList<ContextVariable>()).get();
           });
 
           // Invalid response type
-          assertThrows(CirrinaException.class, () -> {
+          assertThrows(ExecutionException.class, () -> {
             final var service = new HttpServiceImplementation(new Parameters(
                 "http",
                 1.0f,
@@ -210,7 +210,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response2",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>());
+            service.invoke(new ArrayList<ContextVariable>()).get();
           });
         });
   }

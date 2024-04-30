@@ -45,6 +45,14 @@ public class HttpServiceImplementationDescription extends ServiceImplementationD
     @JsonProperty("get")
     GET,
     @JsonProperty("post")
-    POST
+    POST;
+
+    @Override
+    public String toString() {
+      return switch (this) {
+        case GET -> "GET";
+        case POST -> "POST";
+      };
+    }
   }
 }
