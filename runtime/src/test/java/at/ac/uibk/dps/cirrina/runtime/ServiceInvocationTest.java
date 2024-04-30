@@ -13,20 +13,76 @@ import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
+import at.ac.uibk.dps.cirrina.execution.service.ServicesImplementationBuilder;
+import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
+import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;
+import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationsDescription;
 import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinRuntimeScheduler;
 import com.google.common.collect.ArrayListMultimap;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import io.fury.Fury;
+import io.fury.config.Language;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Map;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class TimeoutTest {
+public class ServiceInvocationTest {
 
   private static CollaborativeStateMachine collaborativeStateMachine;
 
+  private static HttpServer httpServer;
+
   @BeforeAll
-  public static void setUp() {
-    final var json = DefaultDescriptions.timeout;
+  public static void setUp() throws IOException {
+    httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
+
+    httpServer.createContext("/increment", new HttpHandler() {
+      public void handle(HttpExchange exchange) throws IOException {
+        final var payload = exchange.getRequestBody().readAllBytes();
+
+        final var fury = Fury.builder()
+            .withLanguage(Language.XLANG)
+            .requireClassRegistration(false)
+            .build();
+
+        // Deserialize the payload
+        final var in = fury.deserialize(payload);
+
+        assertInstanceOf(Map.class, in);
+
+        // Check variables
+        assertTrue(((Map<?, ?>) in).containsKey("v"));
+
+        // Require integers
+        assertInstanceOf(Integer.class, ((Map<?, ?>) in).get("v"));
+
+        // Create output
+        final var out = fury.serialize(Map.of(
+            "v",
+            (int) ((Map<?, ?>) in).get("v") + 1));
+
+        // Response status and length
+        exchange.sendResponseHeaders(200, out.length);
+
+        // Output the response
+        try (final var stream = exchange.getResponseBody()) {
+          stream.write(out);
+        }
+      }
+    });
+
+    httpServer.start();
+
+    final var json = DefaultDescriptions.invoke;
 
     final var parser = new Parser(new Options());
     Assertions.assertDoesNotThrow(() -> {
@@ -34,8 +90,13 @@ public class TimeoutTest {
     });
   }
 
+  @AfterAll
+  public static void tearDown() {
+    httpServer.stop(0);
+  }
+
   @Test
-  public void testTimeoutExecute() {
+  public void testServiceInvocationExecute() {
     Assertions.assertDoesNotThrow(() -> {
       final var mockEventHandler = new EventHandler() {
 
@@ -96,8 +157,34 @@ public class TimeoutTest {
       // Create a runtime
       final var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
 
+      // Create a service implementation description
+      var servicesDescription = new ServiceImplementationsDescription();
+
+      var serviceDescriptions = new ServiceImplementationDescription[1];
+
+      {
+        var service = new HttpServiceImplementationDescription();
+        service.name = "increment";
+        service.type = ServiceImplementationType.HTTP;
+        service.cost = 1.0f;
+        service.local = true;
+        service.scheme = "http";
+        service.host = "localhost";
+        service.port = 8000;
+        service.endPoint = "/increment";
+        service.method = Method.GET;
+
+        serviceDescriptions[0] = service;
+      }
+
       // Create a service implementation selector
-      final var serviceImplementationSelector = new ServiceImplementationSelector(ArrayListMultimap.create());
+      final var serviceImplementationDescription = ArrayListMultimap.create();
+
+      servicesDescription.serviceImplementations = serviceDescriptions;
+
+      final var services = ServicesImplementationBuilder.from(servicesDescription).build();
+
+      final var serviceImplementationSelector = new ServiceImplementationSelector(services);
 
       // Create a new collaborative state machine instance
       final var instances = runtime.newInstance(collaborativeStateMachine, serviceImplementationSelector);

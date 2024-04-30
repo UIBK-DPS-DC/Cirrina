@@ -6,10 +6,11 @@ import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstanceId;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public final class SharedRuntime extends Runtime {
 
@@ -17,12 +18,20 @@ public final class SharedRuntime extends Runtime {
     super(runtimeScheduler, eventHandler, persistentContext);
   }
 
-  public List<StateMachineInstanceId> newInstance(CollaborativeStateMachine collaborativeStateMachine) throws CirrinaException {
-    return newInstances(collaborativeStateMachine.getStateMachines(), Optional.empty());
+  public List<StateMachineInstanceId> newInstance(
+      CollaborativeStateMachine collaborativeStateMachine,
+      ServiceImplementationSelector serviceImplementationSelector
+  ) throws CirrinaException {
+    return newInstances(collaborativeStateMachine.getStateMachines(), serviceImplementationSelector, null);
   }
 
-  private List<StateMachineInstanceId> newInstances(List<StateMachine> stateMachines, Optional<StateMachineInstanceId> parentInstanceId)
-      throws CirrinaException {
+  private List<StateMachineInstanceId> newInstances(
+      List<StateMachine> stateMachines,
+      ServiceImplementationSelector serviceImplementationSelector,
+      @Nullable StateMachineInstanceId parentInstanceId
+  ) throws CirrinaException {
+    // TODO: This function needs to be replaced with a scripted instantiation. Instead of enumerating the SMs in the CSM, the script needs to instantiate specific SMs
+
     var instanceIds = new ArrayList<StateMachineInstanceId>();
 
     for (var stateMachine : stateMachines) {
@@ -31,12 +40,12 @@ public final class SharedRuntime extends Runtime {
         continue;
       }
 
-      var instanceId = newInstance(stateMachine, parentInstanceId);
+      var instanceId = newInstance(stateMachine, serviceImplementationSelector, parentInstanceId);
       instanceIds.add(instanceId);
 
       // Add nested state machines
       if (!stateMachine.getNestedStateMachines().isEmpty()) {
-        instanceIds.addAll(newInstances(stateMachine.getNestedStateMachines(), Optional.of(instanceId)));
+        instanceIds.addAll(newInstances(stateMachine.getNestedStateMachines(), serviceImplementationSelector, instanceId));
       }
     }
 

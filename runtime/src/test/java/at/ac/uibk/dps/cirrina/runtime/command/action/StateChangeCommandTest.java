@@ -27,7 +27,7 @@ public class StateChangeCommandTest {
       doThrow(CirrinaException.from("")).when(stateMachine).updateActiveState(any());
       doNothing().when(stateMachine).updateActiveState(stateOne);
 
-      final var executionContext = new ExecutionContext(stateMachine, null, null, null, null, false);
+      final var executionContext = new ExecutionContext(stateMachine, null, null, null, null, null, false);
 
       final var commandFactory = new CommandFactory(executionContext);
 

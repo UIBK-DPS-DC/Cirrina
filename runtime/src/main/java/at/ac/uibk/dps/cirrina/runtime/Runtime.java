@@ -7,7 +7,9 @@ import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstanceId;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
@@ -63,24 +65,30 @@ public abstract class Runtime implements Runnable, EventListener {
     this.persistentContext = persistentContext;
   }
 
-  protected StateMachineInstanceId newInstance(StateMachine stateMachine) throws CirrinaException {
-    return newInstance(stateMachine, Optional.empty());
+  protected StateMachineInstanceId newInstance(
+      StateMachine stateMachine,
+      ServiceImplementationSelector serviceImplementationSelector
+  ) throws CirrinaException {
+    return newInstance(stateMachine, serviceImplementationSelector, null);
   }
 
-  protected StateMachineInstanceId newInstance(StateMachine stateMachine, Optional<StateMachineInstanceId> parentId)
+  protected StateMachineInstanceId newInstance(
+      StateMachine stateMachine,
+      ServiceImplementationSelector serviceImplementationSelector,
+      @Nullable StateMachineInstanceId parentId)
       throws CirrinaException {
     stateMachineInstancesLock.lock();
 
     try {
-      // Find the actual parent state machine instance
-      final var parentInstance = parentId.flatMap(this::findInstance);
+      // Find the parent state machine instance
+      final var parentInstance = parentId == null ? null : findInstance(parentId).orElse(null);
 
-      if (parentInstance.isEmpty() && parentId.isPresent()) {
-        throw CirrinaException.from("The parent state machine instance with id '%s' could not be found", parentId.get());
+      if (parentId != null && parentInstance == null) {
+        throw CirrinaException.from("The parent state machine instance with id '%s' could not be found", parentId.toString());
       }
 
       // Create the state machine instance
-      final var instance = new StateMachineInstance(this, stateMachine, parentInstance.orElse(null));
+      final var instance = new StateMachineInstance(this, stateMachine, serviceImplementationSelector, parentInstance);
 
       stateMachineInstances.add(instance);
 

@@ -15,13 +15,13 @@ public class ServiceImplementationSelectorTest {
 
   @Test
   public void testSelectMatchingServices() {
-    var servicesDescription = new ServiceImplementationsDescription();
+    final var servicesDescription = new ServiceImplementationsDescription();
 
-    var serviceDescriptions = new ServiceImplementationDescription[5];
+    final var serviceDescriptions = new ServiceImplementationDescription[5];
 
     // Service one
     {
-      var service = new HttpServiceImplementationDescription();
+      final var service = new HttpServiceImplementationDescription();
       service.name = "A";
       service.type = ServiceImplementationType.HTTP;
       service.cost = 1.0f;
@@ -36,7 +36,7 @@ public class ServiceImplementationSelectorTest {
 
     // Service two
     {
-      var service = new HttpServiceImplementationDescription();
+      final var service = new HttpServiceImplementationDescription();
       service.name = "A";
       service.type = ServiceImplementationType.HTTP;
       service.cost = 0.5f;
@@ -51,7 +51,7 @@ public class ServiceImplementationSelectorTest {
 
     // Service three
     {
-      var service = new HttpServiceImplementationDescription();
+      final var service = new HttpServiceImplementationDescription();
       service.name = "B";
       service.type = ServiceImplementationType.HTTP;
       service.cost = 0.4f;
@@ -66,7 +66,7 @@ public class ServiceImplementationSelectorTest {
 
     // Service four
     {
-      var service = new HttpServiceImplementationDescription();
+      final var service = new HttpServiceImplementationDescription();
       service.name = "B";
       service.type = ServiceImplementationType.HTTP;
       service.cost = 0.2f;
@@ -81,7 +81,7 @@ public class ServiceImplementationSelectorTest {
 
     // Service five
     {
-      var service = new HttpServiceImplementationDescription();
+      final var service = new HttpServiceImplementationDescription();
       service.name = "C";
       service.type = ServiceImplementationType.HTTP;
       service.cost = 1.0f;
@@ -96,9 +96,9 @@ public class ServiceImplementationSelectorTest {
 
     servicesDescription.serviceImplementations = serviceDescriptions;
 
-    var services = ServicesImplementationBuilder.from(servicesDescription).build();
+    final var services = ServicesImplementationBuilder.from(servicesDescription).build();
 
-    var serviceSelector = new ServiceImplementationSelector(services);
+    final var serviceSelector = new ServiceImplementationSelector(services);
 
     assertDoesNotThrow(() -> {
       var selected = serviceSelector.select("A", false);

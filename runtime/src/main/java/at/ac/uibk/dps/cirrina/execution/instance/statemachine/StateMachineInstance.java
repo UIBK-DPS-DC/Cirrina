@@ -14,6 +14,7 @@ import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
 import at.ac.uibk.dps.cirrina.execution.command.ExecutionContext;
 import at.ac.uibk.dps.cirrina.execution.command.Scope;
 import at.ac.uibk.dps.cirrina.execution.instance.state.StateInstance;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import jakarta.annotation.Nullable;
 import java.util.Collections;
@@ -49,6 +50,8 @@ public final class StateMachineInstance implements EventListener, Scope, Command
 
   private final StateMachineInstance parentStateMachineInstance;
 
+  private final ServiceImplementationSelector serviceImplementationSelector;
+
   private final StateMachineInstanceEventHandler stateMachineInstanceEventHandler;
 
   private final Context localContext;
@@ -61,22 +64,29 @@ public final class StateMachineInstance implements EventListener, Scope, Command
    * <p>
    * A state machine instance is parented in a runtime.
    * <p>
+   * A service implementation selector is provided that allows selecting between the service implementations accessible to this state
+   * machine instance.
+   * <p>
    * Additionally, a state machine instance may be parented in a state machine instance, forming a nested state machine instance.
    *
-   * @param parentRuntime              Parent runtime.
-   * @param stateMachineObject         State machine object
-   * @param parentStateMachineInstance Parent state machine instance or null.
+   * @param parentRuntime                 Parent runtime.
+   * @param stateMachineObject            State machine object
+   * @param serviceImplementationSelector Service implementation selector.
+   * @param parentStateMachineInstance    Parent state machine instance or null.
    * @throws CirrinaException In case of error.
    * @thread Runtime.
    */
   public StateMachineInstance(
       Runtime parentRuntime,
       StateMachine stateMachineObject,
+      ServiceImplementationSelector serviceImplementationSelector,
       @Nullable StateMachineInstance parentStateMachineInstance
   ) throws CirrinaException {
     this.parentRuntime = parentRuntime;
     this.stateMachineObject = stateMachineObject;
     this.parentStateMachineInstance = parentStateMachineInstance;
+
+    this.serviceImplementationSelector = serviceImplementationSelector;
 
     this.stateMachineInstanceEventHandler = new StateMachineInstanceEventHandler(this, this.parentRuntime.getEventHandler());
 
@@ -123,6 +133,7 @@ public final class StateMachineInstance implements EventListener, Scope, Command
 
     // Append a new event command, this command may do nothing depending on the event
     try {
+      // TODO: This needs to be locked!
       //queueSemaphore.acquire();
 
       addCommandsToBack(List.of(eventcommand));
@@ -280,7 +291,7 @@ public final class StateMachineInstance implements EventListener, Scope, Command
   }
 
   private ExecutionContext buildExecutionContext() {
-    return new ExecutionContext(this, this, status, stateMachineInstanceEventHandler, this, false);
+    return new ExecutionContext(this, this, status, serviceImplementationSelector, stateMachineInstanceEventHandler, this, false);
   }
 
   @Override
@@ -296,5 +307,9 @@ public final class StateMachineInstance implements EventListener, Scope, Command
 
   public StateMachine getStateMachineObject() {
     return stateMachineObject;
+  }
+
+  public Status getStatus() {
+    return status;
   }
 }

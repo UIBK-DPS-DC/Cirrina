@@ -103,6 +103,7 @@ public class ActionRaiseCommandTest {
         stateMachineInstance,
         null,
         null,
+        null,
         new StateMachineInstanceEventHandler(stateMachine, eventHandler),
         null,
         false

@@ -12,8 +12,10 @@ import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.Collaborativ
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinRuntimeScheduler;
+import com.google.common.collect.ArrayListMultimap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ public class PingPongTest {
   @Test
   public void testPingPongExecute() {
     Assertions.assertDoesNotThrow(() -> {
-      var mockEventHandler = new EventHandler() {
+      final var mockEventHandler = new EventHandler() {
 
         @Override
         public void close() throws Exception {
@@ -69,7 +71,7 @@ public class PingPongTest {
       };
 
       // Mock a persistent context using an in-memory context
-      var mockPersistentContext = new InMemoryContext() {
+      final var mockPersistentContext = new InMemoryContext() {
         private int next = 1;
 
         @Override
@@ -92,13 +94,16 @@ public class PingPongTest {
       mockPersistentContext.create("v", 0);
 
       // Create a runtime
-      var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
+      final var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
+
+      // Create a service implementation selector
+      final var serviceImplementationSelector = new ServiceImplementationSelector(ArrayListMultimap.create());
 
       // Create a new collaborative state machine instance
-      runtime.newInstance(collaborativeStateMachine);
+      runtime.newInstance(collaborativeStateMachine, serviceImplementationSelector);
 
       // Run for five seconds
-      var thread = new Thread(runtime);
+      final var thread = new Thread(runtime);
       thread.start();
 
       thread.join(5000);
