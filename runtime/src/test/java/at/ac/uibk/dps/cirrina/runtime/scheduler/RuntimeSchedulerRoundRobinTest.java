@@ -2,12 +2,12 @@ package at.ac.uibk.dps.cirrina.runtime.scheduler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import at.ac.uibk.dps.cirrina.runtime.command.Command;
-import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
+import at.ac.uibk.dps.cirrina.execution.command.Command;
+import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler.StateMachineInstanceCommand;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,19 +16,21 @@ public class RuntimeSchedulerRoundRobinTest {
 
   @Test
   public void testSelectEmpty() {
-    Queue<StateMachineInstance> mockQueue = new LinkedList<>();
+    final var mockQueue = new ArrayList<StateMachineInstance>();
 
-    var scheduler = new RoundRobinRuntimeScheduler();
+    final var scheduler = new RoundRobinRuntimeScheduler();
 
-    assertEquals(Optional.empty(), scheduler.select(mockQueue));
+    final var selectedCommands = scheduler.select(mockQueue);
+
+    assertEquals(0, selectedCommands.size());
   }
 
   @Test
   public void testSelectNoneExecutable() {
     var instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
-    Mockito.when(instanceWithoutCommand.findExecutableCommand()).thenReturn(Optional.empty());
+    Mockito.when(instanceWithoutCommand.takeNextCommand()).thenReturn(Optional.empty());
 
-    Queue<StateMachineInstance> mockQueue = new LinkedList<>();
+    final var mockQueue = new ArrayList<StateMachineInstance>();
 
     mockQueue.add(instanceWithoutCommand); // 1
     mockQueue.add(instanceWithoutCommand); // 2
@@ -36,9 +38,11 @@ public class RuntimeSchedulerRoundRobinTest {
     mockQueue.add(instanceWithoutCommand); // 4
     mockQueue.add(instanceWithoutCommand); // 5
 
-    var scheduler = new RoundRobinRuntimeScheduler();
+    final var scheduler = new RoundRobinRuntimeScheduler();
 
-    assertEquals(Optional.empty(), scheduler.select(mockQueue));
+    final var selectedCommands = scheduler.select(mockQueue);
+
+    assertEquals(0, selectedCommands.size());
   }
 
   @Test
@@ -48,15 +52,15 @@ public class RuntimeSchedulerRoundRobinTest {
     var instancesWithCommand = IntStream.range(0, 3)
         .mapToObj(i -> {
           var instanceWithCommand = Mockito.mock(StateMachineInstance.class);
-          Mockito.when(instanceWithCommand.findExecutableCommand()).thenReturn(Optional.of(mockCommand));
+          Mockito.when(instanceWithCommand.takeNextCommand()).thenReturn(Optional.of(List.of(mockCommand)));
           return instanceWithCommand;
         })
         .toArray(StateMachineInstance[]::new);
 
     var instanceWithoutCommand = Mockito.mock(StateMachineInstance.class);
-    Mockito.when(instanceWithoutCommand.findExecutableCommand()).thenReturn(Optional.empty());
+    Mockito.when(instanceWithoutCommand.takeNextCommand()).thenReturn(Optional.empty());
 
-    Queue<StateMachineInstance> mockQueue = new LinkedList<>();
+    final var mockQueue = new ArrayList<StateMachineInstance>();
 
     mockQueue.add(instancesWithCommand[0]); // 1
     mockQueue.add(instanceWithoutCommand); // 2
@@ -67,16 +71,14 @@ public class RuntimeSchedulerRoundRobinTest {
     var scheduler = new RoundRobinRuntimeScheduler();
 
     var expected = IntStream.range(0, 3)
-        .mapToObj(i -> {
-          return Optional.of(new StateMachineInstanceCommand(instancesWithCommand[i], mockCommand));
-        })
-        .toArray(Optional[]::new);
+        .mapToObj(i -> List.of(new StateMachineInstanceCommand(instancesWithCommand[i], mockCommand)))
+        .toList();
 
-    assertEquals(expected[0], scheduler.select(mockQueue));
-    assertEquals(expected[1], scheduler.select(mockQueue));
-    assertEquals(expected[2], scheduler.select(mockQueue));
-    assertEquals(expected[0], scheduler.select(mockQueue));
-    assertEquals(expected[1], scheduler.select(mockQueue));
-    assertEquals(expected[2], scheduler.select(mockQueue));
+    final var selectedCommands = scheduler.select(mockQueue);
+
+    assertEquals(3, selectedCommands.size());
+    assertEquals(selectedCommands.get(0), scheduler.select(mockQueue).get(0));
+    assertEquals(selectedCommands.get(1), scheduler.select(mockQueue).get(1));
+    assertEquals(selectedCommands.get(2), scheduler.select(mockQueue).get(2));
   }
 }

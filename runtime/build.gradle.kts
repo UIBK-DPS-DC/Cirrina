@@ -27,10 +27,6 @@ repositories {
 dependencies {
     implementation(project(":core"))
 
-    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
-
-    implementation("org.apache.zookeeper:zookeeper-client:3.8.1.7.1.9.0-387")
-
     implementation("com.beust:jcommander:1.82")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
@@ -39,9 +35,15 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.1")
 
-    implementation("org.furyio:fury-core:0.4.1")
-
     implementation("com.google.guava:guava:33.0.0-jre")
+
+    implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
+
+    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+
+    implementation("org.apache.zookeeper:zookeeper-client:3.8.1.7.1.9.0-387")
+
+    implementation("org.furyio:fury-core:0.4.1")
 
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")

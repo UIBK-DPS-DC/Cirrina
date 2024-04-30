@@ -7,10 +7,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
-import at.ac.uibk.dps.cirrina.runtime.command.Command.ExecutionContext;
-import at.ac.uibk.dps.cirrina.runtime.command.statemachine.StateChangeCommand;
-import at.ac.uibk.dps.cirrina.runtime.instance.StateInstance;
-import at.ac.uibk.dps.cirrina.runtime.instance.StateMachineInstance;
+import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
+import at.ac.uibk.dps.cirrina.execution.command.ExecutionContext;
+import at.ac.uibk.dps.cirrina.execution.instance.state.StateInstance;
+import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstance;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -19,22 +19,26 @@ public class StateChangeCommandTest {
   @Test
   public void testStateChangeCommand() {
     assertDoesNotThrow(() -> {
-      var stateOne = Mockito.mock(StateInstance.class);
-      var stateTwo = Mockito.mock(StateInstance.class);
+      final var stateOne = Mockito.mock(StateInstance.class);
+      final var stateTwo = Mockito.mock(StateInstance.class);
 
-      var stateMachine = Mockito.mock(StateMachineInstance.class);
+      final var stateMachine = Mockito.mock(StateMachineInstance.class);
 
-      doThrow(CirrinaException.from("")).when(stateMachine).setActiveState(any());
-      doNothing().when(stateMachine).setActiveState(stateOne);
+      doThrow(CirrinaException.from("")).when(stateMachine).updateActiveState(any());
+      doNothing().when(stateMachine).updateActiveState(stateOne);
+
+      final var executionContext = new ExecutionContext(stateMachine, null, null, null, null, false);
+
+      final var commandFactory = new CommandFactory(executionContext);
 
       assertDoesNotThrow(() -> {
-        var command = new StateChangeCommand(stateOne);
-        command.execute(new ExecutionContext(stateMachine, null));
+        final var command = commandFactory.createStateChangeCommand(stateOne);
+        command.execute();
       });
 
       assertThrows(CirrinaException.class, () -> {
-        var command = new StateChangeCommand(stateTwo);
-        command.execute(new ExecutionContext(stateMachine, null));
+        final var command = commandFactory.createStateChangeCommand(stateTwo);
+        command.execute();
       });
     });
   }

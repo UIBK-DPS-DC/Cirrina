@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
@@ -13,7 +14,6 @@ import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinRuntimeScheduler;
-import at.ac.uibk.dps.cirrina.runtime.shared.SharedRuntime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -78,7 +78,7 @@ public class PingPongTest {
           assertEquals("v", name);
 
           // Which is an integer
-          assertTrue(value instanceof Integer);
+          assertInstanceOf(Integer.class, value);
 
           // And should count up to 100
           assertEquals(next++, value);
@@ -102,6 +102,8 @@ public class PingPongTest {
       thread.start();
 
       thread.join(5000);
+
+      assertEquals(100, mockPersistentContext.get("v"));
     });
   }
 }

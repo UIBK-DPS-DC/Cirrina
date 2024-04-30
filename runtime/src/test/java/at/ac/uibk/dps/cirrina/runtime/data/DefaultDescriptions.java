@@ -2,8 +2,78 @@ package at.ac.uibk.dps.cirrina.runtime.data;
 
 public class DefaultDescriptions {
 
+  public static String invoke = """
+        {
+          name: 'collaborativeStateMachine',
+          version: '0.1',
+          stateMachines: [
+            {
+              name: 'stateMachine1',
+              states: [
+                {
+                  name: 'a',
+                  initial: true,
+                  after: [
+                    {
+                      type: 'timeout',
+                      name: 'timeout',
+                      delay: '100',
+                      action: {
+                        type: 'raise',
+                        event: {
+                          name: 'update',
+                          channel: 'internal'
+                        }
+                      }
+                    }
+                  ],
+                  on: [
+                    {
+                      event: 'update',
+                      target: 'a',
+                      actions: [
+                        {
+                          type: 'invoke',
+                          serviceType: 'increment',
+                          isLocal: true,
+                          input: [
+                            {
+                              name: 'v',
+                              value: 'v'
+                            }
+                          ],
+                          done: [
+                            {
+                              name: 'tob',
+                              channel: 'internal'
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      event: 'tob',
+                      target: 'b',
+                      guards: [
+                        {
+                          expression: 'v >= 10'
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  name: 'b',
+                  terminal: true
+                }
+              ]
+            }
+          ]
+        }
+      """;
+
   public static String timeout = """
-              {
+        {
           name: 'collaborativeStateMachine',
           version: '0.1',
           stateMachines: [
@@ -99,7 +169,7 @@ public class DefaultDescriptions {
                       type: 'raise',
                       event: {
                         name: 'e1',
-                        channel: 'internal'
+                        channel: 'global'
                       }
                     }
                   ],
@@ -117,7 +187,7 @@ public class DefaultDescriptions {
                       type: 'raise',
                       event: {
                         name: 'e3',
-                        channel: 'internal'
+                        channel: 'global'
                       }
                     }
                   ],
@@ -155,7 +225,7 @@ public class DefaultDescriptions {
                       type: 'raise',
                       event: {
                         name: 'e4',
-                        channel: 'internal'
+                        channel: 'global'
                       }
                     }
                   ],
@@ -180,7 +250,7 @@ public class DefaultDescriptions {
                       type: 'raise',
                       event: {
                         name: 'e2',
-                        channel: 'internal'
+                        channel: 'global'
                       }
                     }
                   ],
