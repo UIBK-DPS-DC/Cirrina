@@ -7,15 +7,14 @@ import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstanceId;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class SharedRuntime extends Runtime {
 
-  public SharedRuntime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws CirrinaException {
-    super(runtimeScheduler, eventHandler, persistentContext);
+  public SharedRuntime(EventHandler eventHandler, Context persistentContext) throws CirrinaException {
+    super(eventHandler, persistentContext);
   }
 
   public List<StateMachineInstanceId> newInstance(

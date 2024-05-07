@@ -3,8 +3,9 @@ package at.ac.uibk.dps.cirrina.execution.command;
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.MatchAction;
 import java.util.ArrayList;
+import java.util.List;
 
-public final class ActionMatchCommand extends Command {
+public final class ActionMatchCommand extends ActionCommand {
 
   private final MatchAction matchAction;
 
@@ -15,13 +16,13 @@ public final class ActionMatchCommand extends Command {
   }
 
   @Override
-  public void execute() throws CirrinaException {
+  public List<ActionCommand> execute() throws CirrinaException {
+    final var commands = new ArrayList<ActionCommand>();
     final var extent = executionContext.scope().getExtent();
 
     final var conditionValue = matchAction.getValue().execute(extent);
 
     final var commandFactory = new CommandFactory(executionContext);
-    final var commands = new ArrayList<Command>();
 
     try {
       // Find matching conditions and append the commands to the set of new commands
@@ -37,12 +38,9 @@ public final class ActionMatchCommand extends Command {
         }
       }
     } catch (CirrinaException e) {
-      throw CirrinaException.from("Could not execute match action command: %s", e.getMessage());
+      throw CirrinaException.from("Could not execute match action actionCommand: %s", e.getMessage());
     }
 
-    // Add commands to the front of the queue, replacing this executed command
-    final var commandQueue = executionContext.commandQueueAdapter();
-
-    commandQueue.addCommandsToFront(commands);
+    return commands;
   }
 }

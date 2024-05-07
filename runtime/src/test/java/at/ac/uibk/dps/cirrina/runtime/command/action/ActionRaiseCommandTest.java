@@ -102,8 +102,6 @@ public class ActionRaiseCommandTest {
     final var executionContext = new ExecutionContext(
         stateMachineInstance,
         null,
-        null,
-        null,
         new StateMachineInstanceEventHandler(stateMachine, eventHandler),
         null,
         false

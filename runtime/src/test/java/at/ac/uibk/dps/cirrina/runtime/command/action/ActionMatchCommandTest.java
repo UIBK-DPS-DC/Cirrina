@@ -11,14 +11,9 @@ import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.expression.ExpressionBuilder;
-import at.ac.uibk.dps.cirrina.execution.command.Command;
 import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
 import at.ac.uibk.dps.cirrina.execution.command.ExecutionContext;
-import at.ac.uibk.dps.cirrina.execution.instance.statemachine.CommandQueueAdapter;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstance;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,7 +21,7 @@ import org.mockito.Mockito;
 public class ActionMatchCommandTest {
 
   /**
-   * Match action command test, evaluates the correct execution of a matching case action in a match action.
+   * Match action actionCommand test, evaluates the correct execution of a matching case action in a match action.
    */
   @Test
   public void testMatchActionCommand() {
@@ -70,27 +65,8 @@ public class ActionMatchCommandTest {
         ExpressionBuilder.from(new ExpressionClass("5")).build(), assignAction1,
         ExpressionBuilder.from(new ExpressionClass("6")).build(), assignAction2)).when(matchAction).getCase();
 
-    // Mock command queue adapter implementation
-    final var commandQueueAdapter = new CommandQueueAdapter() {
-
-      public final List<Command> commands = new ArrayList<>();
-
-      @Override
-      public void addCommandsToBack(List<Command> commandList) {
-        commands.addAll(commandList);
-      }
-
-      @Override
-      public void addCommandsToFront(List<Command> commandList) {
-        Collections.reverse(commandList);
-        commandList.forEach(commands::addFirst);
-      }
-    };
-
     final var executionContext = new ExecutionContext(
         stateMachineInstance,
-        commandQueueAdapter,
-        null,
         null,
         null,
         null,
@@ -101,11 +77,9 @@ public class ActionMatchCommandTest {
 
     final var matchActionCommand = commandFactory.createActionCommand(matchAction);
 
-    // Execute the match action command, expect to get 6 as 'v' is 5 and we execute the matching action that performs the assignment 'v=v+1'
+    // Execute the match action actionCommand, expect to get 6 as 'v' is 5 and we execute the matching action that performs the assignment 'v=v+1'
     assertDoesNotThrow(() -> {
-      matchActionCommand.execute();
-
-      for (var command : commandQueueAdapter.commands) {
+      for (var command : matchActionCommand.execute()) {
         command.execute();
       }
 

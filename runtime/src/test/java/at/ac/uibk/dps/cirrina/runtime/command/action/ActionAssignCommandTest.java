@@ -38,7 +38,7 @@ public class ActionAssignCommandTest {
     final var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 
@@ -71,7 +71,7 @@ public class ActionAssignCommandTest {
     final var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 
@@ -104,7 +104,7 @@ public class ActionAssignCommandTest {
     final var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 
@@ -141,7 +141,7 @@ public class ActionAssignCommandTest {
     final var assignAction = Mockito.mock(AssignAction.class);
     doReturn(contextVariable).when(assignAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 

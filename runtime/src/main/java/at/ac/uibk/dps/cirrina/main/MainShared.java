@@ -32,11 +32,9 @@ public final class MainShared extends Main {
    * @throws CirrinaException In case of an error during execution or initialization.
    */
   public void run() throws CirrinaException {
-    final var runtimeScheduler = newRuntimeScheduler();
-
     try (final var eventHandler = newEventHandler()) {
       try (final var persistentContext = newPersistentContext()) {
-        new SharedRuntime(runtimeScheduler, eventHandler, persistentContext);
+        new SharedRuntime(eventHandler, persistentContext);
       }
     } catch (Exception e) {
       throw CirrinaException.from("Failed to run shared runtime: %s", e);

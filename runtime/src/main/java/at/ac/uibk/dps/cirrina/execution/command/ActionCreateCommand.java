@@ -3,8 +3,10 @@ package at.ac.uibk.dps.cirrina.execution.command;
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class ActionCreateCommand extends Command {
+public final class ActionCreateCommand extends ActionCommand {
 
   private final CreateAction createAction;
 
@@ -15,7 +17,9 @@ public final class ActionCreateCommand extends Command {
   }
 
   @Override
-  public void execute() throws CirrinaException {
+  public List<ActionCommand> execute() throws CirrinaException {
+    final var commands = new ArrayList<ActionCommand>();
+    
     final var extent = executionContext.scope().getExtent();
 
     final var isPersistent = createAction.isPersistent();
@@ -43,7 +47,9 @@ public final class ActionCreateCommand extends Command {
       // Attempt to create the variable
       targetContext.create(variable.name(), value);
     } catch (CirrinaException e) {
-      throw CirrinaException.from("Could not execute create action command: %s", e.getMessage());
+      throw CirrinaException.from("Could not execute create action actionCommand: %s", e.getMessage());
     }
+
+    return commands;
   }
 }

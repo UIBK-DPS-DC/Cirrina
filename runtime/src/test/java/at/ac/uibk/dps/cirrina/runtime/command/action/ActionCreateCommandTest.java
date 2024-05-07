@@ -37,7 +37,7 @@ public class ActionCreateCommandTest {
     doReturn(true).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 
@@ -68,7 +68,7 @@ public class ActionCreateCommandTest {
     doReturn(false).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 
@@ -99,7 +99,7 @@ public class ActionCreateCommandTest {
     doReturn(false).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 
@@ -130,7 +130,7 @@ public class ActionCreateCommandTest {
     doReturn(false).when(createAction).isPersistent();
     doReturn(contextVariable).when(createAction).getVariable();
 
-    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, null, null, false);
+    final var executionContext = new ExecutionContext(stateMachineInstance, null, null, null, false);
 
     final var commandFactory = new CommandFactory(executionContext);
 

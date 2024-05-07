@@ -48,6 +48,13 @@ public class DefaultDescriptions {
                               channel: 'internal'
                             }
                           ]
+                        },
+                        {
+                          type: 'assign',
+                          variable: {
+                            name: 'e',
+                            value: 'e + 1'
+                          }
                         }
                       ]
                     },
@@ -56,7 +63,7 @@ public class DefaultDescriptions {
                       target: 'b',
                       guards: [
                         {
-                          expression: 'v >= 10'
+                          expression: 'v >= 10 && e >= 10'
                         }
                       ]
                     }

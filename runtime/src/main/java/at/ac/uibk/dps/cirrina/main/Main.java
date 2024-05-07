@@ -39,7 +39,7 @@ public abstract class Main {
     // Construct shared arguments
     final var args = new Args();
 
-    // Construct command arguments
+    // Construct actionCommand arguments
     final var distributedArgs = new DistributedArgs();
     final var sharedArgs = new SharedArgs();
 
@@ -54,7 +54,7 @@ public abstract class Main {
       // Parse arguments
       jc.parse(argv);
 
-      // Acquire requested command
+      // Acquire requested actionCommand
       final var command = jc.getParsedCommand();
 
       // Instantiate either the distributed or shared runtime main
@@ -66,7 +66,7 @@ public abstract class Main {
           new MainShared(args, sharedArgs).run();
           break;
         default:
-          throw CirrinaException.from("Unknown command '%s'", command);
+          throw CirrinaException.from("Unknown actionCommand '%s'", command);
       }
     } catch (CirrinaException e) {
       logger.error("Failed to run runtime: {}", e.getMessage());

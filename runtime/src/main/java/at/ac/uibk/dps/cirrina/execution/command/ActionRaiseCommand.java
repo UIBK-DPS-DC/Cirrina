@@ -4,8 +4,10 @@ import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.event.EventChannel;
 import at.ac.uibk.dps.cirrina.core.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class ActionRaiseCommand extends Command {
+public final class ActionRaiseCommand extends ActionCommand {
 
   private final RaiseAction raiseAction;
 
@@ -16,7 +18,9 @@ public final class ActionRaiseCommand extends Command {
   }
 
   @Override
-  public void execute() throws CirrinaException {
+  public List<ActionCommand> execute() throws CirrinaException {
+    final var commands = new ArrayList<ActionCommand>();
+
     final var extent = executionContext.scope().getExtent();
 
     final var eventHandler = executionContext.eventHandler();
@@ -30,8 +34,10 @@ public final class ActionRaiseCommand extends Command {
         // Send the event through the event handler
         eventHandler.sendEvent(event);
       } catch (CirrinaException e) {
-        throw CirrinaException.from("Could not execute raise action command: %s", e.getMessage());
+        throw CirrinaException.from("Could not execute raise action actionCommand: %s", e.getMessage());
       }
     }
+
+    return commands;
   }
 }

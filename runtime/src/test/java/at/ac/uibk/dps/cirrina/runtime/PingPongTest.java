@@ -14,11 +14,11 @@ import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinRuntimeScheduler;
 import com.google.common.collect.ArrayListMultimap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
+
 
 public class PingPongTest {
 
@@ -34,7 +34,7 @@ public class PingPongTest {
     });
   }
 
-  @Test
+  @RepeatedTest(10)
   public void testPingPongExecute() {
     Assertions.assertDoesNotThrow(() -> {
       final var mockEventHandler = new EventHandler() {
@@ -94,19 +94,19 @@ public class PingPongTest {
       mockPersistentContext.create("v", 0);
 
       // Create a runtime
-      final var runtime = new SharedRuntime(new RoundRobinRuntimeScheduler(), mockEventHandler, mockPersistentContext);
+      final var runtime = new SharedRuntime(mockEventHandler, mockPersistentContext);
 
       // Create a service implementation selector
       final var serviceImplementationSelector = new ServiceImplementationSelector(ArrayListMultimap.create());
 
       // Create a new collaborative state machine instance
-      runtime.newInstance(collaborativeStateMachine, serviceImplementationSelector);
+      final var instances = runtime.newInstance(collaborativeStateMachine, serviceImplementationSelector);
 
-      // Run for five seconds
-      final var thread = new Thread(runtime);
-      thread.start();
+      assertEquals(2, instances.size());
 
-      thread.join(5000);
+      final var instance = runtime.findInstance(instances.getFirst()).get();
+
+      runtime.shutdown(5000);
 
       assertEquals(100, mockPersistentContext.get("v"));
     });

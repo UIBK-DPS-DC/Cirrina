@@ -1,14 +1,15 @@
 package at.ac.uibk.dps.cirrina.runtime.scheduler;
 
-import at.ac.uibk.dps.cirrina.execution.command.Command;
+import at.ac.uibk.dps.cirrina.execution.command.ActionCommand;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstance;
 import java.util.List;
+import java.util.Optional;
 
 public interface RuntimeScheduler {
 
-  List<StateMachineInstanceCommand> select(List<StateMachineInstance> instances);
+  Optional<StateMachineInstance> select(List<StateMachineInstance> instances);
 
-  record StateMachineInstanceCommand(StateMachineInstance stateMachineInstance, Command command) {
+  record StateMachineInstanceCommand(StateMachineInstance stateMachineInstance, ActionCommand actionCommand) {
 
   }
 }

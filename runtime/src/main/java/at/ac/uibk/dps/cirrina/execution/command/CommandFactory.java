@@ -7,10 +7,6 @@ import at.ac.uibk.dps.cirrina.core.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.core.object.action.MatchAction;
 import at.ac.uibk.dps.cirrina.core.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.object.action.TimeoutAction;
-import at.ac.uibk.dps.cirrina.core.object.action.TimeoutResetAction;
-import at.ac.uibk.dps.cirrina.core.object.event.Event;
-import at.ac.uibk.dps.cirrina.execution.instance.state.StateInstance;
-import at.ac.uibk.dps.cirrina.execution.instance.transition.TransitionInstance;
 
 public class CommandFactory {
 
@@ -20,7 +16,7 @@ public class CommandFactory {
     this.executionContext = executionContext;
   }
 
-  public Command createActionCommand(Action action) {
+  public ActionCommand createActionCommand(Action action) {
     switch (action) {
       case AssignAction assignAction -> {
         return new ActionAssignCommand(executionContext, assignAction);
@@ -40,34 +36,7 @@ public class CommandFactory {
       case TimeoutAction timeoutAction -> {
         return new ActionTimeoutCommand(executionContext, timeoutAction);
       }
-      case TimeoutResetAction timeoutResetAction -> {
-        return new ActionTimeoutResetCommand(executionContext, timeoutResetAction);
-      }
       default -> throw new IllegalArgumentException("Unexpected action");
     }
-  }
-
-  public Command createEventCommand(Event event) {
-    return new EventCommand(executionContext, event);
-  }
-
-  public Command createStateChangeCommand(StateInstance targetStateInstance) {
-    return new StateChangeCommand(executionContext, targetStateInstance);
-  }
-
-  public Command createStateEnterCommand(StateInstance enteringStateInstance) {
-    return new StateEnterCommand(executionContext, enteringStateInstance);
-  }
-
-  public Command createStateExitCommand(StateInstance exitingStateInstance) {
-    return new StateExitCommand(executionContext, exitingStateInstance);
-  }
-
-  public Command createTransitionInitialCommand(StateInstance targetStateInstance) {
-    return new TransitionInitialCommand(executionContext, targetStateInstance);
-  }
-
-  public Command createTransitionCommand(TransitionInstance transitionInstance, StateInstance targetStateInstance, boolean isElse) {
-    return new TransitionCommand(executionContext, transitionInstance, targetStateInstance, isElse);
   }
 }

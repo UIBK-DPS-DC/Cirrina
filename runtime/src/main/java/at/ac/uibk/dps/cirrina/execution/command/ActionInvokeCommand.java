@@ -4,10 +4,11 @@ import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class ActionInvokeCommand extends Command {
+public final class ActionInvokeCommand extends ActionCommand {
 
   private static final Logger logger = LogManager.getLogger();
 
@@ -20,7 +21,9 @@ public final class ActionInvokeCommand extends Command {
   }
 
   @Override
-  public void execute() throws CirrinaException {
+  public List<ActionCommand> execute() throws CirrinaException {
+    final var commands = new ArrayList<ActionCommand>();
+
     final var extent = executionContext.scope().getExtent();
 
     final var serviceImplementationSelector = executionContext.serviceImplementationSelector();
@@ -60,5 +63,7 @@ public final class ActionInvokeCommand extends Command {
           // Raise all events (internally)
           doneEvents.forEach(eventListener::onReceiveEvent);
         });
+
+    return commands;
   }
 }

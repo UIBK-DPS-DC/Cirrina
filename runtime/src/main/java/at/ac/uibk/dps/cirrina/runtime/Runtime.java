@@ -8,12 +8,14 @@ import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstance;
 import at.ac.uibk.dps.cirrina.execution.instance.statemachine.StateMachineInstanceId;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,40 +28,21 @@ import org.apache.logging.log4j.Logger;
  * @see SharedRuntime
  * @see DistributedRuntime
  */
-public abstract class Runtime implements Runnable, EventListener {
+public abstract class Runtime implements EventListener {
 
-  /**
-   * The runtime logger.
-   */
   private static final Logger logger = LogManager.getLogger();
 
-  /**
-   * Lock for state machine instance collection.
-   */
+  private final ExecutorService executorService = Executors.newCachedThreadPool();
+
   private final ReentrantLock stateMachineInstancesLock = new ReentrantLock();
 
-  /**
-   * The collection of executed state machine instances.
-   */
   private final List<StateMachineInstance> stateMachineInstances = new ArrayList<>();
 
-  /**
-   * The runtime runtimeScheduler.
-   */
-  private final RuntimeScheduler runtimeScheduler;
-
-  /**
-   * The event handler.
-   */
   private final EventHandler eventHandler;
 
-  /**
-   * The persistent context.
-   */
   private final Context persistentContext;
 
-  public Runtime(RuntimeScheduler runtimeScheduler, EventHandler eventHandler, Context persistentContext) throws CirrinaException {
-    this.runtimeScheduler = runtimeScheduler;
+  public Runtime(EventHandler eventHandler, Context persistentContext) throws CirrinaException {
     this.eventHandler = eventHandler;
 
     this.persistentContext = persistentContext;
@@ -67,19 +50,12 @@ public abstract class Runtime implements Runnable, EventListener {
 
   protected StateMachineInstanceId newInstance(
       StateMachine stateMachine,
-      ServiceImplementationSelector serviceImplementationSelector
-  ) throws CirrinaException {
-    return newInstance(stateMachine, serviceImplementationSelector, null);
-  }
-
-  protected StateMachineInstanceId newInstance(
-      StateMachine stateMachine,
       ServiceImplementationSelector serviceImplementationSelector,
       @Nullable StateMachineInstanceId parentId)
       throws CirrinaException {
-    stateMachineInstancesLock.lock();
-
     try {
+      stateMachineInstancesLock.lock();
+
       // Find the parent state machine instance
       final var parentInstance = parentId == null ? null : findInstance(parentId).orElse(null);
 
@@ -88,46 +64,34 @@ public abstract class Runtime implements Runnable, EventListener {
       }
 
       // Create the state machine instance
-      final var instance = new StateMachineInstance(this, stateMachine, serviceImplementationSelector, parentInstance);
+      final var stateMachineInstance = new StateMachineInstance(this, stateMachine, serviceImplementationSelector, parentInstance);
 
-      stateMachineInstances.add(instance);
+      eventHandler.addListener(stateMachineInstance);
+      stateMachineInstances.add(stateMachineInstance);
 
-      eventHandler.addListener(instance);
+      // Execute
+      executorService.submit(stateMachineInstance);
 
-      return instance.getStateMachineInstanceId();
+      return stateMachineInstance.getStateMachineInstanceId();
     } finally {
       stateMachineInstancesLock.unlock();
     }
   }
 
-  /**
-   * Runs this operation.
-   */
-  @Override
-  public void run() {
-    while (!Thread.currentThread().isInterrupted()) {
-      try {
-        // Critical section
-        stateMachineInstancesLock.lock();
+  public boolean shutdown(long timeoutInMs) {
+    try {
+      stateMachineInstancesLock.lock();
 
-        try {
-          // Select commands until no command to be executed can be found anymore
-          for (final var stateMachineInstanceCommand : runtimeScheduler.select(stateMachineInstances)) {
-            final var stateMachineInstance = stateMachineInstanceCommand.stateMachineInstance();
-            final var command = stateMachineInstanceCommand.command();
+      executorService.shutdown();
 
-            stateMachineInstance.execute(command);
-          }
-        } finally {
-          stateMachineInstancesLock.unlock();
-        }
-
-        // TODO: Remove me (re-add notify/wait)
-        Thread.sleep(1);
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
-      }
+      return executorService.awaitTermination(timeoutInMs, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } finally {
+      stateMachineInstancesLock.unlock();
     }
+
+    return false;
   }
 
   /**
@@ -137,10 +101,9 @@ public abstract class Runtime implements Runnable, EventListener {
    * @return The state machine instance or an empty optional if no state machine instance was found for the given instance id.
    */
   public Optional<StateMachineInstance> findInstance(StateMachineInstanceId stateMachineInstanceId) {
-    // Critical section
-    stateMachineInstancesLock.lock();
-
     try {
+      stateMachineInstancesLock.lock();
+
       return stateMachineInstances.stream()
           .filter(stateMachineInstance -> stateMachineInstance.getStateMachineInstanceId().equals(stateMachineInstanceId))
           .findFirst();
