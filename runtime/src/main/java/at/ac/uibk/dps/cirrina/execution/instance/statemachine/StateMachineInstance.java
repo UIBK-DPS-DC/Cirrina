@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 public final class StateMachineInstance implements Runnable, EventListener, Scope {
 
-  public static final String EVENT_DATA_VARIABLE = "event_data";
+  public static final String EVENT_DATA_VARIABLE_PREFIX = "$";
 
   private static final Logger logger = LogManager.getLogger();
 
@@ -97,9 +97,6 @@ public final class StateMachineInstance implements Runnable, EventListener, Scop
         .orElseGet(ContextBuilder::from)
         .inMemoryContext()
         .build();
-
-    // Create the event data variable
-    localContext.create(EVENT_DATA_VARIABLE, "");
 
     // Construct state instances
     this.stateInstances = stateMachineObject.vertexSet().stream()
@@ -377,7 +374,7 @@ public final class StateMachineInstance implements Runnable, EventListener, Scop
     onTransition.ifPresent(transitionInstance -> {
       try {
         for (var contextVariable : event.getData()) {
-          getExtent().trySet(contextVariable.name(), contextVariable.value());
+          getExtent().setOrCreate(EVENT_DATA_VARIABLE_PREFIX + contextVariable.name(), contextVariable.value());
         }
       } catch (CirrinaException e) {
         logger.error("Failed to set event data: {}", e.getMessage());
@@ -412,9 +409,13 @@ public final class StateMachineInstance implements Runnable, EventListener, Scop
         }
       }
     } catch (CirrinaException e) {
-      throw new RuntimeException(e);
+      logger.error("{} received a fatal error: {}", stateMachineInstanceId.toString(), e.getMessage());
     } catch (InterruptedException e) {
+      logger.info("{} is interrupted", stateMachineInstanceId.toString());
+
       Thread.currentThread().interrupt();
     }
+
+    logger.info("{} is done", stateMachineInstanceId.toString());
   }
 }

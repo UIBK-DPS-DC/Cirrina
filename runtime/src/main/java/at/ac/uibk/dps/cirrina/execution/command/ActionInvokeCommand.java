@@ -30,7 +30,6 @@ public final class ActionInvokeCommand extends ActionCommand {
 
     final var eventListener = executionContext.eventListener();
 
-    final var doneEvents = invokeAction.getDone();
     final var serviceType = invokeAction.getServiceType();
     final var isLocal = invokeAction.isLocal();
 
@@ -51,14 +50,12 @@ public final class ActionInvokeCommand extends ActionCommand {
           logger.error("Service invocation failed: {}", e.getMessage());
           return null;
         }).thenAccept(output -> {
-          // Set all output variables
-          output.forEach(variable -> {
-            try {
-              extent.trySet(variable.name(), variable.value());
-            } catch (CirrinaException e) {
-              logger.error("Service invocation output assignment failed: {}", e.getMessage());
-            }
-          });
+          // Create new events with output data as event data
+          final var doneEvents = invokeAction.getDone().stream()
+              .map(event -> {
+                return event.withData(output);
+              })
+              .toList();
 
           // Raise all events (internally)
           doneEvents.forEach(eventListener::onReceiveEvent);

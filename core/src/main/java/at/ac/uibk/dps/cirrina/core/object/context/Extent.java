@@ -29,6 +29,16 @@ public class Extent {
         .toList();
   }
 
+  public void setOrCreate(String name, Object value) throws CirrinaException {
+    final var last = extent.getLast();
+
+    try {
+      last.assign(name, value);
+    } catch (CirrinaException e) {
+      last.create(name, value);
+    }
+  }
+
   public void trySet(String name, Object value) throws CirrinaException {
     var exceptions = extent.reversed().stream()
         .map(context -> {

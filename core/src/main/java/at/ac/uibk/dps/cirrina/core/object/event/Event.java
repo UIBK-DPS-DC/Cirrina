@@ -66,6 +66,10 @@ public final class Event {
     return new Event(event.getName(), event.getChannel(), data);
   }
 
+  public Event withData(List<ContextVariable> data) {
+    return new Event(name, channel, data);
+  }
+
   /**
    * Returns the ID.
    *

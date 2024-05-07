@@ -70,7 +70,7 @@ public abstract class Runtime implements EventListener {
       stateMachineInstances.add(stateMachineInstance);
 
       // Execute
-      executorService.submit(stateMachineInstance);
+      executorService.execute(stateMachineInstance);
 
       return stateMachineInstance.getStateMachineInstanceId();
     } finally {

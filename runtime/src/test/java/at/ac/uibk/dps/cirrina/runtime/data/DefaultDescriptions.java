@@ -60,17 +60,35 @@ public class DefaultDescriptions {
                     },
                     {
                       event: 'tob',
-                      target: 'b',
-                      guards: [
-                        {
-                          expression: 'v >= 10 && e >= 10'
-                        }
-                      ]
+                      target: 'b'
                     }
                   ]
                 },
                 {
                   name: 'b',
+                  entry: [
+                    {
+                      type: 'assign',
+                      variable: {
+                        name: 'v',
+                        value: '$v'
+                      }
+                    }
+                  ],
+                  always: [
+                    {
+                      target: 'a',
+                      guards: [
+                        {
+                          expression: 'v < 10'
+                        }
+                      ],
+                      else: 'c'
+                    }
+                  ]
+                },
+                {
+                  name: 'c',
                   terminal: true
                 }
               ]

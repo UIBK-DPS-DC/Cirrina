@@ -192,10 +192,7 @@ public class ServiceInvocationTest {
 
       runtime.shutdown(5000);
 
-      //assertEquals(10, mockPersistentContext.get("v"));
-      //assertEquals(10, mockPersistentContext.get("e"));
-      //assertEquals("b", instance.getStatus().getActivateState().getState().getName());
-      //assertTrue(instance.getStatus().isTerminated());
+      assertEquals(10, mockPersistentContext.get("v"));
     });
   }
 }
