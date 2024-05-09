@@ -11,6 +11,12 @@ java {
     }
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes["Implementation-Version"] = version
+    }
+}
+
 jacoco {
     toolVersion = "0.8.11"
 }
@@ -28,8 +34,16 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.1")
 
     implementation("com.google.guava:guava:33.0.0-jre")
-    
+
     implementation("io.nats:jnats:2.17.3")
+
+    implementation(platform("io.opentelemetry:opentelemetry-bom:1.37.0"));
+    implementation("io.opentelemetry:opentelemetry-api");
+    implementation("io.opentelemetry:opentelemetry-sdk");
+    implementation("io.opentelemetry:opentelemetry-exporter-logging");
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp");
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha");
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure");
 
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
 

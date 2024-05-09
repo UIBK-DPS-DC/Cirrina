@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime;
+package at.ac.uibk.dps.cirrina.execution.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -12,6 +12,7 @@ import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.Collaborativ
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
+import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServicesImplementationBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
@@ -19,7 +20,7 @@ import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplement
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationsDescription;
-import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
+import at.ac.uibk.dps.cirrina.runtime.SharedRuntime;
 import com.google.common.collect.ArrayListMultimap;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -32,9 +33,9 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
-public class ServiceInvocationTest {
+public class ServiceInvocationTest extends RuntimeTest {
 
   private static CollaborativeStateMachine collaborativeStateMachine;
 
@@ -94,7 +95,7 @@ public class ServiceInvocationTest {
     httpServer.stop(0);
   }
 
-  @RepeatedTest(10)
+  @Test
   public void testServiceInvocationExecute() {
     Assertions.assertDoesNotThrow(() -> {
       final var mockEventHandler = new EventHandler() {
@@ -151,10 +152,8 @@ public class ServiceInvocationTest {
       mockPersistentContext.create("v", 0);
       mockPersistentContext.create("e", 0);
 
-      // Create a runtime
-      final var runtime = new SharedRuntime(mockEventHandler, mockPersistentContext);
+      final var runtime = new SharedRuntime(mockEventHandler, mockPersistentContext, openTelemetry);
 
-      // Create a service implementation description
       var servicesDescription = new ServiceImplementationsDescription();
 
       var serviceDescriptions = new ServiceImplementationDescription[1];
@@ -174,16 +173,13 @@ public class ServiceInvocationTest {
         serviceDescriptions[0] = service;
       }
 
-      // Create a service implementation selector
       final var serviceImplementationDescription = ArrayListMultimap.create();
 
       servicesDescription.serviceImplementations = serviceDescriptions;
 
       final var services = ServicesImplementationBuilder.from(servicesDescription).build();
-
       final var serviceImplementationSelector = new ServiceImplementationSelector(services);
 
-      // Create a new collaborative state machine instance
       final var instances = runtime.newInstance(collaborativeStateMachine, serviceImplementationSelector);
 
       assertEquals(1, instances.size());

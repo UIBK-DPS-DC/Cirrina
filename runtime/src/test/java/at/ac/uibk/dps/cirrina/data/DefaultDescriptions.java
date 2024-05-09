@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime.data;
+package at.ac.uibk.dps.cirrina.data;
 
 public class DefaultDescriptions {
 

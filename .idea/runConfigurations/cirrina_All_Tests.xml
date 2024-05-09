@@ -1,9 +1,12 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cirrina [core:test]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="cirrina All Tests" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="NATS_SERVER_URL" value="nats://localhost:4222" />
+          <entry key="OTEL_LOGS_EXPORTER" value="logging" />
+          <entry key="OTEL_METRICS_EXPORTER" value="logging" />
+          <entry key="OTEL_SERVICE_NAME" value="cirrinaTests" />
+          <entry key="OTEL_TRACES_EXPORTER" value="logging" />
         </map>
       </option>
       <option name="executionName" />
@@ -15,6 +18,7 @@
       </option>
       <option name="taskNames">
         <list>
+          <option value="runtime:test" />
           <option value="core:test" />
         </list>
       </option>

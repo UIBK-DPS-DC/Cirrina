@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime.service;
+package at.ac.uibk.dps.cirrina.execution.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,7 +11,6 @@ import at.ac.uibk.dps.cirrina.core.lang.classes.context.ContextVariableClass;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.core.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.core.object.context.Extent;
-import at.ac.uibk.dps.cirrina.execution.service.HttpServiceImplementation;
 import at.ac.uibk.dps.cirrina.execution.service.HttpServiceImplementation.Parameters;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import com.sun.net.httpserver.HttpExchange;

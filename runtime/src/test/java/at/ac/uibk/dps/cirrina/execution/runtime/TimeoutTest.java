@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime;
+package at.ac.uibk.dps.cirrina.execution.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -12,14 +12,15 @@ import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.Collaborativ
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
+import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
-import at.ac.uibk.dps.cirrina.runtime.data.DefaultDescriptions;
+import at.ac.uibk.dps.cirrina.runtime.SharedRuntime;
 import com.google.common.collect.ArrayListMultimap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
-public class TimeoutTest {
+public class TimeoutTest extends RuntimeTest {
 
   private static CollaborativeStateMachine collaborativeStateMachine;
 
@@ -33,7 +34,7 @@ public class TimeoutTest {
     });
   }
 
-  @RepeatedTest(10)
+  @Test
   public void testTimeoutExecute() {
     Assertions.assertDoesNotThrow(() -> {
       final var mockEventHandler = new EventHandler() {
@@ -69,7 +70,6 @@ public class TimeoutTest {
         }
       };
 
-      // Mock a persistent context using an in-memory context
       var mockPersistentContext = new InMemoryContext() {
         private int next = 1;
 
@@ -89,16 +89,11 @@ public class TimeoutTest {
         }
       };
 
-      // Create the persistent context variable v
       mockPersistentContext.create("v", 0);
 
-      // Create a runtime
-      final var runtime = new SharedRuntime(mockEventHandler, mockPersistentContext);
-
-      // Create a service implementation selector
+      final var runtime = new SharedRuntime(mockEventHandler, mockPersistentContext, openTelemetry);
       final var serviceImplementationSelector = new ServiceImplementationSelector(ArrayListMultimap.create());
 
-      // Create a new collaborative state machine instance
       final var instances = runtime.newInstance(collaborativeStateMachine, serviceImplementationSelector);
 
       assertEquals(1, instances.size());

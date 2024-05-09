@@ -5,14 +5,16 @@ import at.ac.uibk.dps.cirrina.core.object.context.Context;
 import at.ac.uibk.dps.cirrina.core.object.context.NatsContext;
 import at.ac.uibk.dps.cirrina.core.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.core.object.event.NatsEventHandler;
+import at.ac.uibk.dps.cirrina.execution.scheduler.RoundRobinRuntimeScheduler;
+import at.ac.uibk.dps.cirrina.execution.scheduler.RuntimeScheduler;
 import at.ac.uibk.dps.cirrina.main.MainDistributed.DistributedArgs;
 import at.ac.uibk.dps.cirrina.main.MainShared.SharedArgs;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.RoundRobinRuntimeScheduler;
-import at.ac.uibk.dps.cirrina.runtime.scheduler.RuntimeScheduler;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -128,6 +130,16 @@ public abstract class Main {
     }
 
     throw CirrinaException.from("Unknown persistent context '%s'", args.eventHandler);
+  }
+
+  /**
+   * Returns the OpenTelemetry SDK instance.
+   *
+   * @return OpenTelemetry SDK.
+   */
+  protected OpenTelemetry getOpenTelemetry() {
+    return AutoConfiguredOpenTelemetrySdk.initialize()
+        .getOpenTelemetrySdk();
   }
 
   private NatsEventHandler newNatsEventHandler() throws CirrinaException {

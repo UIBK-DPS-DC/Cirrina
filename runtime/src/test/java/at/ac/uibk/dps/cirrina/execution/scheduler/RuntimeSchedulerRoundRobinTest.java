@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime.scheduler;
+package at.ac.uibk.dps.cirrina.execution.scheduler;
 
 public class RuntimeSchedulerRoundRobinTest {
 

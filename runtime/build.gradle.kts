@@ -37,6 +37,14 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
+    implementation(platform("io.opentelemetry:opentelemetry-bom:1.37.0"));
+    implementation("io.opentelemetry:opentelemetry-api");
+    implementation("io.opentelemetry:opentelemetry-sdk");
+    implementation("io.opentelemetry:opentelemetry-exporter-logging");
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp");
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha");
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure");
+
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")

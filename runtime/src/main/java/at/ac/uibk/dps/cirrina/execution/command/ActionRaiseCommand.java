@@ -1,9 +1,16 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_CHANNEL;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_RAISE_COMMAND_EXECUTE;
+
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.core.lang.classes.event.EventChannel;
 import at.ac.uibk.dps.cirrina.core.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.core.object.event.Event;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,26 +25,43 @@ public final class ActionRaiseCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute() throws CirrinaException {
-    final var commands = new ArrayList<ActionCommand>();
+  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws CirrinaException {
+    final var event = raiseAction.getEvent();
 
-    final var extent = executionContext.scope().getExtent();
+    // Create span
+    final var span = tracer.spanBuilder(SPAN_ACTION_RAISE_COMMAND_EXECUTE)
+        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
+        .startSpan();
 
-    final var eventHandler = executionContext.eventHandler();
-    final var eventListener = executionContext.eventListener();
-    final var event = Event.ensureHasEvaluatedData(raiseAction.getEvent(), extent);
+    // Span attributes
+    span.setAttribute(ATTR_EVENT_ID, event.getId());
+    span.setAttribute(ATTR_EVENT_NAME, event.getName());
+    span.setAttribute(ATTR_EVENT_CHANNEL, event.getChannel().toString());
 
-    if (event.getChannel() == EventChannel.INTERNAL) {
-      eventListener.onReceiveEvent(event);
-    } else {
-      try {
-        // Send the event through the event handler
-        eventHandler.sendEvent(event);
-      } catch (CirrinaException e) {
-        throw CirrinaException.from("Could not execute raise action actionCommand: %s", e.getMessage());
+    try (final var scope = span.makeCurrent()) {
+      final var commands = new ArrayList<ActionCommand>();
+
+      final var extent = executionContext.scope().getExtent();
+      final var eventHandler = executionContext.eventHandler();
+      final var eventListener = executionContext.eventListener();
+
+      final var evaluatedEvent = Event.ensureHasEvaluatedData(event, extent);
+
+      // Dispatch the event
+      if (evaluatedEvent.getChannel() == EventChannel.INTERNAL) {
+        eventListener.onReceiveEvent(evaluatedEvent);
+      } else {
+        try {
+          // Send the event through the event handler
+          eventHandler.sendEvent(evaluatedEvent);
+        } catch (CirrinaException e) {
+          throw CirrinaException.from("Could not execute raise action actionCommand: %s", e.getMessage());
+        }
       }
-    }
 
-    return commands;
+      return commands;
+    } finally {
+      span.end();
+    }
   }
 }

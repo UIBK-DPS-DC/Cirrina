@@ -1,10 +1,8 @@
-package at.ac.uibk.dps.cirrina.runtime.service;
+package at.ac.uibk.dps.cirrina.execution.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
-import at.ac.uibk.dps.cirrina.execution.service.ServicesImplementationBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;

@@ -34,7 +34,7 @@ public final class MainShared extends Main {
   public void run() throws CirrinaException {
     try (final var eventHandler = newEventHandler()) {
       try (final var persistentContext = newPersistentContext()) {
-        new SharedRuntime(eventHandler, persistentContext);
+        new SharedRuntime(eventHandler, persistentContext, getOpenTelemetry());
       }
     } catch (Exception e) {
       throw CirrinaException.from("Failed to run shared runtime: %s", e);

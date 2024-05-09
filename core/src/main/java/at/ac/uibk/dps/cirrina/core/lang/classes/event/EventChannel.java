@@ -10,5 +10,22 @@ public enum EventChannel {
   EXTERNAL,
 
   @JsonProperty("global")
-  GLOBAL
+  GLOBAL;
+
+  @Override
+  public String toString() throws IllegalStateException {
+    switch (this) {
+      case INTERNAL -> {
+        return "internal";
+      }
+      case EXTERNAL -> {
+        return "external";
+      }
+      case GLOBAL -> {
+        return "global";
+      }
+    }
+
+    throw new IllegalStateException();
+  }
 }
