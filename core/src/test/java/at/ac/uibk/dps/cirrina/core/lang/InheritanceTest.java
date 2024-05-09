@@ -1,17 +1,9 @@
 package at.ac.uibk.dps.cirrina.core.lang;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import at.ac.uibk.dps.cirrina.core.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
+import at.ac.uibk.dps.cirrina.core.lang.parser.CollaborativeStateMachineParser;
 import at.ac.uibk.dps.cirrina.core.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
@@ -19,16 +11,18 @@ import at.ac.uibk.dps.cirrina.core.object.context.Extent;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.core.object.statemachine.StateMachine;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InheritanceTest {
 
   private CollaborativeStateMachine getCollaborativeStateMachine() {
 
-    var parser = new Parser(new Parser.Options());
+    var parser = new CollaborativeStateMachineParser();
     return assertDoesNotThrow(() -> {
       var csm = parser.parse(DefaultDescriptions.completeInheritance);
       return CollaborativeStateMachineBuilder.from(csm).build();
@@ -37,7 +31,7 @@ public class InheritanceTest {
 
   private void tryCheckCollaborativeStateMachine(String json) throws VerificationException {
 
-    var parser = new Parser(new Parser.Options());
+    var parser = new CollaborativeStateMachineParser();
     var csm = assertDoesNotThrow(() -> parser.parse(json));
 
     CollaborativeStateMachineBuilder.from(csm).build();

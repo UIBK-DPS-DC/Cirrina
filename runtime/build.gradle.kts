@@ -83,3 +83,10 @@ tasks.test {
 tasks.jacocoTestReport {
     finalizedBy(tasks.jacocoToCobertura)
 }
+
+tasks {
+    task("main", type = JavaExec::class) {
+        mainClass = "at.ac.uibk.dps.cirrina.main.Main"
+        classpath = sourceSets["main"].runtimeClasspath
+    }
+}

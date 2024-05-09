@@ -1,6 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.service.description;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 /**
  * HTTP service implementation description, represents an available service implementation that is accessible via HTTP.
  */
+@JsonDeserialize(using = JsonDeserializer.None.class)
 public class HttpServiceImplementationDescription extends ServiceImplementationDescription {
 
   /**

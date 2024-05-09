@@ -16,12 +16,11 @@ import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import jakarta.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +45,8 @@ public abstract class Runtime implements EventListener {
   private final ReentrantLock stateMachineInstancesLock = new ReentrantLock();
 
   private final List<StateMachineInstance> stateMachineInstances = new ArrayList<>();
+
+  private final List<Future<?>> stateMachineFutures = new ArrayList<>();
 
   private final EventHandler eventHandler;
 
@@ -102,7 +103,8 @@ public abstract class Runtime implements EventListener {
       stateMachineInstances.add(stateMachineInstance);
 
       // Execute
-      executorService.execute(stateMachineInstance);
+      Future<?> future = executorService.submit(stateMachineInstance);
+      stateMachineFutures.add(future);
 
       final var stateMachineInstanceId = stateMachineInstance.getStateMachineInstanceId();
 
@@ -158,5 +160,9 @@ public abstract class Runtime implements EventListener {
 
   public EventHandler getEventHandler() {
     return eventHandler;
+  }
+
+  public List<Future<?>> getStateMachineFutures() {
+    return Collections.unmodifiableList(stateMachineFutures);
   }
 }

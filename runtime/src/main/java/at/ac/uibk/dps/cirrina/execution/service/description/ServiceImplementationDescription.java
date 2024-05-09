@@ -50,15 +50,15 @@ public abstract class ServiceImplementationDescription {
       var treeNode = parser.readValueAsTree();
 
       var typeClasses = Map.of(
-          "http", HttpServiceImplementationDescription.class
+          ServiceImplementationType.HTTP, HttpServiceImplementationDescription.class
       );
 
-      var type = codec.treeToValue(treeNode.get("type"), String.class);
+      var type = codec.treeToValue(treeNode.get("type"), ServiceImplementationType.class);
       if (!typeClasses.containsKey(type)) {
         throw new IllegalArgumentException(String.format("Service description type '%s' is not known", type));
       }
 
-      return parser.getCodec().treeToValue(treeNode, typeClasses.get(type));
+      return codec.treeToValue(treeNode, typeClasses.get(type));
     }
   }
 }

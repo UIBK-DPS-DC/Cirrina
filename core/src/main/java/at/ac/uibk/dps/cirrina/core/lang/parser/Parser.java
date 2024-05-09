@@ -24,15 +24,14 @@ import java.util.stream.Collectors;
 
 
 /**
- * CSML parser. Provides parsing functionality for descriptions written in the CSML language. A description is parsed into a structure
- * consisting of CSML models.
+ * Generic Parser. Provides functionality to parse JSON data into an object of the parser's value type.
  */
-public final class Parser {
+public class Parser<T> {
 
   /**
-   * Parser options.
+   * Parser value type
    */
-  private final Options options;
+  private final Class<T> valueType;
 
   /**
    * Mapper from a serialized format to objects.
@@ -40,12 +39,12 @@ public final class Parser {
   private final ObjectMapper mapper;
 
   /**
-   * Initializes the parser, provided the parser options.
+   * Initializes the parser, provided the value type.
    *
-   * @param options Parser options.
+   * @param valueType Parser value type.
    */
-  public Parser(Options options) {
-    this.options = options;
+  public Parser(Class<T> valueType) {
+    this.valueType = valueType;
 
     // Add a deserialization module that adds bean validation
     SimpleModule validationModule = new SimpleModule();
@@ -63,33 +62,25 @@ public final class Parser {
   }
 
   /**
-   * Parse a description in JSON. Returns a collaborative state machine (top-level) model. Any errors will result in a LanguageException
-   * being thrown. Errors could be the result of errors in the description such as syntax errors as well as validation errors such as
-   * missing fields.
+   * Parse a JSON string. Returns an instance of the parsers value type. Any errors will result in a CirrinaException
+   * being thrown. Errors could be syntax errors as well as validation errors such as missing fields.
    *
    * @param json JSON description.
    * @return Collaborative state machine model.
    * @throws CirrinaException In case an error occurs during parsing or validation.
    */
-  public CollaborativeStateMachineClass parse(String json) throws CirrinaException {
+  public T parse(String json) throws CirrinaException {
     try {
-      return mapper.readValue(json, CollaborativeStateMachineClass.class);
+      return mapper.readValue(json, valueType);
     } catch (JsonProcessingException | IllegalArgumentException e) {
       throw CirrinaException.from("Parsing error: %s", e.getMessage());
     }
   }
 
   /**
-   * Parser options.
-   */
-  public record Options() {
-
-  }
-
-  /**
    * Modifier for bean deserializer. Provides a bean deserializer with validation in the place of a bean deserializer.
    */
-  static class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
+  public static class BeanDeserializerModifierWithValidation extends BeanDeserializerModifier {
 
     /**
      * Provides a bean deserializer with validation in the place of a bean deserializer.

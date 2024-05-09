@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
+import at.ac.uibk.dps.cirrina.core.lang.parser.CollaborativeStateMachineParser;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
@@ -84,7 +83,7 @@ public class ServiceInvocationTest extends RuntimeTest {
 
     final var json = DefaultDescriptions.invoke;
 
-    final var parser = new Parser(new Options());
+    final var parser = new CollaborativeStateMachineParser();
     Assertions.assertDoesNotThrow(() -> {
       collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
     });

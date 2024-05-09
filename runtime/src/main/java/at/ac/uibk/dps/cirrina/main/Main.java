@@ -15,8 +15,10 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 
 
 /**
@@ -38,6 +40,9 @@ public abstract class Main {
   }
 
   public static void main(String... argv) {
+    // Set up logging
+    setupLogging();
+
     // Construct shared arguments
     final var args = new Args();
 
@@ -75,6 +80,15 @@ public abstract class Main {
     } catch (ParameterException e) {
       logger.error(e.getMessage());
     }
+  }
+
+  private static void setupLogging() {
+    final var loggerContext = (LoggerContext) LogManager.getContext(false);
+    final var loggerConfig = loggerContext.getConfiguration().getLoggerConfig(logger.getName());
+
+    // Set log level
+    loggerConfig.setLevel(Level.INFO);
+    loggerContext.updateLoggers();
   }
 
   /**

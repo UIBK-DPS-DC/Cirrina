@@ -1,12 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.runtime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
+import at.ac.uibk.dps.cirrina.core.lang.parser.CollaborativeStateMachineParser;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.core.object.context.InMemoryContext;
@@ -20,6 +15,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class PingPongTest extends RuntimeTest {
 
@@ -29,7 +26,7 @@ public class PingPongTest extends RuntimeTest {
   public static void setUp() {
     var json = DefaultDescriptions.pingPong;
 
-    var parser = new Parser(new Options());
+    var parser = new CollaborativeStateMachineParser();
     Assertions.assertDoesNotThrow(() -> {
       collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
     });

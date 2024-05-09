@@ -1,20 +1,17 @@
 package at.ac.uibk.dps.cirrina.core.object.statemachine;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import at.ac.uibk.dps.cirrina.core.data.DefaultDescriptions;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
+import at.ac.uibk.dps.cirrina.core.lang.parser.CollaborativeStateMachineParser;
 import at.ac.uibk.dps.cirrina.core.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
 import at.ac.uibk.dps.cirrina.core.object.expression.Expression;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StateMachineTest {
 
@@ -24,7 +21,7 @@ public class StateMachineTest {
   public static void setUp() {
     var json = DefaultDescriptions.complete;
 
-    var parser = new Parser(new Options());
+    var parser = new CollaborativeStateMachineParser();
     assertDoesNotThrow(() -> {
       var collaborativeStateMachine = CollaborativeStateMachineBuilder.from(parser.parse(json)).build();
 

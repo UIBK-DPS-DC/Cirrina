@@ -1,16 +1,17 @@
 package at.ac.uibk.dps.cirrina.core.io.plantuml;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import at.ac.uibk.dps.cirrina.core.data.DefaultDescriptions;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser;
+import at.ac.uibk.dps.cirrina.core.lang.parser.CollaborativeStateMachineParser;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachine;
 import at.ac.uibk.dps.cirrina.core.object.collaborativestatemachine.CollaborativeStateMachineBuilder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.StringWriter;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class CollaborativeStateMachineExporterTest {
 
@@ -20,7 +21,7 @@ class CollaborativeStateMachineExporterTest {
   static void setUp() {
     var json = DefaultDescriptions.completeNested;
 
-    var parser = new Parser(new Parser.Options());
+    var parser = new CollaborativeStateMachineParser();
     var csm = assertDoesNotThrow(() -> parser.parse(json));
     completeNestedCsm = assertDoesNotThrow(() -> CollaborativeStateMachineBuilder.from(csm).build());
   }

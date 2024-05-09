@@ -1,12 +1,11 @@
 package at.ac.uibk.dps.cirrina.core.lang.parser;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import at.ac.uibk.dps.cirrina.core.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
-import at.ac.uibk.dps.cirrina.core.lang.parser.Parser.Options;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class JsonParserTest {
@@ -15,7 +14,7 @@ public class JsonParserTest {
   public void testDescriptionPositive() {
     var json = DefaultDescriptions.complete;
 
-    var parser = new Parser(new Options());
+    var parser = new CollaborativeStateMachineParser();
     assertDoesNotThrow(() -> {
       var csm = parser.parse(json);
     });
@@ -25,7 +24,7 @@ public class JsonParserTest {
   public void testDescriptionNegative() {
     var json = DefaultDescriptions.empty;
 
-    var parser = new Parser(new Options());
+    var parser = new CollaborativeStateMachineParser();
     assertThrows(CirrinaException.class, () -> {
       var csm = parser.parse(json);
       System.out.println(csm);
@@ -36,7 +35,7 @@ public class JsonParserTest {
   public void testInheritance() {
     var json = DefaultDescriptions.completeInheritance;
 
-    var parser = new Parser(new Options());
+    var parser = new CollaborativeStateMachineParser();
     assertDoesNotThrow(() -> {
       var csm = parser.parse(json);
     });

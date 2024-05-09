@@ -194,9 +194,17 @@ public final class StateMachineInstance implements Runnable, EventListener, Scop
    *
    * @return True if the state machine instance is terminated, otherwise false.
    */
-  private boolean isTerminated() {
-    return activeState != null // The active state is null initially, this indicates that the state machine instance is not terminated
-        && activeState.getStateObject().isTerminal();
+  public boolean isTerminated() {
+    // The active state is null initially, this indicates that the state machine instance is not terminated
+    if (activeState == null) {
+      return false;
+    }
+    // The state machine instance should be terminated if it is nested and its parent is terminated.
+    if (parentStateMachineInstance != null && parentStateMachineInstance.isTerminated()) {
+      return true;
+    }
+
+    return activeState.getStateObject().isTerminal();
   }
 
   /**

@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Logger;
 
 public class NatsEventHandler extends EventHandler {
 
+  public static final String GLOBAL_SOURCE = "global";
+
   private static final Logger logger = LogManager.getLogger();
   private final Connection connection;
   private final Dispatcher dispatcher;
@@ -52,7 +54,7 @@ public class NatsEventHandler extends EventHandler {
           .map(channel -> {
             return switch (channel) {
               case EXTERNAL -> String.format("%s.%s", source, event.getName());
-              case GLOBAL -> String.format("*.%s", event.getName());
+              case GLOBAL -> String.format("%s.%s", GLOBAL_SOURCE, event.getName());
               default -> throw new IllegalArgumentException(String.format("Unsupported channel '%s'", channel));
             };
           })
