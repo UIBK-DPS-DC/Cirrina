@@ -1,0 +1,20 @@
+services:
+  grafana:
+    image: "grafana/otel-lgtm:latest"
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+  nats:
+    image: "nats:latest"
+    ports:
+      - "4222:4222"
+      - "6222:6222"
+      - "8222:8222"
+  zookeeper:
+    image: "zookeeper:latest"
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+      - "8080:8080"
