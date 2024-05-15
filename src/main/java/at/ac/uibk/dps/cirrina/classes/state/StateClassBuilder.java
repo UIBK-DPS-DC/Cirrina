@@ -1,10 +1,6 @@
 package at.ac.uibk.dps.cirrina.classes.state;
 
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ACTION_NAME_DOES_NOT_EXIST;
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.AFTER_ACTION_IS_NOT_A_TIMEOUT_ACTION;
-
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.csml.description.StateDescription;
 import at.ac.uibk.dps.cirrina.csml.description.helper.ActionOrActionReferenceDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
@@ -139,7 +135,8 @@ public abstract class StateClassBuilder {
      * Builds the state class.
      *
      * @return State class.
-     * @throws IllegalArgumentException In case of error.
+     * @throws IllegalArgumentException If an action name does not exist.
+     * @throws IllegalArgumentException If an after action is not a timeout action.
      */
     @Override
     public StateClass build() throws IllegalArgumentException {
@@ -149,7 +146,8 @@ public abstract class StateClassBuilder {
               .map(actionOrActionClass -> {
                 var resolvedAction = actionResolver.tryResolve(actionOrActionClass);
                 if (resolvedAction.isEmpty()) {
-                  throw new IllegalArgumentException(VerificationException.from(ACTION_NAME_DOES_NOT_EXIST));
+                  throw new IllegalArgumentException(
+                      "An action with the name '%s' does not exist".formatted(actionOrActionClass.toString()));
                 }
                 return resolvedAction.get();
               })
@@ -161,7 +159,7 @@ public abstract class StateClassBuilder {
       final var afterActions = resolveActions.apply(stateDescription.after);
 
       if (!afterActions.stream().allMatch(action -> action instanceof TimeoutAction)) {
-        throw new IllegalArgumentException(VerificationException.from(AFTER_ACTION_IS_NOT_A_TIMEOUT_ACTION));
+        throw new IllegalArgumentException("After action is not a timeout action");
       }
 
       // Create the state class

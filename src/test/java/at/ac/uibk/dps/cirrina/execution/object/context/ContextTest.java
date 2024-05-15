@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
+import java.io.IOException;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
@@ -26,14 +26,14 @@ public abstract class ContextTest {
   void testCreateDuplicateVariable() throws Exception {
     try (var context = createContext()) {
       assertDoesNotThrow(() -> context.create("testVar", 42));
-      assertThrows(CirrinaException.class, () -> context.create("testVar", 42));
+      assertThrows(IOException.class, () -> context.create("testVar", 42));
     }
   }
 
   @Test
   void testGetNonExistentVariable() throws Exception {
     try (var context = createContext()) {
-      assertThrows(CirrinaException.class, () -> context.get("nonExistentVar"));
+      assertThrows(IOException.class, () -> context.get("nonExistentVar"));
     }
   }
 
@@ -53,7 +53,7 @@ public abstract class ContextTest {
   @Test
   void testAssignNonExistentVariable() throws Exception {
     try (var context = createContext()) {
-      assertThrows(CirrinaException.class, () -> context.assign("nonExistentVar", 1));
+      assertThrows(IOException.class, () -> context.assign("nonExistentVar", 1));
     }
   }
 
@@ -65,14 +65,14 @@ public abstract class ContextTest {
         context.delete("testVar");
       });
 
-      assertThrows(CirrinaException.class, () -> context.get("testVar"));
+      assertThrows(IOException.class, () -> context.get("testVar"));
     }
   }
 
   @Test
   void testDeleteNonExistentVariable() throws Exception {
     try (var context = createContext()) {
-      assertThrows(CirrinaException.class, () -> context.delete("nonExistentVar"));
+      assertThrows(IOException.class, () -> context.delete("nonExistentVar"));
     }
   }
 

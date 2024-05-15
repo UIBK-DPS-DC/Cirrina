@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.classes.collaborativestatemachine;
 
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
@@ -149,25 +148,14 @@ public final class CollaborativeStateMachineClassBuilder {
    * Builds the collaborative state machine class.
    *
    * @return Built collaborative state machine class.
-   * @throws IllegalArgumentException In case the collaborative state machine could not be built.
+   * @throws IllegalArgumentException If the collaborative state machine could not be built.
    */
-  public CollaborativeStateMachineClass build() throws VerificationException {
-    try {
-      var collaborativeStateMachine = new CollaborativeStateMachineClass(collaborativeStateMachineDescription.name);
+  public CollaborativeStateMachineClass build() throws IllegalArgumentException {
+    var collaborativeStateMachine = new CollaborativeStateMachineClass(collaborativeStateMachineDescription.name);
 
-      buildVertices(collaborativeStateMachine);
-      buildEdges(collaborativeStateMachine);
+    buildVertices(collaborativeStateMachine);
+    buildEdges(collaborativeStateMachine);
 
-      return collaborativeStateMachine;
-    } catch (IllegalArgumentException e) {
-      // We expect a checker exception which is the cause of the exception caught, in case we don't get a checker
-      // exception as the cause, we don't know what to do and just rethrow. Otherwise, we throw the CheckerException
-      var cause = e.getCause();
-      if (!(cause instanceof VerificationException verificationException)) {
-        throw e;
-      }
-
-      throw verificationException;
-    }
+    return collaborativeStateMachine;
   }
 }

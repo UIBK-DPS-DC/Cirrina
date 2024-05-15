@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.classes.transition;
 
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.ActionGraph;
 import at.ac.uibk.dps.cirrina.execution.object.action.ActionGraphBuilder;
@@ -79,13 +78,17 @@ public class TransitionClass extends DefaultEdge implements Exportable {
    *
    * @param extent Extent describing variables in scope.
    * @return True if the transition can be taken based on the guards, otherwise false.
-   * @throws CirrinaException If some guard expression could not be evaluated, or some guard expression does not produce a boolean value.
+   * @throws UnsupportedOperationException If the transition could not be evaluated.
    */
-  public boolean evaluate(Extent extent) throws CirrinaException {
-    for (var guard : guards) {
-      if (!guard.evaluate(extent)) {
-        return false;
+  public boolean evaluate(Extent extent) throws UnsupportedOperationException {
+    try {
+      for (var guard : guards) {
+        if (!guard.evaluate(extent)) {
+          return false;
+        }
       }
+    } catch (IllegalArgumentException | UnsupportedOperationException e) {
+      throw new UnsupportedOperationException("Transition could not be evaluated", e);
     }
 
     return true;

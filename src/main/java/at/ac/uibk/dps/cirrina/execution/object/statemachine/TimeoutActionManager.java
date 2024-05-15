@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,12 +38,12 @@ public final class TimeoutActionManager {
    * @param actionName Name of the timeout action.
    * @param delayInMs  Delay in milliseconds.
    * @param task       The task to execute.
-   * @throws CirrinaException If two timeout actions with the same name have been started without being stopped.
+   * @throws IllegalArgumentException If two timeout actions with the same name have been started without being stopped.
    */
-  public void start(String actionName, Number delayInMs, Runnable task) throws CirrinaException {
+  public void start(String actionName, Number delayInMs, Runnable task) throws IllegalArgumentException {
     // Ensure unique timeout action names
     if (timeoutTasks.containsKey(actionName)) {
-      throw CirrinaException.from("Duplicate timeout action name '%s'", actionName);
+      throw new IllegalArgumentException("Duplicate timeout action name '%s'".formatted(actionName));
     }
 
     // Schedule at an interval
@@ -60,9 +59,9 @@ public final class TimeoutActionManager {
    * A timeout action with the provided name must have been started.
    *
    * @param actionName Name of action to stop.
-   * @throws CirrinaException In case not exactly one timeout action was found with the provided name.
+   * @throws IllegalArgumentException If not exactly one timeout action was found with the provided name.
    */
-  public void stop(String actionName) throws CirrinaException {
+  public void stop(String actionName) throws IllegalArgumentException {
     // Retrieve the timeout task
     final var timeoutTasksWithName = timeoutTasks.entrySet().stream()
         .filter(entry -> entry.getKey().equals(actionName))
@@ -70,7 +69,7 @@ public final class TimeoutActionManager {
         .toList();
 
     if (timeoutTasksWithName.size() != 1) {
-      throw CirrinaException.from("Expected exactly one timeout action with the name '%s'", actionName);
+      throw new IllegalArgumentException("Expected exactly one timeout action with the name '%s'".formatted(actionName));
     }
 
     final var timeoutTask = timeoutTasksWithName.getFirst();

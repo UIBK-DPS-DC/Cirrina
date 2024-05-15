@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.runtime.job;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessSemaphoreMutex;
 
@@ -16,7 +15,7 @@ public class Job {
   /**
    * The lock path format.
    */
-  private final String LOCK_PATH_FORMAT = "/locks/%s";
+  private static final String LOCK_PATH_FORMAT = "/locks/%s";
 
   /**
    * The name of the job.
@@ -61,13 +60,13 @@ public class Job {
   /**
    * Deletes this job.
    *
-   * @throws CirrinaException In case the job could not be deleted.
+   * @throws UnsupportedOperationException If the job could not be deleted.
    */
-  public void delete() throws CirrinaException {
+  public void delete() throws UnsupportedOperationException {
     try {
       curatorFramework.delete().forPath(nodePath);
     } catch (Exception e) {
-      throw CirrinaException.from("Failed to delete job '%s'", nodePath);
+      throw new UnsupportedOperationException("Failed to delete job '%s'".formatted(nodePath), e);
     }
   }
 
@@ -76,11 +75,12 @@ public class Job {
    * <p>
    * Every call to lock needs to be balanced with a call to unlock.
    *
-   * @throws CirrinaException In case the lock could not be created/acquired or the lock has already been acquired.
+   * @throws UnsupportedOperationException If a job lock was already created.
+   * @throws UnsupportedOperationException If a job lock could not be acquired/created.
    */
-  public void lock() throws CirrinaException {
+  public void lock() throws UnsupportedOperationException {
     if (sharedLock != null) {
-      throw CirrinaException.from("A job lock was already created");
+      throw new UnsupportedOperationException("A job lock was already created");
     }
 
     // Acquire a job lock
@@ -88,25 +88,26 @@ public class Job {
       sharedLock = new InterProcessSemaphoreMutex(curatorFramework, String.format(LOCK_PATH_FORMAT, jobName));
       sharedLock.acquire();
     } catch (Exception e) {
-      throw CirrinaException.from("Failed to create/acquire job lock");
+      throw new UnsupportedOperationException("Failed to create/acquire job lock", e);
     }
   }
 
   /**
    * Unlocks the job.
    *
-   * @throws CirrinaException In case the job has not been locked.
+   * @throws UnsupportedOperationException If the job has not been locked.
+   * @throws UnsupportedOperationException If the job could not be released.
    */
-  public void unlock() throws CirrinaException {
+  public void unlock() throws UnsupportedOperationException {
     if (sharedLock == null) {
-      throw CirrinaException.from("A job lock was not created");
+      throw new UnsupportedOperationException("A job lock was not created");
     }
 
     // Release a job lock
     try {
       sharedLock.release();
     } catch (Exception e) {
-      throw CirrinaException.from("Failed to release job lock");
+      throw new UnsupportedOperationException("Failed to release job lock", e);
     }
   }
 
@@ -114,13 +115,13 @@ public class Job {
    * Returns a flag that indicates if this job exists.
    *
    * @return True if existent, otherwise false.
-   * @throws CirrinaException In case the existence could not be checked.
+   * @throws UnsupportedOperationException If the existence could not be checked.
    */
-  public boolean exists() throws CirrinaException {
+  public boolean exists() throws UnsupportedOperationException {
     try {
       return curatorFramework.checkExists().forPath(nodePath) != null;
     } catch (Exception e) {
-      throw CirrinaException.from("Failed to check for existence of '%s'", nodePath);
+      throw new UnsupportedOperationException("Failed to check for existence of '%s'".formatted(nodePath), e);
     }
   }
 

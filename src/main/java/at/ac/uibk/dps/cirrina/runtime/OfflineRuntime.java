@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachineId;
@@ -45,9 +44,8 @@ public class OfflineRuntime extends Runtime {
    *
    * @param eventHandler      Event handler.
    * @param persistentContext Persistent context.
-   * @throws CirrinaException In case of error.
    */
-  public OfflineRuntime(EventHandler eventHandler, Context persistentContext) throws CirrinaException {
+  public OfflineRuntime(EventHandler eventHandler, Context persistentContext) {
     super(eventHandler, persistentContext, getOpenTelemetry());
   }
 
@@ -95,12 +93,12 @@ public class OfflineRuntime extends Runtime {
    * @param collaborativeStateMachineClass Collaborative state machine.
    * @param serviceImplementationSelector  Service implementation selector.
    * @return Instance IDs.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If a state machine could not be instantiated.
    */
   public List<StateMachineId> newInstance(
       CollaborativeStateMachineClass collaborativeStateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector
-  ) throws CirrinaException {
+  ) throws UnsupportedOperationException {
     return super.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);
   }
 }

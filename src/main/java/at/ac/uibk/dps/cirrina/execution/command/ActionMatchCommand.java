@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_MATCH_COMMAND_EXECUTE;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.action.MatchAction;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -20,21 +19,21 @@ public final class ActionMatchCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws CirrinaException {
-    // Create span
-    final var span = tracer.spanBuilder(SPAN_ACTION_MATCH_COMMAND_EXECUTE)
-        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
-        .startSpan();
+  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException {
+    try {
+      // Create span
+      final var span = tracer.spanBuilder(SPAN_ACTION_MATCH_COMMAND_EXECUTE)
+          .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
+          .startSpan();
 
-    try (final var scope = span.makeCurrent()) {
-      final var commands = new ArrayList<ActionCommand>();
+      try (final var scope = span.makeCurrent()) {
+        final var commands = new ArrayList<ActionCommand>();
 
-      final var extent = executionContext.scope().getExtent();
-      final var conditionValue = matchAction.getValue().execute(extent);
+        final var extent = executionContext.scope().getExtent();
+        final var conditionValue = matchAction.getValue().execute(extent);
 
-      final var commandFactory = new CommandFactory(executionContext);
+        final var commandFactory = new CommandFactory(executionContext);
 
-      try {
         // Find matching conditions and append the commands to the set of new commands
         for (var entry : matchAction.getCase().entrySet()) {
           final var caseValue = entry.getKey().execute(extent);
@@ -47,13 +46,13 @@ public final class ActionMatchCommand extends ActionCommand {
             commands.add(command);
           }
         }
-      } catch (CirrinaException e) {
-        throw CirrinaException.from("Could not execute match action actionCommand: %s", e.getMessage());
-      }
 
-      return commands;
-    } finally {
-      span.end();
+        return commands;
+      } finally {
+        span.end();
+      }
+    } catch (Exception e) {
+      throw new UnsupportedOperationException("Could not execute match action", e);
     }
   }
 }

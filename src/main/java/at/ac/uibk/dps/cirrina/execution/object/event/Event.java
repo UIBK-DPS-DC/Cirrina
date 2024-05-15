@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
@@ -12,14 +11,28 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Event, resembles an event as it is sent to state machine instances. An event can be translated into a CloudEvents event for
- * transmission.
+ * Event, resembles an event as it is sent to state machine instances.
  */
 public final class Event {
 
+  /**
+   * Event ID, is unique.
+   */
   private final String id = UUID.randomUUID().toString();
+
+  /**
+   * Name of the event, is not unique.
+   */
   private final String name;
+
+  /**
+   * Event channel.
+   */
   private final EventChannel channel;
+
+  /**
+   * Event data.
+   */
   private final List<ContextVariable> data;
 
   /**
@@ -40,27 +53,41 @@ public final class Event {
    *
    * @param bytes Byte data.
    * @return Event.
-   * @throws CirrinaException In case the event could not be retrieved from the CloudEvents event.
+   * @throws UnsupportedOperationException In case the event is not in a recognizable format.
    */
-  public static Event fromBytes(byte[] bytes) throws CirrinaException {
-    Fury fury = Fury.builder()
+  public static Event fromBytes(byte[] bytes) throws UnsupportedOperationException {
+    final var fury = Fury.builder()
         .withLanguage(Language.XLANG)
         .requireClassRegistration(false)
         .build();
 
-    var event = fury.deserialize(bytes);
+    final var event = fury.deserialize(bytes);
+
     if (!(event instanceof Event)) {
-      throw CirrinaException.from("Received an event that does not contain an event as its data");
+      throw new UnsupportedOperationException("Received an event with an unsupported payload");
     }
 
     return (Event) event;
   }
 
-  public static Event ensureHasEvaluatedData(Event event, Extent extent) throws CirrinaException {
+  /**
+   * Ensure that an event only has evaluated event data.
+   *
+   * @param event  Event.
+   * @param extent Extent.
+   * @return Event with evaluated event data.
+   * @throws UnsupportedOperationException If a event data variable could not be evaluated.
+   */
+  public static Event ensureHasEvaluatedData(Event event, Extent extent) throws UnsupportedOperationException {
     var data = new ArrayList<ContextVariable>();
 
     for (var variable : event.getData()) {
-      data.add(variable.evaluate(extent));
+      try {
+        data.add(variable.evaluate(extent));
+      } catch (UnsupportedOperationException e) {
+        throw new UnsupportedOperationException("The event data variable '%s' could not be evaluated".formatted(
+            variable.name()), e);
+      }
     }
 
     return new Event(event.getName(), event.getChannel(), data);
@@ -128,12 +155,15 @@ public final class Event {
 
   /**
    * Converts this event to byte data.
+   * <p>
+   * All data variables of this event must be evaluated.
    *
    * @return Byte data.
+   * @throws IllegalStateException If the event has unevaluated event data.
    */
-  public byte[] toBytes() throws CirrinaException {
+  public byte[] toBytes() throws IllegalStateException {
     if (data.stream().anyMatch(ContextVariable::isLazy)) {
-      throw CirrinaException.from("All variables need to be evaluated before an event can be converted to bytes");
+      throw new IllegalStateException("Event '%s' has unevaluated event data".formatted(name));
     }
 
     Fury fury = Fury.builder()

@@ -6,7 +6,6 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_NEW_INSTANC
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
@@ -95,9 +94,8 @@ public abstract class Runtime implements EventListener {
    * @param eventHandler      Event handler.
    * @param persistentContext Persistent context.
    * @param openTelemetry     OpenTelemetry.
-   * @throws CirrinaException In case of error.
    */
-  public Runtime(EventHandler eventHandler, Context persistentContext, OpenTelemetry openTelemetry) throws CirrinaException {
+  public Runtime(EventHandler eventHandler, Context persistentContext, OpenTelemetry openTelemetry) {
     // Keep dependencies
     this.eventHandler = eventHandler;
     this.persistentContext = persistentContext;
@@ -137,12 +135,12 @@ public abstract class Runtime implements EventListener {
    * @param collaborativeStateMachineClass Collaborative state machine.
    * @param serviceImplementationSelector  Service implementation selector.
    * @return Instance IDs.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If a state machine could not be instantiated.
    */
   protected List<StateMachineId> newInstance(
       CollaborativeStateMachineClass collaborativeStateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector
-  ) throws CirrinaException {
+  ) throws UnsupportedOperationException {
     return newInstances(collaborativeStateMachineClass.getStateMachineClasses(), serviceImplementationSelector, null);
   }
 
@@ -153,13 +151,13 @@ public abstract class Runtime implements EventListener {
    * @param serviceImplementationSelector Service implementation selector.
    * @param parentInstanceId              ID of parent state machine instance.
    * @return Instance IDs.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If a state machine could not be instantiated.
    */
   protected List<StateMachineId> newInstances(
       List<StateMachineClass> stateMachineClasses,
       ServiceImplementationSelector serviceImplementationSelector,
       @Nullable StateMachineId parentInstanceId
-  ) throws CirrinaException {
+  ) throws UnsupportedOperationException {
     var instanceIds = new ArrayList<StateMachineId>();
 
     for (var stateMachine : stateMachineClasses) {
@@ -169,12 +167,16 @@ public abstract class Runtime implements EventListener {
       }
 
       // Instantiate
-      var instanceId = newInstance(stateMachine, serviceImplementationSelector, parentInstanceId);
-      instanceIds.add(instanceId);
+      try {
+        var instanceId = newInstance(stateMachine, serviceImplementationSelector, parentInstanceId);
+        instanceIds.add(instanceId);
 
-      // Add nested state machines
-      if (!stateMachine.getNestedStateMachineClasses().isEmpty()) {
-        instanceIds.addAll(newInstances(stateMachine.getNestedStateMachineClasses(), serviceImplementationSelector, instanceId));
+        // Add nested state machines
+        if (!stateMachine.getNestedStateMachineClasses().isEmpty()) {
+          instanceIds.addAll(newInstances(stateMachine.getNestedStateMachineClasses(), serviceImplementationSelector, instanceId));
+        }
+      } catch (UnsupportedOperationException e) {
+        throw new UnsupportedOperationException("Could not instantiate state machine", e);
       }
     }
 
@@ -190,15 +192,16 @@ public abstract class Runtime implements EventListener {
    * @param serviceImplementationSelector Service implementation selector.
    * @param parentInstanceId              ID of parent state machine instance.
    * @return Instance ID.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the runtime is shut down.
+   * @throws UnsupportedOperationException If the parent state machine could not be found.
    */
   protected StateMachineId newInstance(
       StateMachineClass stateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector,
       @Nullable StateMachineId parentInstanceId
-  ) throws CirrinaException {
+  ) throws UnsupportedOperationException {
     if (stateMachineInstanceExecutorService.isShutdown()) {
-      throw CirrinaException.from("Runtime is shut down");
+      throw new UnsupportedOperationException("Runtime is shut down");
     }
 
     final var stateMachineName = stateMachineClass.getName();
@@ -220,7 +223,8 @@ public abstract class Runtime implements EventListener {
       final var parentInstance = parentInstanceId == null ? null : findInstance(parentInstanceId).orElse(null);
 
       if (parentInstanceId != null && parentInstance == null) {
-        throw CirrinaException.from("The parent state machine instance with id '%s' could not be found", parentInstanceId.toString());
+        throw new UnsupportedOperationException(
+            "The parent state machine instance with ID '%s' could not be found".formatted(parentInstanceId.toString()));
       }
 
       // Create the state machine instance
@@ -264,9 +268,8 @@ public abstract class Runtime implements EventListener {
    *
    * @param timeoutInMs Timeout in milliseconds.
    * @return True if the waiting has reached completion, otherwise false.
-   * @throws CirrinaException In case of error.
    */
-  public boolean waitForCompletion(int timeoutInMs) throws CirrinaException {
+  public boolean waitForCompletion(int timeoutInMs) {
     try {
       stateMachineInstancesLock.lock();
 
@@ -285,10 +288,12 @@ public abstract class Runtime implements EventListener {
 
   /**
    * Shutdown, will trigger all currently executing state machine instances to be completed and no new instances to be accepted.
+   *
+   * @throws UnsupportedOperationException If the runtime is already shut down.
    */
-  public void shutdown() throws CirrinaException {
+  public void shutdown() throws UnsupportedOperationException {
     if (stateMachineInstanceExecutorService.isShutdown()) {
-      throw CirrinaException.from("Runtime is already shut down");
+      throw new UnsupportedOperationException("Runtime is already shut down");
     }
 
     stateMachineInstanceExecutorService.shutdown();

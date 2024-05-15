@@ -1,11 +1,11 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import io.fury.Fury;
 import io.fury.config.Language;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -89,7 +89,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
     final var errorCode = response.statusCode();
 
     if (errorCode != HttpURLConnection.HTTP_OK) {
-      throw new CompletionException(CirrinaException.from("Received HTTP error (%d)", errorCode));
+      throw new CompletionException(new IOException("HTTP error (%d)".formatted(errorCode)));
     }
 
     // Acquire the payload
@@ -101,14 +101,14 @@ public class HttpServiceImplementation extends ServiceImplementation {
     // Verify the output, we expect a map of string-object
     if (!(output instanceof Map<?, ?> untypedMap)) {
       throw new CompletionException(
-          CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object"));
+          new IOException("Unexpected HTTP service invocation type, expected map of string-object"));
     }
     if (!untypedMap.isEmpty()) {
       if (!untypedMap.entrySet().stream()
           .allMatch(entry -> entry.getKey() instanceof String
               && entry.getValue() != null)) {
         throw new CompletionException(
-            CirrinaException.from("Unexpected HTTP service invocation type, expected map of string-object"));
+            new IOException("Unexpected HTTP service invocation type, expected map of string-object"));
       }
     }
 
@@ -125,13 +125,16 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
   /**
    * Invoke this service implementation.
+   * <p>
+   * All input variables must be evaluated.
    *
    * @param input Input to the service invocation.
    * @return The service invocation output.
-   * @throws CirrinaException If the service invocation failed.
+   * @throws UnsupportedOperationException If not all variables are evaluated.
+   * @throws UnsupportedOperationException If the invocation failed.
    */
   @Override
-  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws CirrinaException {
+  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws UnsupportedOperationException {
     try (final var client = HttpClient.newHttpClient()) {
       final var fury = Fury.builder()
           .withLanguage(Language.XLANG)
@@ -139,7 +142,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       if (input.stream().anyMatch(ContextVariable::isLazy)) {
-        throw CirrinaException.from("All variables need to be evaluated before service input can be converted to bytes");
+        throw new UnsupportedOperationException("All variables need to be evaluated before service input can be converted to bytes");
       }
 
       final var payload = fury.serialize(input.stream()
@@ -156,7 +159,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
       return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApplyAsync(HttpServiceImplementation::handleResponse);
     } catch (URISyntaxException e) {
-      throw CirrinaException.from("Failed to perform HTTP service invocation: %s", e.getMessage());
+      throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     }
   }
 

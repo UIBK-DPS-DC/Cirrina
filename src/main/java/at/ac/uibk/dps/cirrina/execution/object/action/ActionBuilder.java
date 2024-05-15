@@ -1,10 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.action;
 
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ACTION_NAME_DOES_NOT_EXIST;
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.TIMEOUT_ACTION_NAME_IS_NOT_PROVIDED;
-
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.csml.description.action.ActionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.action.AssignActionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.action.CreateActionDescription;
@@ -90,13 +86,14 @@ public final class ActionBuilder {
    *
    * @param cases Case classes.
    * @return Cases.
+   * @throws IllegalArgumentException If an action name does not exist.
    */
   private Map<Expression, Action> buildCases(List<MatchCaseDescription> cases) {
     final Map<Expression, Action> ret = new HashMap<>();
 
     for (final var casee : cases) {
       ret.put(ExpressionBuilder.from(casee.casee).build(), actionResolver.tryResolve(casee.action)
-          .orElseThrow(() -> new IllegalArgumentException(VerificationException.from(ACTION_NAME_DOES_NOT_EXIST, casee.action))));
+          .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(casee.action))));
     }
 
     return ret;
@@ -106,8 +103,8 @@ public final class ActionBuilder {
    * Builds the action.
    *
    * @return The built action.
-   * @throws IllegalArgumentException In case the action could not be built.
-   * @throws IllegalStateException    In case of an unexpected state.
+   * @throws IllegalArgumentException      If an action name does not exist.
+   * @throws UnsupportedOperationException If an action is of an unknown type.
    */
   public Action build() throws IllegalArgumentException, IllegalStateException {
     switch (actionDescription) {
@@ -190,14 +187,14 @@ public final class ActionBuilder {
       case TimeoutActionDescription timeout -> {
         // Acquire the action name, for timeout actions, the name is always required
         final var name = timeout.name.orElseThrow(
-            () -> new IllegalArgumentException(VerificationException.from(TIMEOUT_ACTION_NAME_IS_NOT_PROVIDED)));
+            () -> new IllegalArgumentException("Timeout action name is not provided"));
 
         // Acquire the delay expression
         final var delayExpression = ExpressionBuilder.from(timeout.delay).build();
 
         // Acquire the timeout action
         final var timeoutAction = actionResolver.tryResolve(timeout.action)
-            .orElseThrow(() -> new IllegalArgumentException(VerificationException.from(ACTION_NAME_DOES_NOT_EXIST, timeout.action)));
+            .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(timeout.action)));
 
         // Construct parameters
         final var parameters = new TimeoutAction.Parameters(
@@ -219,7 +216,7 @@ public final class ActionBuilder {
         // Construct the timeout reset action
         return new TimeoutResetAction(parameters);
       }
-      default -> throw new IllegalStateException(String.format("Unexpected value: %s", actionDescription.type));
+      default -> throw new UnsupportedOperationException("Action type '%s' is not known".formatted(actionDescription.type));
     }
   }
 }

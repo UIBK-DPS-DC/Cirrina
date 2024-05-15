@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.main;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.context.NatsContext;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
@@ -15,6 +14,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import java.io.IOException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -29,8 +29,14 @@ import org.apache.logging.log4j.core.LoggerContext;
  */
 public abstract class Main {
 
+  /**
+   * Main logger.
+   */
   private static final Logger logger = LogManager.getLogger();
 
+  /**
+   * Shared arguments.
+   */
   private final Args args;
 
   /**
@@ -68,7 +74,7 @@ public abstract class Main {
       final var command = jc.getParsedCommand();
 
       if (command == null) {
-        throw CirrinaException.from("Provide either distributed or shared ");
+        throw new ParameterException("Provide either distributed or shared ");
       }
 
       // Instantiate either the distributed or shared runtime main
@@ -80,10 +86,8 @@ public abstract class Main {
           new MainShared(args, sharedArgs).run();
           break;
         default:
-          throw CirrinaException.from("Unknown actionCommand '%s'", command);
+          throw new ParameterException("Provide either distributed or shared ");
       }
-    } catch (CirrinaException e) {
-      logger.error("Failed to run runtime: {}", e.getMessage());
     } catch (ParameterException e) {
       logger.error(e.getMessage());
     }
@@ -100,50 +104,49 @@ public abstract class Main {
 
   /**
    * Run the runtime.
-   *
-   * @throws CirrinaException In case of an error during execution or initialization.
    */
-  public abstract void run() throws CirrinaException;
+  public abstract void run();
 
   /**
    * Constructs a new runtime scheduler according to the provided arguments.
    *
    * @return Runtime scheduler.
-   * @throws CirrinaException If the runtime scheduler could not be constructed.
+   * @throws IllegalArgumentException If the scheduler provided is not known.
    */
-  protected RuntimeScheduler newRuntimeScheduler() throws CirrinaException {
+  protected RuntimeScheduler newRuntimeScheduler() throws IllegalArgumentException {
     switch (args.scheduler) {
       case RoundRobin -> {
         return new RoundRobinRuntimeScheduler();
       }
     }
 
-    throw CirrinaException.from("Unknown scheduler '%s'", args.scheduler);
+    throw new IllegalArgumentException("Unknown scheduler '%s'".formatted(args.scheduler));
   }
 
   /**
    * Constructs a new event handler according to the provided arguments.
    *
    * @return Event handler.
-   * @throws CirrinaException If the event handler could not be constructed.
+   * @throws IOException              If the event handler could not be constructed.
+   * @throws IllegalArgumentException If the event handler provided is not known.
    */
-  protected EventHandler newEventHandler() throws CirrinaException {
+  protected EventHandler newEventHandler() throws IOException, IllegalArgumentException {
     switch (args.eventHandler) {
       case Nats -> {
         return newNatsEventHandler();
       }
     }
 
-    throw CirrinaException.from("Unknown event handler '%s'", args.eventHandler);
+    throw new IllegalArgumentException("Unknown event handler '%s'".formatted(args.eventHandler));
   }
 
   /**
    * Constructs a new NATS event handler according to the provided arguments.
    *
    * @return Event handler.
-   * @throws CirrinaException If the event handler could not be constructed.
+   * @throws IOException If the event handler could not be constructed.
    */
-  private NatsEventHandler newNatsEventHandler() throws CirrinaException {
+  private NatsEventHandler newNatsEventHandler() throws IOException {
     return new NatsEventHandler(args.natsEventHandlerArgs.natsUrl);
   }
 
@@ -151,25 +154,26 @@ public abstract class Main {
    * Constructs a new persistent context according to the provided arguments.
    *
    * @return Persistent context.
-   * @throws CirrinaException If the persistent context could not be constructed.
+   * @throws IOException              If the event handler could not be constructed.
+   * @throws IllegalArgumentException If the persistent context provided is not known.
    */
-  protected Context newPersistentContext() throws CirrinaException {
+  protected Context newPersistentContext() throws IOException, IllegalArgumentException {
     switch (args.persistentContext) {
       case Nats -> {
         return newNatsPersistentContext();
       }
     }
 
-    throw CirrinaException.from("Unknown persistent context '%s'", args.eventHandler);
+    throw new IllegalArgumentException("Unknown persistent context '%s'".formatted(args.eventHandler));
   }
 
   /**
    * Constructs a new NATS persistent context according to the provided arguments.
    *
    * @return Persistent context.
-   * @throws CirrinaException If the persistent context could not be constructed.
+   * @throws IOException If the persistent context could not be constructed.
    */
-  private NatsContext newNatsPersistentContext() throws CirrinaException {
+  private NatsContext newNatsPersistentContext() throws IOException {
     return new NatsContext(args.natsPersistentContextArgs.natsUrl, args.natsPersistentContextArgs.bucketName);
   }
 
@@ -177,9 +181,8 @@ public abstract class Main {
    * Constructs a new Curator framework according to the provided arguments.
    *
    * @return Curator framework.
-   * @throws CirrinaException In case a connection to ZooKeeper could not be made.
    */
-  public CuratorFramework newCuratorFramework() throws CirrinaException {
+  public CuratorFramework newCuratorFramework() {
     return CuratorFrameworkFactory.builder()
         .connectString(args.zooKeeperArgs.connectString)
         .retryPolicy(new ExponentialBackoffRetry(1000, 3))

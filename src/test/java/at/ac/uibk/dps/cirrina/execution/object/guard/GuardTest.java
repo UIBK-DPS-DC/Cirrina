@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.guard.GuardDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
@@ -41,7 +40,7 @@ public class GuardTest {
         assertFalse(guard.evaluate(extent));
       });
 
-      assertThrows(CirrinaException.class, () -> {
+      assertThrows(IllegalArgumentException.class, () -> {
         var guardClass = new GuardDescription();
 
         guardClass.name = Optional.of("name");

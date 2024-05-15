@@ -1,8 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.object.context;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -66,10 +66,10 @@ public class ContextBuilder {
    * @param natsUrl    NATS url.
    * @param bucketName NATS bucket name.
    * @return This builder.
-   * @throws CirrinaException
+   * @throws IOException If the context could not be built.
    * @see NatsContext
    */
-  public ContextBuilder natsContext(String natsUrl, String bucketName) throws CirrinaException {
+  public ContextBuilder natsContext(String natsUrl, String bucketName) throws IOException {
     context = new NatsContext(natsUrl, bucketName);
 
     return this;
@@ -79,11 +79,9 @@ public class ContextBuilder {
    * Builds the current context.
    *
    * @return Context.
-   * @throws CirrinaException
+   * @throws IOException If the context could not be built.
    */
-  public Context build() throws CirrinaException {
-    // TODO: No CirrinaException. Probably best to remove all types of exceptions and just have one anyways...
-
+  public Context build() throws IOException {
     assert context != null;
 
     // Add all variables contained within the context class to the newly created context, only do this if there is a class

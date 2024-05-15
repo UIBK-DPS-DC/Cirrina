@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
@@ -133,7 +132,7 @@ public class ServiceInvocationTest {
       // Mock a persistent context using an in-memory context
       var mockPersistentContext = new InMemoryContext() {
         @Override
-        public void assign(String name, Object value) throws CirrinaException {
+        public void assign(String name, Object value) throws IOException {
           // Don't expect any variables assigned except for v
           assertTrue(name.equals("v") || name.equals("e"));
 

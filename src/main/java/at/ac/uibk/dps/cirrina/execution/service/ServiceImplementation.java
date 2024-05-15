@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,9 +34,9 @@ public abstract class ServiceImplementation {
    *
    * @param input Input to the service invocation.
    * @return The service invocation output.
-   * @throws CirrinaException If the service invocation failed.
+   * @throws IOException If the service invocation failed.
    */
-  public abstract CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws CirrinaException;
+  public abstract CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws IOException;
 
 
   /**

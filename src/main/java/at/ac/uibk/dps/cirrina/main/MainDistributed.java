@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.main;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,10 +26,8 @@ public final class MainDistributed extends Main {
 
   /**
    * Run the runtime.
-   *
-   * @throws CirrinaException In case of an error during execution or initialization.
    */
-  public void run() throws CirrinaException {
+  public void run() {
 
   }
 

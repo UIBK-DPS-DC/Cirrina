@@ -1,14 +1,10 @@
 package at.ac.uibk.dps.cirrina.classes.statemachine;
 
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES;
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES;
-
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.state.StateClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClassBuilder;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.csml.description.StateDescription;
 import at.ac.uibk.dps.cirrina.csml.description.StateMachineDescription;
 import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
@@ -196,7 +192,7 @@ public final class ChildStateMachineClassBuilder {
   /**
    * Ensures that the overridden state can in fact be overridden.
    *
-   * @throws IllegalArgumentException When at least one state is overridden which is neither virtual nor abstract.
+   * @throws IllegalArgumentException If an attempt is made to override states that are not abstract or virtual.
    */
   private void checkOverriddenStates() throws IllegalArgumentException {
     final var stateClasses = getStateDescriptions();
@@ -208,15 +204,15 @@ public final class ChildStateMachineClassBuilder {
         );
 
     if (cannotOverrideState) {
-      throw new IllegalArgumentException(
-          VerificationException.from(STATE_MACHINE_OVERRIDES_UNSUPPORTED_STATES, stateMachineDescription));
+      throw new IllegalArgumentException("States of '%s' attempt to override states that are neither abstract nor virtual".formatted(
+          stateMachineDescription.name));
     }
   }
 
   /**
    * Ensures that everything that is abstract is overridden.
    *
-   * @throws IllegalArgumentException When at least one abstract state is not overridden.
+   * @throws IllegalArgumentException If not all abstract states are overridden.
    */
   private void checkAbstractStates() throws IllegalArgumentException {
 
@@ -238,8 +234,7 @@ public final class ChildStateMachineClassBuilder {
         );
 
     if (isIncomplete) {
-      throw new IllegalArgumentException(
-          VerificationException.from(STATE_MACHINE_DOES_NOT_OVERRIDE_ABSTRACT_STATES, stateMachineDescription));
+      throw new IllegalArgumentException("Not all abstract states of '%s' are overridden".formatted(stateMachineDescription.name));
     }
   }
 

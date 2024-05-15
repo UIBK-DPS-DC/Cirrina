@@ -3,7 +3,6 @@ package at.ac.uibk.dps.cirrina.runtime;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_UPTIME;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
@@ -39,14 +38,13 @@ public class OnlineRuntime extends Runtime implements JobListener {
    * @param persistentContext Persistent context.
    * @param openTelemetry     OpenTelemetry.
    * @param curatorFramework  CuratorFramework.
-   * @throws CirrinaException In case of error.
    */
   public OnlineRuntime(
       EventHandler eventHandler,
       Context persistentContext,
       OpenTelemetry openTelemetry,
       CuratorFramework curatorFramework
-  ) throws CirrinaException {
+  ) {
     super(eventHandler, persistentContext, openTelemetry);
 
     // Create a job monitor
@@ -57,10 +55,10 @@ public class OnlineRuntime extends Runtime implements JobListener {
    * Called upon the arrival of a new job, will instantiate a new state machine if capable and appropriate.
    *
    * @param job New job.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If a state machine is not known.
    */
   @Override
-  public void newJob(Job job) throws CirrinaException {
+  public void newJob(Job job) throws UnsupportedOperationException {
     // TODO: Check if job can be executed, would be nice to add some conditions
 
     try {
@@ -85,8 +83,8 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
         // Find the state machine by name
         final var stateMachine = collaborativeStateMachine.findStateMachineClassByName(stateMachineName)
-            .orElseThrow(() -> CirrinaException.from("A state machine with the name '%s' does not exist in the collaborative state machine",
-                stateMachineName));
+            .orElseThrow(() -> new UnsupportedOperationException(
+                "A state machine with the name '%s' does not exist in the collaborative state machine".formatted(stateMachineName)));
 
         // TODO: Set up variables, etc.
 

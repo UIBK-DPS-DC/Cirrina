@@ -22,7 +22,6 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_TRANSITION;
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClass;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.command.ActionCommand;
 import at.ac.uibk.dps.cirrina.execution.command.ActionRaiseCommand;
 import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
@@ -46,6 +45,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +105,6 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @param stateMachineClassObject       StateClass machine object
    * @param serviceImplementationSelector Service implementation selector.
    * @param parentStateMachine            Parent state machine instance or null.
-   * @throws CirrinaException In case of error.
    * @thread Runtime.
    */
   public StateMachine(
@@ -114,7 +113,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       ServiceImplementationSelector serviceImplementationSelector,
       OpenTelemetry openTelemetry,
       @Nullable StateMachine parentStateMachine
-  ) throws CirrinaException {
+  ) {
     this.parentRuntime = parentRuntime;
     this.stateMachineClassObject = stateMachineClassObject;
     this.serviceImplementationSelector = serviceImplementationSelector;
@@ -132,11 +131,15 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     stateMachineEventHandler = new StateMachineEventHandler(this, this.parentRuntime.getEventHandler());
 
     // Build the local context
-    localContext = stateMachineClassObject.getLocalContextClass()
-        .map(ContextBuilder::from)
-        .orElseGet(ContextBuilder::from)
-        .inMemoryContext()
-        .build();
+    try {
+      localContext = stateMachineClassObject.getLocalContextClass()
+          .map(ContextBuilder::from)
+          .orElseGet(ContextBuilder::from)
+          .inMemoryContext()
+          .build();
+    } catch (IOException ignored) {
+      throw new IllegalStateException(); // This should not happen
+    }
 
     // Construct state instances
     stateInstances = stateMachineClassObject.vertexSet().stream()
@@ -255,9 +258,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param event Event to find an on transition for.
    * @return On transition or empty in case no matching on transition can be selected.
-   * @throws CirrinaException In case of non-determinism or any other error.
+   * @throws IllegalStateException If non-determinism is detected.
    */
-  private Optional<Transition> trySelectOnTransition(Event event) throws CirrinaException {
+  private Optional<Transition> trySelectOnTransition(Event event) throws IllegalStateException {
     // Find the transitions from the active state for the given event
     final var transitionObjects = stateMachineClassObject
         .findOnTransitionsFromStateByEventName(activeState.getStateObject(), event.getName());
@@ -269,9 +272,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Attempts to select an always transition.
    *
    * @return Always transition or empty in case no always transition can be selected.
-   * @throws CirrinaException In case of non-determinism or any other error.
+   * @throws IllegalStateException If non-determinism is detected.
    */
-  private Optional<Transition> trySelectAlwaysTransition() throws CirrinaException {
+  private Optional<Transition> trySelectAlwaysTransition() throws IllegalStateException {
     // Find the transitions from the active state for the given event
     final var transitionObjects = stateMachineClassObject
         .findAlwaysTransitionsFromState(activeState.getStateObject());
@@ -286,29 +289,33 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param transitionObjects Collection of transition objects to select from.
    * @return Selected transition instance or empty in case no transition can be selected.
-   * @throws CirrinaException In case of non-determinism or any other error.
+   * @throws IllegalStateException If non-determinism is detected.
+   * @throws IllegalStateException If no transition could be selected.
    */
-  private Optional<Transition> trySelectTransition(List<? extends TransitionClass> transitionObjects)
-      throws CirrinaException {
-    final var extent = getExtent();
+  private Optional<Transition> trySelectTransition(List<? extends TransitionClass> transitionObjects) throws IllegalStateException {
+    try {
+      final var extent = getExtent();
 
-    // A transition is taken when its guard conditions evaluate to true, or they do not evaluate to true, but an else target state is provided
-    final var selectedTransitions = new ArrayList<Transition>();
+      // A transition is taken when its guard conditions evaluate to true, or they do not evaluate to true, but an else target state is provided
+      final var selectedTransitions = new ArrayList<Transition>();
 
-    for (final var transitionObject : transitionObjects) {
-      final var isElse = transitionObject.getElse().isPresent();
-      final var result = transitionObject.evaluate(extent);
+      for (final var transitionObject : transitionObjects) {
+        final var isElse = transitionObject.getElse().isPresent();
+        final var result = transitionObject.evaluate(extent);
 
-      if (isElse || result) {
-        selectedTransitions.add(new Transition(transitionObject, isElse && !result));
+        if (isElse || result) {
+          selectedTransitions.add(new Transition(transitionObject, isElse && !result));
+        }
       }
-    }
 
-    return switch (selectedTransitions.size()) {
-      case 0 -> Optional.empty();
-      case 1 -> Optional.of(selectedTransitions.getFirst());
-      default -> throw CirrinaException.from("Non-determinism detected");
-    };
+      return switch (selectedTransitions.size()) {
+        case 0 -> Optional.empty();
+        case 1 -> Optional.of(selectedTransitions.getFirst());
+        default -> throw new IllegalStateException("Non-determinism detected");
+      };
+    } catch (UnsupportedOperationException e) {
+      throw new IllegalStateException("No transition could be selected", e);
+    }
   }
 
   /**
@@ -319,18 +326,22 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param actionCommands Commands to execute.
    * @param parentSpan     Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the action commands cannot be executed.
    */
-  private void execute(List<ActionCommand> actionCommands, Span parentSpan) throws CirrinaException {
-    for (final var actionCommand : actionCommands) {
-      // Increment executed actions counter
-      meter.counterBuilder(METRIC_EXECUTED_ACTIONS).build().add(1);
+  private void execute(List<ActionCommand> actionCommands, Span parentSpan) throws UnsupportedOperationException {
+    try {
+      for (final var actionCommand : actionCommands) {
+        // Increment executed actions counter
+        meter.counterBuilder(METRIC_EXECUTED_ACTIONS).build().add(1);
 
-      // Execute this command
-      final var newCommands = actionCommand.execute(tracer, parentSpan);
+        // Execute this command
+        final var newCommands = actionCommand.execute(tracer, parentSpan);
 
-      // Execute any subsequent command
-      execute(newCommands, parentSpan);
+        // Execute any subsequent command
+        execute(newCommands, parentSpan);
+      }
+    } catch (UnsupportedOperationException e) {
+      throw new UnsupportedOperationException("Could not execute action commands", e);
     }
   }
 
@@ -341,27 +352,32 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param timeoutActionObjects Timeout action objects to start.
    * @param parentSpan           Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the delay expression does not evaluate to a numeric value.
+   * @throws IllegalArgumentException      If the timeout action is not a raise action.
+   * @throws IllegalArgumentException      If the timeout action does not have a name.
    */
-  private void startAllTimeoutActions(List<TimeoutAction> timeoutActionObjects, Span parentSpan) throws CirrinaException {
+  private void startAllTimeoutActions(
+      List<TimeoutAction> timeoutActionObjects, Span parentSpan
+  ) throws UnsupportedOperationException, IllegalArgumentException {
     for (final var timeoutActionObject : timeoutActionObjects) {
       // The evaluated delay value is required to be numeric
       final var delay = timeoutActionObject.getDelay().execute(getExtent());
 
       if (!(delay instanceof Number)) {
-        throw CirrinaException.from("The delay expression '%s' did not evaluate to a numeric value", timeoutActionObject.getDelay());
+        throw new UnsupportedOperationException(
+            "The delay expression '%s' did not evaluate to a numeric value".formatted(timeoutActionObject.getDelay()));
       }
 
       // Create action command
       final var actionTimeoutCommand = stateMachineScopedCommandFactory(this).createActionCommand(timeoutActionObject.getAction());
 
       if (!(actionTimeoutCommand instanceof ActionRaiseCommand)) {
-        throw CirrinaException.from("A timeout action must be a raise action");
+        throw new IllegalArgumentException("A timeout action must be a raise action");
       }
 
       // Acquire the name, which must be provided (otherwise it cannot be reset)
       final var actionName = timeoutActionObject.getName()
-          .orElseThrow(() -> CirrinaException.from("A timeout action must have a name"));
+          .orElseThrow(() -> new IllegalArgumentException("A timeout action must have a name"));
 
       // Start the timeout task
       timeoutActionManager.start(actionName, (Number) delay, () -> {
@@ -374,8 +390,6 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
         try (final var scope = span.makeCurrent()) {
           execute(List.of(actionTimeoutCommand), span);
-        } catch (CirrinaException e) {
-          logger.error("Failed to execute timeout command: {}", e.getMessage());
         } finally {
           span.end();
         }
@@ -387,9 +401,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Stops a specific timeout action.
    *
    * @param actionName Name of timeout action to stop.
-   * @throws CirrinaException In case of error.
+   * @throws IllegalArgumentException If not exactly one timeout action was found with the provided name.
    */
-  private void stopTimeoutAction(String actionName) throws CirrinaException {
+  private void stopTimeoutAction(String actionName) throws IllegalArgumentException {
     timeoutActionManager.stop(actionName);
   }
 
@@ -404,13 +418,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Switches the current active state to the provided state instance.
    *
    * @param state New active state.
-   * @throws CirrinaException In case of error.
+   * @throws IllegalArgumentException If the state is not known.
    */
-  private void switchActiveState(State state) throws CirrinaException {
+  private void switchActiveState(State state) throws IllegalArgumentException {
     if (!stateInstances.containsValue(state)) {
-      throw CirrinaException.from(
-          "A state with the name '%s' could not be found while attempting to set the new active state of state machine '%s'",
-          state.getStateObject().getName(), stateMachineId);
+      throw new IllegalArgumentException("A state '%s' does not exist".formatted(state.getStateObject().getName()));
     }
 
     // Update the active state
@@ -425,9 +437,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param exitingState StateClass instance that is being exited.
    * @param parentSpan   Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the exit action cannot be executed.
    */
-  private void doExit(State exitingState, Span parentSpan) throws CirrinaException {
+  private void doExit(State exitingState, Span parentSpan) throws UnsupportedOperationException {
     // Create span
     final var span = tracer.spanBuilder(SPAN_DO_EXIT)
         .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
@@ -444,7 +456,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       // TODO: Cancel while actions
 
       // Execute in order
-      execute(exitActionCommands, span);
+      try {
+        execute(exitActionCommands, span);
+      } catch (UnsupportedOperationException e) {
+        throw new UnsupportedOperationException("Could not execute exit actions", e);
+      }
     } finally {
       span.end();
     }
@@ -457,9 +473,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param transition TransitionClass instance that is being taken.
    * @param parentSpan Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the transition action cannot be executed.
    */
-  private void doTransition(Transition transition, Span parentSpan) throws CirrinaException {
+  private void doTransition(Transition transition, Span parentSpan) throws UnsupportedOperationException {
     // Create span
     final var span = tracer.spanBuilder(SPAN_DO_TRANSITION)
         .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
@@ -476,7 +492,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
           stateMachineScopedCommandFactory(this));
 
       // Execute in order
-      execute(transitionActionCommands, span);
+      try {
+        execute(transitionActionCommands, span);
+      } catch (UnsupportedOperationException e) {
+        throw new UnsupportedOperationException("Could not execute transition actions", e);
+      }
     } finally {
       span.end();
     }
@@ -491,9 +511,15 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param enteringState StateClass instance that is being entered.
    * @param parentSpan    Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the entry/while actions could not be executed.
+   * @throws UnsupportedOperationException If the timeout actions could not be started.
+   * @throws UnsupportedOperationException If the states could not be switched.
+   * @throws UnsupportedOperationException If an always transition could not be selected.
    */
-  private Optional<Transition> doEnter(State enteringState, Span parentSpan) throws CirrinaException {
+  private Optional<Transition> doEnter(
+      State enteringState,
+      Span parentSpan
+  ) throws UnsupportedOperationException, IllegalArgumentException {
     // Create span
     final var span = tracer.spanBuilder(SPAN_DO_ENTER)
         .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
@@ -510,16 +536,32 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       final var timeoutActionObjects = enteringState.getTimeoutActionObjects();
 
       // Execute in order
-      execute(entryActionCommands, span);
-      execute(whileActionCommands, span);
+      try {
+        execute(entryActionCommands, span);
+        execute(whileActionCommands, span);
+      } catch (UnsupportedOperationException e) {
+        throw new UnsupportedOperationException("Could not execute entry/while actions", e);
+      }
 
       // Start timeout actions
-      startAllTimeoutActions(timeoutActionObjects, span);
+      try {
+        startAllTimeoutActions(timeoutActionObjects, span);
+      } catch (UnsupportedOperationException | IllegalArgumentException e) {
+        throw new UnsupportedOperationException("Could not start timeout actions", e);
+      }
 
       // Switch the active state to the entering state
-      switchActiveState(enteringState);
+      try {
+        switchActiveState(enteringState);
+      } catch (IllegalArgumentException e) {
+        throw new UnsupportedOperationException("Could not switch states");
+      }
 
-      return trySelectAlwaysTransition();
+      try {
+        return trySelectAlwaysTransition();
+      } catch (IllegalStateException e) {
+        throw new UnsupportedOperationException("Could not select always transition");
+      }
     } finally {
       span.end();
     }
@@ -530,9 +572,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param transition TransitionClass instance.
    * @param parentSpan Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleInternalTransition(@NotNull Transition transition, Span parentSpan) throws CirrinaException {
+  private void handleInternalTransition(@NotNull Transition transition, Span parentSpan) throws UnsupportedOperationException {
     // Increment internal transitions counter
     meter.counterBuilder(METRIC_INTERNAL_TRANSITIONS).build().add(1);
 
@@ -558,9 +600,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param transition TransitionClass instance.
    * @param parentSpan Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleExternalTransition(@NotNull Transition transition, Span parentSpan) throws CirrinaException {
+  private void handleExternalTransition(@NotNull Transition transition, Span parentSpan) throws UnsupportedOperationException {
     // Increment external transitions counter
     meter.counterBuilder(METRIC_EXTERNAL_TRANSITIONS).build().add(1);
 
@@ -576,7 +618,8 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     try (final var scope = span.makeCurrent()) {
       // Acquire the target state instance
       final var targetStateInstance = findStateInstanceByName(transition.getTargetStateName())
-          .orElseThrow(() -> CirrinaException.from("Target state cannot be found in state machine"));
+          .orElseThrow(() -> new IllegalArgumentException(
+              "Target state '%s' cannot be found in state machine".formatted(transition.getTargetStateName())));
 
       // Exit the current state
       doExit(activeState, span);
@@ -587,9 +630,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       // Enter the target state, if there is a follow-up transition, handle it recursively
       final var nextTransitionInstance = doEnter(targetStateInstance, span);
 
-      if (nextTransitionInstance.isPresent()) {
-        handleTransition(nextTransitionInstance.get(), span);
-      }
+      nextTransitionInstance.ifPresent(value -> handleTransition(value, span));
     } finally {
       span.end();
     }
@@ -600,9 +641,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    *
    * @param transition TransitionClass instance.
    * @param parentSpan Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleTransition(@NotNull Transition transition, Span parentSpan) throws CirrinaException {
+  private void handleTransition(@NotNull Transition transition, Span parentSpan) throws UnsupportedOperationException {
     if (transition.isInternalTransition()) {
       handleInternalTransition(transition, parentSpan);
     } else {
@@ -616,9 +657,10 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * This function blocks until a new event is received.
    *
    * @param parentSpan Parent span.
-   * @throws CirrinaException In case of error.
+   * @throws InterruptedException          If interrupted while waiting for an event.
+   * @throws UnsupportedOperationException If an on transition could not be selected.
    */
-  private Optional<Transition> handleEvent(Span parentSpan) throws InterruptedException, CirrinaException {
+  private Optional<Transition> handleEvent(Span parentSpan) throws InterruptedException, UnsupportedOperationException {
     // Wait for the next event, this call is blocking
     final var event = eventQueue.take();
 
@@ -635,23 +677,27 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     meter.counterBuilder(METRIC_RECEIVED_EVENTS).build().add(1);
 
     // Find a matching transition
-    final var onTransition = trySelectOnTransition(event);
+    try {
+      final var onTransition = trySelectOnTransition(event);
 
-    // Set the event data
-    onTransition.ifPresent(transition -> {
-      // Increment handled events counter
-      meter.counterBuilder(METRIC_HANDLED_EVENTS).build().add(1);
+      // Set the event data
+      onTransition.ifPresent(transition -> {
+        // Increment handled events counter
+        meter.counterBuilder(METRIC_HANDLED_EVENTS).build().add(1);
 
-      try {
-        for (var contextVariable : event.getData()) {
-          getExtent().setOrCreate(EVENT_DATA_VARIABLE_PREFIX + contextVariable.name(), contextVariable.value());
+        try {
+          for (var contextVariable : event.getData()) {
+            getExtent().setOrCreate(EVENT_DATA_VARIABLE_PREFIX + contextVariable.name(), contextVariable.value());
+          }
+        } catch (IOException e) {
+          logger.error("Failed to set event data", e);
         }
-      } catch (CirrinaException e) {
-        logger.error("Failed to set event data: {}", e.getMessage());
-      }
-    });
+      });
 
-    return onTransition;
+      return onTransition;
+    } catch (IllegalStateException e) {
+      throw new UnsupportedOperationException("Could not select on transition", e);
+    }
   }
 
   /**
@@ -687,12 +733,12 @@ public final class StateMachine implements Runnable, EventListener, Scope {
           nextTransition = Optional.empty();
         }
       }
-    } catch (CirrinaException e) {
-      logger.error("{} received a fatal error: {}", stateMachineId.toString(), e.getMessage());
     } catch (InterruptedException e) {
       logger.info("{} is interrupted", stateMachineId.toString());
 
       Thread.currentThread().interrupt();
+    } catch (Exception e) {
+      logger.error("%s received a fatal error".formatted(stateMachineId.toString()), e);
     } finally {
       span.end();
     }

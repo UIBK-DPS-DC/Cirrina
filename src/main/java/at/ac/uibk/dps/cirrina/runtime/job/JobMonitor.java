@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.runtime.job;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,12 +20,12 @@ public class JobMonitor implements CuratorCacheListener {
   /**
    * Job monitor logger.
    */
-  private static final Logger logger = LogManager.getLogger();
+  private static final String JOBS_NODE = "/jobs";
 
   /**
    * Job monitor logger.
    */
-  private static final String JOBS_NODE = "/jobs";
+  private static final Logger logger = LogManager.getLogger();
 
   /**
    * Job node pattern.
@@ -60,9 +59,8 @@ public class JobMonitor implements CuratorCacheListener {
    *
    * @param curatorFramework Curator framework.
    * @param jobListener      Job listener.
-   * @throws CirrinaException In case of error.
    */
-  public JobMonitor(CuratorFramework curatorFramework, JobListener jobListener) throws CirrinaException {
+  public JobMonitor(CuratorFramework curatorFramework, JobListener jobListener) {
     // Construct the ZooKeeper instance
     this.curatorFramework = curatorFramework;
 
@@ -113,8 +111,8 @@ public class JobMonitor implements CuratorCacheListener {
 
         // Call listener
         jobListener.newJob(job);
-      } catch (CirrinaException e) {
-        logger.error("Failed to register job: {}", e.getMessage());
+      } catch (UnsupportedOperationException e) {
+        logger.error("Failed to register job", e);
       }
     });
   }

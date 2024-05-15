@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.io.description;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -66,13 +65,13 @@ public class DescriptionParser<T> {
    *
    * @param json JSON description.
    * @return Collaborative state machine model.
-   * @throws CirrinaException In case an error occurs during parsing or validation.
+   * @throws IllegalArgumentException If an error occurs during parsing or validation.
    */
-  public T parse(String json) throws CirrinaException {
+  public T parse(String json) throws IllegalArgumentException {
     try {
       return mapper.readValue(json, valueType);
     } catch (JsonProcessingException | IllegalArgumentException e) {
-      throw CirrinaException.from("Parsing error: %s", e.getMessage());
+      throw new IllegalArgumentException("Parsing error", e);
     }
   }
 

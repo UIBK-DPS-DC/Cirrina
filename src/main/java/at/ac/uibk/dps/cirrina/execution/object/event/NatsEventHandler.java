@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
@@ -18,14 +17,14 @@ public class NatsEventHandler extends EventHandler {
   private final Connection connection;
   private final Dispatcher dispatcher;
 
-  public NatsEventHandler(String natsUrl) throws CirrinaException {
+  public NatsEventHandler(String natsUrl) throws IOException {
     // Attempt to connect to the NATS server
     try {
       connection = Nats.connect(natsUrl);
     } catch (InterruptedException | IOException e) {
       Thread.currentThread().interrupt();
 
-      throw CirrinaException.from("Could not connect to the NATS server: %s", e.getMessage());
+      throw new IOException("Could not connect to the NATS server", e);
     }
 
     // Create a message dispatcher (asynchronous)
@@ -38,13 +37,13 @@ public class NatsEventHandler extends EventHandler {
       var event = Event.fromBytes(message.getData());
 
       propagateEvent(event);
-    } catch (CirrinaException e) {
+    } catch (UnsupportedOperationException e) {
       logger.debug("A message could not be read as an event: {}", e.getMessage());
     }
   }
 
   @Override
-  public void sendEvent(Event event, String source) throws CirrinaException {
+  public void sendEvent(Event event, String source) throws IOException {
     try {
       var data = event.toBytes();
 
@@ -63,7 +62,7 @@ public class NatsEventHandler extends EventHandler {
 
       connection.publish(subject, data);
     } catch (IllegalArgumentException | IllegalStateException e) {
-      throw CirrinaException.from("Could not send event through NATS: %s", e.getMessage());
+      throw new IOException("Could not send event through NATS", e);
     }
   }
 
@@ -88,11 +87,11 @@ public class NatsEventHandler extends EventHandler {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
     try {
       connection.close();
     } catch (InterruptedException e) {
-      throw CirrinaException.from("Failed to close NATS persistent context: %s", e.getMessage());
+      throw new IOException("Failed to close NATS persistent context", e);
     }
   }
 }

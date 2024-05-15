@@ -5,7 +5,6 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_ID;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_RAISE_COMMAND_EXECUTE;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
@@ -25,43 +24,43 @@ public final class ActionRaiseCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws CirrinaException {
-    final var event = raiseAction.getEvent();
+  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException {
+    try {
+      final var event = raiseAction.getEvent();
 
-    // Create span
-    final var span = tracer.spanBuilder(SPAN_ACTION_RAISE_COMMAND_EXECUTE)
-        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
-        .startSpan();
+      // Create span
+      final var span = tracer.spanBuilder(SPAN_ACTION_RAISE_COMMAND_EXECUTE)
+          .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
+          .startSpan();
 
-    // Span attributes
-    span.setAttribute(ATTR_EVENT_ID, event.getId());
-    span.setAttribute(ATTR_EVENT_NAME, event.getName());
-    span.setAttribute(ATTR_EVENT_CHANNEL, event.getChannel().toString());
+      // Span attributes
+      span.setAttribute(ATTR_EVENT_ID, event.getId());
+      span.setAttribute(ATTR_EVENT_NAME, event.getName());
+      span.setAttribute(ATTR_EVENT_CHANNEL, event.getChannel().toString());
 
-    try (final var scope = span.makeCurrent()) {
-      final var commands = new ArrayList<ActionCommand>();
+      try (final var scope = span.makeCurrent()) {
+        final var commands = new ArrayList<ActionCommand>();
 
-      final var extent = executionContext.scope().getExtent();
-      final var eventHandler = executionContext.eventHandler();
-      final var eventListener = executionContext.eventListener();
+        final var extent = executionContext.scope().getExtent();
+        final var eventHandler = executionContext.eventHandler();
+        final var eventListener = executionContext.eventListener();
 
-      final var evaluatedEvent = Event.ensureHasEvaluatedData(event, extent);
+        final var evaluatedEvent = Event.ensureHasEvaluatedData(event, extent);
 
-      // Dispatch the event
-      if (evaluatedEvent.getChannel() == EventChannel.INTERNAL) {
-        eventListener.onReceiveEvent(evaluatedEvent);
-      } else {
-        try {
+        // Dispatch the event
+        if (evaluatedEvent.getChannel() == EventChannel.INTERNAL) {
+          eventListener.onReceiveEvent(evaluatedEvent);
+        } else {
           // Send the event through the event handler
           eventHandler.sendEvent(evaluatedEvent);
-        } catch (CirrinaException e) {
-          throw CirrinaException.from("Could not execute raise action actionCommand: %s", e.getMessage());
         }
-      }
 
-      return commands;
-    } finally {
-      span.end();
+        return commands;
+      } finally {
+        span.end();
+      }
+    } catch (Exception e) {
+      throw new UnsupportedOperationException("Could not execute raise action", e);
     }
   }
 }

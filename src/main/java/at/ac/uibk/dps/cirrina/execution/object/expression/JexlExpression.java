@@ -1,8 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.expression;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,14 +25,15 @@ public class JexlExpression extends Expression {
    * Initializes the JEXL expression.
    *
    * @param source Source string.
+   * @throws UnsupportedOperationException If the expression could not be parsed.
    */
-  JexlExpression(String source) throws IllegalArgumentException {
+  JexlExpression(String source) throws UnsupportedOperationException {
     super(source);
 
     try {
       this.jexlScript = JEXL_ENGINE.createScript(source);
     } catch (Exception e) {
-      throw new IllegalArgumentException(VerificationException.from(Message.EXPRESSION_COULD_NOT_BE_PARSED, source, e.getMessage()));
+      throw new UnsupportedOperationException("The JEXL expression '%s' could not be parsed".formatted(source), e);
     }
   }
 
@@ -65,14 +63,15 @@ public class JexlExpression extends Expression {
    *
    * @param extent Extent for resolving variables.
    * @return Result of the expression.
-   * @throws CirrinaException In case of an error while executing the expression.
+   * @throws UnsupportedOperationException If the expression could not be executed.
    */
   @Override
-  public Object execute(Extent extent) throws CirrinaException {
+  public Object execute(Extent extent) throws UnsupportedOperationException {
     try {
       return jexlScript.execute(new ExtentJexlContext(extent));
     } catch (Exception e) {
-      throw CirrinaException.from("Could not execute the expression '%s': %s", jexlScript.getSourceText(), e.getMessage());
+      throw new UnsupportedOperationException(
+          "The JEXL expression '%s' could to be parsed".formatted(jexlScript.getSourceText()), e);
     }
   }
 

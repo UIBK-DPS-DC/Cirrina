@@ -38,7 +38,7 @@ public final class GuardDescription extends Construct implements GuardOrGuardRef
    * @see StateMachineDescription
    * @see GuardReferenceDescription
    */
-  public Optional<String> name;
+  public Optional<String> name = Optional.empty();
 
   /**
    * An expression.

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
@@ -77,21 +76,21 @@ public class ExpressionTest {
       context.create("varOneInt", 1);
 
       // Throws while parsing
-      assertThrows(IllegalArgumentException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("1 + ")).build().execute(extent));
-      assertThrows(IllegalArgumentException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("varOneInt = 2")).build().execute(extent));
 
       // Throws at runtime
-      assertThrows(CirrinaException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("varInvalid")).build().execute(extent));
-      assertThrows(CirrinaException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("!varInvalid")).build().execute(extent));
-      assertThrows(CirrinaException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("varInvalid.varInvalidSub")).build().execute(extent));
-      assertThrows(CirrinaException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("varInvalid + 1")).build().execute(extent));
-      assertThrows(CirrinaException.class,
+      assertThrows(UnsupportedOperationException.class,
           () -> ExpressionBuilder.from(new ExpressionDescription("let varTemp = varInvalid; varTemp")).build().execute(extent));
     }
   }

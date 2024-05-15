@@ -1,13 +1,9 @@
 package at.ac.uibk.dps.cirrina.classes.transition;
 
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.ACTION_NAME_DOES_NOT_EXIST;
-import static at.ac.uibk.dps.cirrina.core.exception.VerificationException.Message.GUARD_NAME_DOES_NOT_EXIST;
-
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.classes.helper.GuardResolver;
 import at.ac.uibk.dps.cirrina.classes.statemachine.ChildStateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.core.exception.VerificationException;
 import at.ac.uibk.dps.cirrina.csml.description.helper.ActionOrActionReferenceDescription;
 import at.ac.uibk.dps.cirrina.csml.description.helper.GuardOrGuardReferenceDescription;
 import at.ac.uibk.dps.cirrina.csml.description.transition.OnTransitionDescription;
@@ -99,7 +95,8 @@ public abstract class TransitionClassBuilder {
      * Builds the transition class.
      *
      * @return Transition class.
-     * @throws IllegalArgumentException In case of error.
+     * @throws IllegalArgumentException If a guard name does not exist.
+     * @throws IllegalArgumentException If an action name does not exist.
      */
     @Override
     public TransitionClass build() throws IllegalArgumentException {
@@ -110,7 +107,7 @@ public abstract class TransitionClassBuilder {
                 var resolvedGuard = guardResolver.resolve(guardOrReferenceClass);
                 if (resolvedGuard.isEmpty()) {
                   throw new IllegalArgumentException(
-                      VerificationException.from(GUARD_NAME_DOES_NOT_EXIST));
+                      "A guard with the name '%s' does not exist".formatted(guardOrReferenceClass.toString()));
                 }
                 return resolvedGuard.get();
               })
@@ -123,7 +120,7 @@ public abstract class TransitionClassBuilder {
                 var resolvedAction = actionResolver.tryResolve(actionOrActionClass);
                 if (resolvedAction.isEmpty()) {
                   throw new IllegalArgumentException(
-                      VerificationException.from(ACTION_NAME_DOES_NOT_EXIST));
+                      "An action with the name '%s' does not exist".formatted(actionOrActionClass.toString()));
                 }
                 return resolvedAction.get();
               })

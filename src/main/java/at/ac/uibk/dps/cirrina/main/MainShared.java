@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.main;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
 import at.ac.uibk.dps.cirrina.execution.object.event.NatsEventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachineId;
@@ -42,10 +41,8 @@ public final class MainShared extends Main {
 
   /**
    * Run the runtime.
-   *
-   * @throws CirrinaException In case of an error during execution or initialization.
    */
-  public void run() throws CirrinaException {
+  public void run() {
     // Connect to event system
     try (final var eventHandler = newEventHandler()) {
       eventHandler.subscribe(NatsEventHandler.GLOBAL_SOURCE, "*");
@@ -77,9 +74,10 @@ public final class MainShared extends Main {
       }
     } catch (InterruptedException e) {
       logger.info("Interrupted.");
-      throw CirrinaException.from(e.getMessage());
+
+      Thread.currentThread().interrupt();
     } catch (Exception e) {
-      throw CirrinaException.from("Failed to run shared runtime: %s", e);
+      logger.error("Could not initialize the shared runtime", e);
     }
   }
 

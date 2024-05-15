@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.context;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 
 /**
@@ -43,16 +42,23 @@ public record ContextVariable(
     this(name, value, false);
   }
 
-  public ContextVariable evaluate(Extent extent) throws CirrinaException {
+  /**
+   * Evaluate this variable.
+   *
+   * @param extent Extent.
+   * @return Evaluated variable.
+   * @throws UnsupportedOperationException If the variable could not be evaluated (e.g. its expression could not be executed).
+   */
+  public ContextVariable evaluate(Extent extent) throws UnsupportedOperationException {
     if (isLazy) {
-      var expression = value;
+      final var expression = value;
 
       assert expression instanceof Expression;
 
       try {
         return new ContextVariable(name, ((Expression) expression).execute(extent));
-      } catch (CirrinaException e) {
-        throw CirrinaException.from("Could not evaluate variable: %s", e.getMessage());
+      } catch (UnsupportedOperationException e) {
+        throw new UnsupportedOperationException("Could not evaluate variable '%s'".formatted(name), e);
       }
     } else {
       return this;

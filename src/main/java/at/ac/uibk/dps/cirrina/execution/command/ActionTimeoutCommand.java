@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_TIMEOUT_COMMAND_EXECUTE;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -19,7 +18,7 @@ public final class ActionTimeoutCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws CirrinaException {
+  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException {
     // Create span
     final var span = tracer.spanBuilder(SPAN_ACTION_TIMEOUT_COMMAND_EXECUTE)
         .setParent(io.opentelemetry.context.Context.current().with(parentSpan))

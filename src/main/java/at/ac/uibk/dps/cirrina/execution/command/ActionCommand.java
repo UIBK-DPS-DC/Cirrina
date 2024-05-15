@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.List;
@@ -17,5 +16,5 @@ public abstract class ActionCommand {
     this.executionContext = executionContext;
   }
 
-  public abstract List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws CirrinaException;
+  public abstract List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException;
 }

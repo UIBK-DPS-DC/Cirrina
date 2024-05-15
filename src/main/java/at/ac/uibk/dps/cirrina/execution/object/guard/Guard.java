@@ -1,8 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.object.guard;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
+import jakarta.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -10,7 +10,14 @@ import java.util.Optional;
  */
 public class Guard {
 
-  private final Optional<String> name;
+  /**
+   * Guard name, only applicable for a named guard. An in-line guard can have null as its name.
+   */
+  private final @Nullable String name;
+
+  /**
+   * Guard expression.
+   */
   private final Expression expression;
 
   /**
@@ -21,7 +28,7 @@ public class Guard {
    * @param name       Name of the guard.
    * @param expression Expression of the guard.
    */
-  Guard(Optional<String> name, Expression expression) {
+  Guard(@Nullable String name, Expression expression) {
     this.name = name;
     this.expression = expression;
   }
@@ -31,12 +38,14 @@ public class Guard {
    *
    * @param extent Extent describing variables in scope.
    * @return Boolean result.
-   * @throws CirrinaException If the expression could not be evaluated, or the expression does not produce a boolean value.
+   * @throws UnsupportedOperationException If the guard expression could not be executed.
+   * @throws IllegalArgumentException      If the expression could not be evaluated, or the expression does not produce a boolean value.
    */
-  public boolean evaluate(Extent extent) throws CirrinaException {
+  public boolean evaluate(Extent extent) throws IllegalArgumentException, UnsupportedOperationException {
     var result = expression.execute(extent);
+
     if (!(result instanceof Boolean)) {
-      throw CirrinaException.from("Guard expression '%s' does not produce a boolean value", expression);
+      throw new IllegalArgumentException("Guard expression '%s' does not produce a boolean value".formatted(expression));
     }
 
     return (Boolean) result;
@@ -48,7 +57,7 @@ public class Guard {
    * @return Guard name.
    */
   public Optional<String> getName() {
-    return name;
+    return Optional.ofNullable(name);
   }
 
   /**

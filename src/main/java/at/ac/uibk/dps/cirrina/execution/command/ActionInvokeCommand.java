@@ -6,7 +6,6 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_NAM
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_PERFORMANCE;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_INVOKE_COMMAND_EXECUTE;
 
-import at.ac.uibk.dps.cirrina.core.exception.CirrinaException;
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import io.opentelemetry.api.trace.Span;
@@ -43,64 +42,70 @@ public final class ActionInvokeCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws CirrinaException {
-    final var serviceType = invokeAction.getServiceType();
-    final var isLocal = invokeAction.isLocal();
+  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException {
+    try {
+      final var serviceType = invokeAction.getServiceType();
+      final var isLocal = invokeAction.isLocal();
 
-    final var serviceImplementationSelector = executionContext.serviceImplementationSelector();
+      final var serviceImplementationSelector = executionContext.serviceImplementationSelector();
 
-    // Select a service implementation
-    final var serviceImplementation = serviceImplementationSelector.select(serviceType, isLocal)
-        .orElseThrow(() -> CirrinaException.from("Could not find a service implementation for the service type '%s'", serviceType));
+      // Select a service implementation
+      final var serviceImplementation = serviceImplementationSelector.select(serviceType, isLocal)
+          .orElseThrow(
+              () -> new IllegalArgumentException(
+                  "Could not find a service implementation for the service type '%s'".formatted(serviceType)));
 
-    // Create span
-    final var span = tracer.spanBuilder(SPAN_ACTION_INVOKE_COMMAND_EXECUTE)
-        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
-        .startSpan();
+      // Create span
+      final var span = tracer.spanBuilder(SPAN_ACTION_INVOKE_COMMAND_EXECUTE)
+          .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
+          .startSpan();
 
-    // Span attributes
-    span.setAttribute(ATTR_SERVICE_NAME, serviceImplementation.getName());
-    span.setAttribute(ATTR_SERVICE_COST, serviceImplementation.getCost());
-    span.setAttribute(ATTR_SERVICE_PERFORMANCE, serviceImplementation.getPerformance());
-    span.setAttribute(ATTR_SERVICE_IS_LOCAL, serviceImplementation.isLocal());
+      // Span attributes
+      span.setAttribute(ATTR_SERVICE_NAME, serviceImplementation.getName());
+      span.setAttribute(ATTR_SERVICE_COST, serviceImplementation.getCost());
+      span.setAttribute(ATTR_SERVICE_PERFORMANCE, serviceImplementation.getPerformance());
+      span.setAttribute(ATTR_SERVICE_IS_LOCAL, serviceImplementation.isLocal());
 
-    try (final var scope = span.makeCurrent()) {
-      final var commands = new ArrayList<ActionCommand>();
+      try (final var scope = span.makeCurrent()) {
+        final var commands = new ArrayList<ActionCommand>();
 
-      final var extent = executionContext.scope().getExtent();
-      final var eventListener = executionContext.eventListener();
+        final var extent = executionContext.scope().getExtent();
+        final var eventListener = executionContext.eventListener();
 
-      // Evaluate all input
-      var input = new ArrayList<ContextVariable>();
+        // Evaluate all input
+        var input = new ArrayList<ContextVariable>();
 
-      for (var variable : invokeAction.getInput()) {
-        input.add(variable.evaluate(extent));
+        for (var variable : invokeAction.getInput()) {
+          input.add(variable.evaluate(extent));
+        }
+
+        // Invoke (asynchronously)
+        serviceImplementation.invoke(input)
+            .exceptionally(e -> {
+              span.addEvent("responseFailure");
+
+              logger.error("Service invocation failed: {}", e.getMessage());
+              return null;
+            }).thenAccept(output -> {
+              span.addEvent("responseSuccess");
+
+              // Create new events with output data as event data
+              final var doneEvents = invokeAction.getDone().stream()
+                  .map(event -> {
+                    return event.withData(output);
+                  })
+                  .toList();
+
+              // Raise all events (internally)
+              doneEvents.forEach(eventListener::onReceiveEvent);
+            });
+
+        return commands;
+      } finally {
+        span.end();
       }
-
-      // Invoke (asynchronously)
-      serviceImplementation.invoke(input)
-          .exceptionally(e -> {
-            span.addEvent("responseFailure");
-
-            logger.error("Service invocation failed: {}", e.getMessage());
-            return null;
-          }).thenAccept(output -> {
-            span.addEvent("responseSuccess");
-
-            // Create new events with output data as event data
-            final var doneEvents = invokeAction.getDone().stream()
-                .map(event -> {
-                  return event.withData(output);
-                })
-                .toList();
-
-            // Raise all events (internally)
-            doneEvents.forEach(eventListener::onReceiveEvent);
-          });
-
-      return commands;
-    } finally {
-      span.end();
+    } catch (Exception e) {
+      throw new UnsupportedOperationException("Could not execute invoke action", e);
     }
   }
 }

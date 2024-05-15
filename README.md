@@ -1,8 +1,12 @@
 # Cirrina
 
-<img src="cirrina.svg" alt="Logo" width="200"/>
+<div align="center">
+    <img src="cirrina.svg" alt="Logo" width="400"/>
+</div>
 
-Cirrina, a distributed Collaborative State Machines (CSM) runtime for the Cloud-Edge-IoT continuum.
+Cirrina, a distributed Collaborative State Machines (CSM) runtime for the Cloud-Edge-IoT continuum. Collaborative state machines is a state
+machine-based programming model for the Cloud-Edge-IoT continuum inspired by David
+Harel's [statecharts](https://www.sciencedirect.com/science/article/pii/0167642387900359).
 
 For the Collaborative State Machines Language specification,
 visit [CSML Specifications](https://git.uibk.ac.at/informatik/dps/dps-dc-software/cirrina/-/wikis/csml-specifications).
@@ -17,3 +21,8 @@ Universität Innsbruck](https://dps.uibk.ac.at/).
 ## License
 
 GPLv3 licensed, see [LICENSE](LICENSE).
+
+## Citing
+
+```
+```
