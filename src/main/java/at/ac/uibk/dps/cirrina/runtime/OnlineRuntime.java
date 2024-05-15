@@ -11,6 +11,7 @@ import at.ac.uibk.dps.cirrina.runtime.job.JobListener;
 import at.ac.uibk.dps.cirrina.runtime.job.JobMonitor;
 import com.google.common.collect.ArrayListMultimap;
 import io.opentelemetry.api.OpenTelemetry;
+import java.io.IOException;
 import org.apache.curator.framework.CuratorFramework;
 
 /**
@@ -86,7 +87,16 @@ public class OnlineRuntime extends Runtime implements JobListener {
             .orElseThrow(() -> new UnsupportedOperationException(
                 "A state machine with the name '%s' does not exist in the collaborative state machine".formatted(stateMachineName)));
 
-        // TODO: Set up variables, etc.
+        // Create persistent variables
+        final var persistentContextVariables = collaborativeStateMachine.getPersistentContextVariables();
+
+        persistentContextVariables.forEach(variable -> {
+          try {
+            persistentContext.create(variable.name(), variable.value());
+          } catch (IOException ignored) {
+            // Variable likely already exists, ignore. We probably ignore too many errors here, should there be a legitimate error
+          }
+        });
 
         // Create a new instance
         newInstance(stateMachine, serviceImplementationSelector, null);

@@ -91,6 +91,8 @@ public abstract class Main {
     } catch (ParameterException e) {
       logger.error(e.getMessage());
     }
+
+    logger.error("Runtime out");
   }
 
   private static void setupLogging() {

@@ -4,9 +4,11 @@ import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.execution.object.context.ContextBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public final class CollaborativeStateMachineClassBuilder {
    * @param collaborativeStateMachineClass The collaborative state machine class being built.
    */
   private void buildVertices(CollaborativeStateMachineClass collaborativeStateMachineClass) {
-    var knownStateMachines = new ArrayList<StateMachineClass>();
+    final var knownStateMachines = new ArrayList<StateMachineClass>();
 
     collaborativeStateMachineDescription.stateMachines.stream()
         .map(stateMachineClass -> StateMachineClassBuilder.from(stateMachineClass,
@@ -97,15 +99,15 @@ public final class CollaborativeStateMachineClassBuilder {
       CollaborativeStateMachineClass collaborativeStateMachineClass,
       Table<StateMachineClass, Event, List<StateMachineClass>> events
   ) {
-    for (var entry : events.cellSet()) {
-      var sourceStateMachineClass = entry.getRowKey();
-      var raisedEvent = entry.getColumnKey();
-      var targetStateMachineClasses = entry.getValue();
+    for (final var entry : events.cellSet()) {
+      final var sourceStateMachineClass = entry.getRowKey();
+      final var raisedEvent = entry.getColumnKey();
+      final var targetStateMachineClasses = entry.getValue();
 
       // Determine if the potential target state machine raises the column's raised event and append the target state
       // machine to the cell if it does
-      for (var targetStateMachine : collaborativeStateMachineClass.vertexSet()) {
-        var handledEvents = targetStateMachine.getInputEvents();
+      for (final var targetStateMachine : collaborativeStateMachineClass.vertexSet()) {
+        final var handledEvents = targetStateMachine.getInputEvents();
 
         // If the raised event is internal, the source- and target state machines need to match, otherwise it can be
         // added to the table. At this point we assume that external events will be bound, we cannot resolve the case
@@ -128,16 +130,18 @@ public final class CollaborativeStateMachineClassBuilder {
    * @param collaborativeStateMachineClass The collaborative state machine class being built.
    * @param events                         Raised events table.
    */
-  private void addEdges(CollaborativeStateMachineClass collaborativeStateMachineClass,
-      Table<StateMachineClass, Event, List<StateMachineClass>> events) {
+  private void addEdges(
+      CollaborativeStateMachineClass collaborativeStateMachineClass,
+      Table<StateMachineClass, Event, List<StateMachineClass>> events
+  ) {
     // Process the events table and add all edges
-    for (var rowEntry : events.rowMap().entrySet()) {
-      var sourceStateMachineClass = rowEntry.getKey();
+    for (final var rowEntry : events.rowMap().entrySet()) {
+      final var sourceStateMachineClass = rowEntry.getKey();
 
       for (var colEntry : rowEntry.getValue().entrySet()) {
-        var raisedEvent = colEntry.getKey();
+        final var raisedEvent = colEntry.getKey();
 
-        for (var targetStateMachineClass : colEntry.getValue()) {
+        for (final var targetStateMachineClass : colEntry.getValue()) {
           collaborativeStateMachineClass.addEdge(sourceStateMachineClass, targetStateMachineClass, raisedEvent);
         }
       }
@@ -151,11 +155,31 @@ public final class CollaborativeStateMachineClassBuilder {
    * @throws IllegalArgumentException If the collaborative state machine could not be built.
    */
   public CollaborativeStateMachineClass build() throws IllegalArgumentException {
-    var collaborativeStateMachine = new CollaborativeStateMachineClass(collaborativeStateMachineDescription.name);
+    // Construct a local context from the persistent context description, such that we can easily acquire the context variables
+    final var persistentContext = collaborativeStateMachineDescription.persistentContext.map(
+            contextDescription -> {
+              try {
+                return ContextBuilder.from(contextDescription)
+                    .inMemoryContext()
+                    .build();
+              } catch (IOException ignored) {
+                throw new IllegalStateException();
+              }
+            })
+        .orElse(null);
 
-    buildVertices(collaborativeStateMachine);
-    buildEdges(collaborativeStateMachine);
+    try {
+      final var collaborativeStateMachine = new CollaborativeStateMachineClass(
+          collaborativeStateMachineDescription.name,
+          persistentContext != null ? persistentContext.getAll() : List.of()
+      );
 
-    return collaborativeStateMachine;
+      buildVertices(collaborativeStateMachine);
+      buildEdges(collaborativeStateMachine);
+
+      return collaborativeStateMachine;
+    } catch (IOException ignored) {
+      throw new IllegalStateException();
+    }
   }
 }

@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.classes.collaborativestatemachine;
 
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
+import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import java.util.List;
 import java.util.Optional;
@@ -20,14 +21,20 @@ public final class CollaborativeStateMachineClass extends DirectedPseudograph<St
   private final String name;
 
   /**
+   * The collection of persistent context variables.
+   */
+  private final List<ContextVariable> persistentContextVariables;
+
+  /**
    * Initializes this collaborative state machine class.
    *
    * @param name Name.
    */
-  CollaborativeStateMachineClass(String name) {
+  CollaborativeStateMachineClass(String name, List<ContextVariable> persistentContextVariables) {
     super(Event.class);
 
     this.name = name;
+    this.persistentContextVariables = persistentContextVariables;
   }
 
   /**
@@ -69,5 +76,14 @@ public final class CollaborativeStateMachineClass extends DirectedPseudograph<St
    */
   public List<StateMachineClass> getStateMachineClasses() {
     return List.copyOf(vertexSet());
+  }
+
+  /**
+   * Returns the collection of persistent context variables.
+   *
+   * @return Persistent context variables.
+   */
+  public List<ContextVariable> getPersistentContextVariables() {
+    return persistentContextVariables;
   }
 }

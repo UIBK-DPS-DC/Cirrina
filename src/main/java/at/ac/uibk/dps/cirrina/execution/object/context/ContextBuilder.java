@@ -2,15 +2,15 @@ package at.ac.uibk.dps.cirrina.execution.object.context;
 
 import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Context builder, builder for various context implementations.
  */
 public class ContextBuilder {
 
-  private final Optional<ContextDescription> contextClass;
+  private final @Nullable ContextDescription contextClass;
 
   private Context context;
 
@@ -18,7 +18,7 @@ public class ContextBuilder {
    * Initializes this context builder object.
    */
   private ContextBuilder() {
-    this.contextClass = Optional.empty();
+    this.contextClass = null;
   }
 
   /**
@@ -27,7 +27,7 @@ public class ContextBuilder {
    * @param contextDescription Context class.
    */
   private ContextBuilder(ContextDescription contextDescription) {
-    this.contextClass = Optional.of(contextDescription);
+    this.contextClass = contextDescription;
   }
 
   /**
@@ -85,9 +85,7 @@ public class ContextBuilder {
     assert context != null;
 
     // Add all variables contained within the context class to the newly created context, only do this if there is a class
-    if (contextClass.isPresent()) {
-      var contextClass = this.contextClass.get();
-
+    if (contextClass != null) {
       for (var contextVariable : contextClass.variables) {
         // Build the value expression
         var expression = ExpressionBuilder.from(contextVariable.value).build();

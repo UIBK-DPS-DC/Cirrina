@@ -25,7 +25,7 @@ public abstract class Context implements AutoCloseable {
    * @throws IOException If the variable could not be created.
    */
   public abstract void create(String name, Object value) throws IOException;
-
+  
   /**
    * Assigns to a context variable.
    *

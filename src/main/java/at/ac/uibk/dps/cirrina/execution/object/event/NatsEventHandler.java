@@ -89,6 +89,8 @@ public class NatsEventHandler extends EventHandler {
   @Override
   public void close() throws IOException {
     try {
+      connection.closeDispatcher(dispatcher);
+
       connection.close();
     } catch (InterruptedException e) {
       throw new IOException("Failed to close NATS persistent context", e);
