@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
+import at.ac.uibk.dps.cirrina.execution.object.exchange.EventExchange;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 public class NatsEventHandler extends EventHandler {
 
   public static final String GLOBAL_SOURCE = "global";
+  public static final String PERIPHERAL_SOURCE = "peripheral";
 
   private static final Logger logger = LogManager.getLogger();
   private final Connection connection;
@@ -34,7 +36,7 @@ public class NatsEventHandler extends EventHandler {
   private void handle(Message message) {
     // Reconstruct the event from the message data, if possible
     try {
-      var event = Event.fromBytes(message.getData());
+      var event = EventExchange.fromBytes(message.getData()).getEvent();
 
       propagateEvent(event);
     } catch (UnsupportedOperationException e) {
@@ -45,7 +47,7 @@ public class NatsEventHandler extends EventHandler {
   @Override
   public void sendEvent(Event event, String source) throws IOException {
     try {
-      var data = event.toBytes();
+      var data = new EventExchange(event).toBytes();
 
       // * is used as a wildcard, for more information, refer to the NATS documentation:
       // https://docs.nats.io/using-nats/developer/receiving/wildcards

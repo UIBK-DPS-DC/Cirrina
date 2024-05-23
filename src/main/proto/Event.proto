@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package exchange;
+
+import "ContextVariable.proto";
+
+option java_multiple_files = false;
+option java_package = "at.ac.uibk.dps.cirrina.execution.object.exchange";
+option java_outer_classname = "EventProtos";
+
+message Event {
+  enum Channel {
+    INTERNAL = 0;
+    EXTERNAL = 1;
+    GLOBAL = 2;
+    PERIPHERAL = 3;
+  }
+
+  string id = 1;
+  string name = 2;
+  Channel channel = 3;
+  repeated ContextVariable data = 4;
+}

@@ -3,8 +3,6 @@ package at.ac.uibk.dps.cirrina.execution.object.event;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
-import io.fury.Fury;
-import io.fury.config.Language;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +16,7 @@ public final class Event {
   /**
    * Event ID, is unique.
    */
-  private final String id = UUID.randomUUID().toString();
+  private final String id;
 
   /**
    * Name of the event, is not unique.
@@ -36,38 +34,32 @@ public final class Event {
   private final List<ContextVariable> data;
 
   /**
-   * Initializes this event. A random ID will be assigned to identify this event.
+   * Initializes this event.
    *
+   * @param id      Event ID.
    * @param name    Event name.
    * @param channel Event channel.
    * @param data    Event data.
    */
-  Event(String name, EventChannel channel, List<ContextVariable> data) {
+  public Event(String id, String name, EventChannel channel, List<ContextVariable> data) {
+    this.id = id;
     this.name = name;
     this.channel = channel;
     this.data = data;
   }
 
   /**
-   * (Re)constructs an event from byte data.
+   * Initializes this event. A random ID will be assigned to identify this event.
    *
-   * @param bytes Byte data.
-   * @return Event.
-   * @throws UnsupportedOperationException In case the event is not in a recognizable format.
+   * @param name    Event name.
+   * @param channel Event channel.
+   * @param data    Event data.
    */
-  public static Event fromBytes(byte[] bytes) throws UnsupportedOperationException {
-    final var fury = Fury.builder()
-        .withLanguage(Language.XLANG)
-        .requireClassRegistration(false)
-        .build();
-
-    final var event = fury.deserialize(bytes);
-
-    if (!(event instanceof Event)) {
-      throw new UnsupportedOperationException("Received an event with an unsupported payload");
-    }
-
-    return (Event) event;
+  public Event(String name, EventChannel channel, List<ContextVariable> data) {
+    this.id = UUID.randomUUID().toString();
+    this.name = name;
+    this.channel = channel;
+    this.data = data;
   }
 
   /**
@@ -95,6 +87,26 @@ public final class Event {
 
   public Event withData(List<ContextVariable> data) {
     return new Event(name, channel, data);
+  }
+
+  /**
+   * Returns a string representation.
+   *
+   * @return String representation.
+   */
+  @Override
+  public String toString() {
+    return name;
+  }
+
+  /**
+   * Returns a hash code representation.
+   *
+   * @return Hash code representation.
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, name, channel, data);
   }
 
   /**
@@ -131,46 +143,5 @@ public final class Event {
    */
   public List<ContextVariable> getData() {
     return data;
-  }
-
-  /**
-   * Returns a string representation.
-   *
-   * @return String representation.
-   */
-  @Override
-  public String toString() {
-    return name;
-  }
-
-  /**
-   * Returns a hash code representation.
-   *
-   * @return Hash code representation.
-   */
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, channel, data);
-  }
-
-  /**
-   * Converts this event to byte data.
-   * <p>
-   * All data variables of this event must be evaluated.
-   *
-   * @return Byte data.
-   * @throws IllegalStateException If the event has unevaluated event data.
-   */
-  public byte[] toBytes() throws IllegalStateException {
-    if (data.stream().anyMatch(ContextVariable::isLazy)) {
-      throw new IllegalStateException("Event '%s' has unevaluated event data".formatted(name));
-    }
-
-    Fury fury = Fury.builder()
-        .withLanguage(Language.XLANG)
-        .requireClassRegistration(false)
-        .build();
-
-    return fury.serialize(this);
   }
 }

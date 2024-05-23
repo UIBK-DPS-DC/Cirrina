@@ -39,6 +39,7 @@ public final class MainShared extends Main {
     // Connect to event system
     try (final var eventHandler = newEventHandler()) {
       eventHandler.subscribe(NatsEventHandler.GLOBAL_SOURCE, "*");
+      eventHandler.subscribe(NatsEventHandler.PERIPHERAL_SOURCE, "*");
 
       // Connect to persistent context system
       try (final var persistentContext = newPersistentContext()) {

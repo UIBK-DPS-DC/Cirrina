@@ -2,28 +2,26 @@ package at.ac.uibk.dps.cirrina.execution.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.HttpServiceImplementation.Parameters;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import io.fury.Fury;
-import io.fury.config.Language;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,28 +38,22 @@ public class HttpServiceImplementationTest {
       public void handle(HttpExchange exchange) throws IOException {
         final var payload = exchange.getRequestBody().readAllBytes();
 
-        final var fury = Fury.builder()
-            .withLanguage(Language.XLANG)
-            .requireClassRegistration(false)
-            .build();
+        final var in = ContextVariableProtos.ContextVariables.parseFrom(payload)
+            .getDataList().stream()
+            .map(ContextVariableExchange::fromProto)
+            .toList();
 
-        // Deserialize the payload
-        final var in = fury.deserialize(payload);
-
-        assertInstanceOf(Map.class, in);
-
-        // Check variables
-        assertTrue(((Map<?, ?>) in).containsKey("varOne"));
-        assertTrue(((Map<?, ?>) in).containsKey("varTwo"));
-
-        // Require integers
-        assertInstanceOf(Integer.class, ((Map<?, ?>) in).get("varOne"));
-        assertInstanceOf(Integer.class, ((Map<?, ?>) in).get("varTwo"));
+        final var varOne = in.stream().filter(e -> e.name().equals("varOne")).findFirst();
+        final var varTwo = in.stream().filter(e -> e.name().equals("varTwo")).findFirst();
 
         // Create output
-        final var out = fury.serialize(Map.of(
-            "result",
-            (int) ((Map<?, ?>) in).get("varOne") + (int) ((Map<?, ?>) in).get("varTwo")));
+        final var out = ContextVariableProtos.ContextVariables.newBuilder()
+            .addAllData(Stream.of(new ContextVariable("result", (int) varOne.get().value() + (int) varTwo.get().value()))
+                .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
+                .toList()
+            )
+            .build()
+            .toByteArray();
 
         // Response status and length
         exchange.sendResponseHeaders(200, out.length);
@@ -102,13 +94,7 @@ public class HttpServiceImplementationTest {
     httpServer.createContext("/broken-response2", new HttpHandler() {
       @Override
       public void handle(HttpExchange exchange) throws IOException {
-        final var fury = Fury.builder()
-            .withLanguage(Language.XLANG)
-            .requireClassRegistration(false)
-            .build();
-
-        // Create output
-        final var out = fury.serialize(Map.of(1, 2));
+        final byte[] out = null;
 
         // Response status and length
         exchange.sendResponseHeaders(200, out.length);

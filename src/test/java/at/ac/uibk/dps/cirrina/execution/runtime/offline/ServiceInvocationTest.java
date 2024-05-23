@@ -8,9 +8,12 @@ import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeSta
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
+import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServicesImplementationBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
@@ -23,11 +26,9 @@ import at.ac.uibk.dps.cirrina.runtime.OfflineRuntime;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import io.fury.Fury;
-import io.fury.config.Language;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,26 +48,21 @@ public class ServiceInvocationTest {
       public void handle(HttpExchange exchange) throws IOException {
         final var payload = exchange.getRequestBody().readAllBytes();
 
-        final var fury = Fury.builder()
-            .withLanguage(Language.XLANG)
-            .requireClassRegistration(false)
-            .build();
+        final var in = ContextVariableProtos.ContextVariables.parseFrom(payload)
+            .getDataList().stream()
+            .map(ContextVariableExchange::fromProto)
+            .toList();
 
-        // Deserialize the payload
-        final var in = fury.deserialize(payload);
-
-        assertInstanceOf(Map.class, in);
-
-        // Check variables
-        assertTrue(((Map<?, ?>) in).containsKey("v"));
-
-        // Require integers
-        assertInstanceOf(Integer.class, ((Map<?, ?>) in).get("v"));
+        final var v = in.stream().filter(e -> e.name().equals("v")).findFirst();
 
         // Create output
-        final var out = fury.serialize(Map.of(
-            "v",
-            (int) ((Map<?, ?>) in).get("v") + 1));
+        final var out = ContextVariableProtos.ContextVariables.newBuilder()
+            .addAllData(Stream.of(new ContextVariable("v", (int) v.get().value() + 1))
+                .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
+                .toList()
+            )
+            .build()
+            .toByteArray();
 
         // Response stateMachineInstanceStatus and length
         exchange.sendResponseHeaders(200, out.length);

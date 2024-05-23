@@ -28,7 +28,7 @@ public record ContextVariable(
    * @param name  Name of the variable.
    * @param value Value expression of the variable.
    */
-  ContextVariable(String name, Expression value) {
+  public ContextVariable(String name, Expression value) {
     this(name, value, true);
   }
 
@@ -38,7 +38,7 @@ public record ContextVariable(
    * @param name  Name of the variable.
    * @param value Value of the variable.
    */
-  ContextVariable(String name, Object value) {
+  public ContextVariable(String name, Object value) {
     this(name, value, false);
   }
 

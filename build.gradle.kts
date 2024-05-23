@@ -3,6 +3,8 @@ plugins {
 
     jacoco
     id("net.razvan.jacoco-to-cobertura") version "1.2.0"
+
+    id("com.google.protobuf") version "0.9.4"
 }
 
 group = "ac.at.uibk.dps.cirrina"
@@ -33,6 +35,8 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
+    implementation("com.google.protobuf:protobuf-java:3.25.3")
+
     implementation("io.nats:jnats:2.17.3")
 
     implementation(platform("io.opentelemetry:opentelemetry-bom:1.37.0"));
@@ -51,8 +55,6 @@ dependencies {
     implementation("org.apache.curator:curator-recipes:5.6.0")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
-
-    implementation("org.furyio:fury-core:0.4.1")
 
     implementation("org.glassfish.expressly:expressly:5.0.0")
 

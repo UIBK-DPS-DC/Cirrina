@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.context;
 
-import io.fury.Fury;
-import io.fury.config.Language;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ValueExchange;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.KeyValue;
@@ -83,7 +82,7 @@ public final class NatsContext extends Context implements AutoCloseable {
       var entry = keyValue.get(name);
 
       return fromBytes(entry.getValue());
-    } catch (IOException | JetStreamApiException e) {
+    } catch (IOException | JetStreamApiException | UnsupportedOperationException e) {
       throw new IOException("Failed to retrieve the variable '%s'".formatted(name), e);
     }
   }
@@ -108,7 +107,7 @@ public final class NatsContext extends Context implements AutoCloseable {
       keyValue.create(name, toBytes(value));
 
       knownKeys.add(name);
-    } catch (IOException | JetStreamApiException e) {
+    } catch (IOException | JetStreamApiException | UnsupportedOperationException e) {
       throw new IOException("Failed to create variable '%s'".formatted(name), e);
     }
   }
@@ -186,14 +185,12 @@ public final class NatsContext extends Context implements AutoCloseable {
     return ret;
   }
 
-  private byte[] toBytes(Object value) {
-    Fury fury = Fury.builder().withLanguage(Language.XLANG).build();
-    return fury.serialize(value);
+  private byte[] toBytes(Object value) throws UnsupportedOperationException {
+    return new ValueExchange(value).toBytes();
   }
 
-  private Object fromBytes(byte[] bytes) {
-    Fury fury = Fury.builder().withLanguage(Language.XLANG).build();
-    return fury.deserialize(bytes);
+  private Object fromBytes(byte[] bytes) throws UnsupportedOperationException {
+    return ValueExchange.fromBytes(bytes).getValue();
   }
 
   @Override

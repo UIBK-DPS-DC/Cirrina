@@ -1,10 +1,10 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
-import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
+import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
-import io.fury.Fury;
-import io.fury.config.Language;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -14,21 +14,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 
 /**
  * HTTP service implementation, a service implementation that is accessible through HTTP.
  * <p>
- * Input variables provided to the invoked service are provided as a map of string-object. Input may be deserialized cross-language inside
- * an invoked service using Fury
+ * Input variables provided to the invoked service are provided as a list of context variables.
  * <p>
- * Output variables received from the invoked service are provided as a map of string-object. Output is serialized cross-language using
- * Fury.
- *
- * @see <a href="https://fury.apache.org>Fury</a>
+ * Context variables are encoded using Protocol Buffers.
  */
 public class HttpServiceImplementation extends ServiceImplementation {
 
@@ -80,11 +74,6 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws CompletionException In case of error.
    */
   private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
-    final var fury = Fury.builder()
-        .withLanguage(Language.XLANG)
-        .requireClassRegistration(false)
-        .build();
-
     // Require HTTP OK
     final var errorCode = response.statusCode();
 
@@ -95,32 +84,15 @@ public class HttpServiceImplementation extends ServiceImplementation {
     // Acquire the payload
     final var payload = response.body();
 
-    // Perform deserialization
-    final var output = fury.deserialize(payload);
-
-    // Verify the output, we expect a map of string-object
-    if (!(output instanceof Map<?, ?> untypedMap)) {
+    try {
+      return ContextVariableProtos.ContextVariables.parseFrom(payload)
+          .getDataList().stream()
+          .map(ContextVariableExchange::fromProto)
+          .toList();
+    } catch (InvalidProtocolBufferException e) {
       throw new CompletionException(
-          new IOException("Unexpected HTTP service invocation type, expected map of string-object"));
+          new IOException("Unexpected HTTP service invocation value type"));
     }
-    if (!untypedMap.isEmpty()) {
-      if (!untypedMap.entrySet().stream()
-          .allMatch(entry -> entry.getKey() instanceof String
-              && entry.getValue() != null)) {
-        throw new CompletionException(
-            new IOException("Unexpected HTTP service invocation type, expected map of string-object"));
-      }
-    }
-
-    @SuppressWarnings("unchecked") final var map = (Map<String, Object>) output;
-
-    // Build the output variables
-    final var builder = ContextVariableBuilder.from();
-
-    return map.entrySet().stream()
-        .map(entry -> builder.name(entry.getKey()).value(entry.getValue()))
-        .map(ContextVariableBuilder::build)
-        .toList();
   }
 
   /**
@@ -136,17 +108,18 @@ public class HttpServiceImplementation extends ServiceImplementation {
   @Override
   public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws UnsupportedOperationException {
     try (final var client = HttpClient.newHttpClient()) {
-      final var fury = Fury.builder()
-          .withLanguage(Language.XLANG)
-          .requireClassRegistration(false)
-          .build();
-
       if (input.stream().anyMatch(ContextVariable::isLazy)) {
         throw new UnsupportedOperationException("All variables need to be evaluated before service input can be converted to bytes");
       }
 
-      final var payload = fury.serialize(input.stream()
-          .collect(Collectors.toMap(ContextVariable::name, ContextVariable::value)));
+      // Serialize the data
+      final byte[] payload = ContextVariableProtos.ContextVariables.newBuilder()
+          .addAllData(input.stream()
+              .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
+              .toList()
+          )
+          .build()
+          .toByteArray();
 
       // Create URL
       final var uri = new URI(scheme, "", host, port, endPoint, "", "");
@@ -158,7 +131,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApplyAsync(HttpServiceImplementation::handleResponse);
-    } catch (URISyntaxException e) {
+    } catch (URISyntaxException | UnsupportedOperationException e) {
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     }
   }

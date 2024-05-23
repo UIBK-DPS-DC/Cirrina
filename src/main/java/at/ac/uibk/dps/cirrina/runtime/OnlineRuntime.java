@@ -102,7 +102,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
         newInstance(stateMachine, serviceImplementationSelector, null);
 
         // Delete the job (it has been consumed)
-        job.delete();
+        //job.delete();
       }
     } finally {
       // Unlock the job

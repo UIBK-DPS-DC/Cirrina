@@ -1,4 +1,4 @@
-image: gradle:8.6.0-jdk21
+image: gradle:8.6.0-jdk21-alpine
 
 stages:
   - build
@@ -11,6 +11,8 @@ cache:
 
 build:
   stage: build
+  before_script:
+    - apk add protoc
   script:
     - gradle clean build
   artifacts:
@@ -20,6 +22,8 @@ build:
 
 test:
   stage: test
+  before_script:
+    - apk add protoc
   script:
     - gradle check
   artifacts:

@@ -10,7 +10,10 @@ public enum EventChannel {
   EXTERNAL,
 
   @JsonProperty("global")
-  GLOBAL;
+  GLOBAL,
+
+  @JsonProperty("peripheral")
+  PERIPHERAL;
 
   @Override
   public String toString() throws IllegalStateException {
@@ -23,6 +26,9 @@ public enum EventChannel {
       }
       case GLOBAL -> {
         return "global";
+      }
+      case PERIPHERAL -> {
+        return "peripheral";
       }
     }
 
