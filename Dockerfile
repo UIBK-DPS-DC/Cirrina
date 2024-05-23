@@ -1,6 +1,9 @@
 # Stage 1: Build Stage
 FROM gradle:8.7.0-jdk21-alpine AS build
 
+# Install protoc
+RUN apk add protoc
+
 # Copy application source code into the container
 COPY --chown=gradle:gradle . /usr/src/cirrina
 

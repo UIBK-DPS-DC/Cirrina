@@ -1,3 +1,5 @@
+import com.google.protobuf.gradle.id
+
 plugins {
     application
 
@@ -22,6 +24,17 @@ java {
 
 jacoco {
     toolVersion = "0.8.11"
+}
+
+protobuf {
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                id("python")
+                id("cpp")
+            }
+        }
+    }
 }
 
 dependencies {
