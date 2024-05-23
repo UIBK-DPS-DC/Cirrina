@@ -89,11 +89,35 @@ public final class ActionInvokeCommand extends ActionCommand {
             }).thenAccept(output -> {
               span.addEvent("responseSuccess");
 
+              // Assign service output to the provided output context variables
+              for (final var outputReference : invokeAction.getOutput()) {
+
+                // Find output reference in the service output
+                final var outputVariable = output.stream()
+                    .filter(variable -> variable.name().equals(outputReference.reference))
+                    .findFirst();
+
+                if (outputVariable.isEmpty()) {
+                  logger.warn(
+                      "Service invocation output does not contain the expected output variable '{}'.",
+                      outputReference.reference
+                  );
+                  continue;
+                }
+
+                try {
+                  extent.trySet(outputReference.reference, outputVariable.get().value());
+                } catch (Exception e) {
+                  logger.error(
+                      "Failed to assign service output to output variable '{}': {}",
+                      outputReference.reference, e.getMessage()
+                  );
+                }
+              }
+
               // Create new events with output data as event data
               final var doneEvents = invokeAction.getDone().stream()
-                  .map(event -> {
-                    return event.withData(output);
-                  })
+                  .map(event -> event.withData(output))
                   .toList();
 
               // Raise all events (internally)

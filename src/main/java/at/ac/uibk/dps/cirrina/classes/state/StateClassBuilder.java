@@ -6,9 +6,12 @@ import at.ac.uibk.dps.cirrina.csml.description.helper.ActionOrActionReferenceDes
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
 import jakarta.annotation.Nullable;
+
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Abstract stateClass builder
@@ -56,8 +59,12 @@ public abstract class StateClassBuilder {
    * @param stateClass           State class.
    * @return State class builder.
    */
-  public static StateClassBuilder from(UUID parentStateMachineId, StateClass stateClass) {
-    return new StateClassFromClassBuilder(parentStateMachineId, stateClass);
+  public static StateClassBuilder from(
+      UUID parentStateMachineId,
+      StateClass stateClass,
+      List<Action> namedActions
+  ) {
+    return new StateClassFromClassBuilder(parentStateMachineId, stateClass, namedActions);
   }
 
   /**
@@ -209,14 +216,28 @@ public abstract class StateClassBuilder {
     private final StateClass stateClass;
 
     /**
+     * Named actions.
+     */
+    private final Map<String, Action> namedActions;
+
+    /**
      * Initializes this builder from a state class.
      *
      * @param parentStateMachineId ID of the parent state machine class.
      * @param stateClass           State class.
      */
-    public StateClassFromClassBuilder(UUID parentStateMachineId, StateClass stateClass) {
+    public StateClassFromClassBuilder(
+        UUID parentStateMachineId,
+        StateClass stateClass,
+        List<Action> namedActions
+    ) {
       this.parentStateMachineId = parentStateMachineId;
       this.stateClass = stateClass;
+
+      // Construct a named actions map where the keys are the names of the actions
+      this.namedActions = namedActions.stream()
+          .filter(named -> named.getName().isPresent())
+          .collect(Collectors.toMap(named -> named.getName().get(), Function.identity()));
     }
 
     /**
@@ -227,6 +248,7 @@ public abstract class StateClassBuilder {
      */
     @Override
     public StateClass build() throws IllegalArgumentException {
+
       final var parameters = new StateClass.BaseParameters(
           parentStateMachineId,
           stateClass.getName(),
@@ -235,14 +257,26 @@ public abstract class StateClassBuilder {
           stateClass.isTerminal(),
           stateClass.isAbstract(),
           stateClass.isVirtual(),
-          stateClass.getEntryActionGraph().getActions(),
-          stateClass.getExitActionGraph().getActions(),
-          stateClass.getWhileActionGraph().getActions(),
-          stateClass.getAfterActionGraph().getActions()
+          replaceNamedActions(stateClass.getEntryActionGraph().getActions()),
+          replaceNamedActions(stateClass.getExitActionGraph().getActions()),
+          replaceNamedActions(stateClass.getWhileActionGraph().getActions()),
+          replaceNamedActions(stateClass.getAfterActionGraph().getActions())
       );
 
       // Create this stateClass
       return new StateClass(parameters);
+    }
+
+    /**
+     * Replace actions in the list with named actions of this state class builder if their names match
+     *
+     * @param actions The actions where named actions should be replaced.
+     * @return Actions where named actions are replaced by the named actions of this state builder.
+     */
+    private List<Action> replaceNamedActions(List<Action> actions) {
+      return actions.stream()
+          .map(action -> namedActions.getOrDefault(action.getName().orElse(null), action))
+          .collect(Collectors.toList());
     }
   }
 }

@@ -25,9 +25,9 @@ public final class InvokeActionDescription extends ActionDescription {
   public List<EventDescription> done = List.of();
 
   /**
-   * The optional output variable.
+   * The optional output variables.
    * <p>
-   * Used to automatically store service output to a local context variable. The variable must exist at runtime.
+   * Used to automatically store service output to local context variables. The variables must exist at runtime.
    */
-  public Optional<ContextVariableReferenceDescription> output = Optional.empty();
+  public List<ContextVariableReferenceDescription> output = List.of();
 }

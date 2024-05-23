@@ -11,7 +11,9 @@ import at.ac.uibk.dps.cirrina.csml.description.transition.TransitionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Abstract transitionClass builder.
@@ -40,8 +42,8 @@ public abstract class TransitionClassBuilder {
    * @param transitionClass Transition class.
    * @return Builder.
    */
-  public static TransitionClassBuilder from(TransitionClass transitionClass) {
-    return new TransitionClassFromClassBuilder(transitionClass);
+  public static TransitionClassBuilder from(TransitionClass transitionClass, List<Guard> namedGuards) {
+    return new TransitionClassFromClassBuilder(transitionClass, namedGuards);
   }
 
   /**
@@ -161,13 +163,22 @@ public abstract class TransitionClassBuilder {
      */
     private final TransitionClass transitionClass;
 
+
+    /**
+     * Named Guards.
+     */
+    private final Map<String, Guard> namedGuards;
+
     /**
      * Initializes this builder.
      *
      * @param transitionClass Transition class.
      */
-    private TransitionClassFromClassBuilder(TransitionClass transitionClass) {
+    private TransitionClassFromClassBuilder(TransitionClass transitionClass, List<Guard> namedGuards) {
       this.transitionClass = transitionClass;
+      this.namedGuards = namedGuards.stream()
+          .filter(named -> named.getName().isPresent())
+          .collect(Collectors.toMap(named -> named.getName().get(), Function.identity()));;
     }
 
     /**
@@ -182,7 +193,7 @@ public abstract class TransitionClassBuilder {
         return new OnTransitionClass(
             onTransition.getTargetStateName(),
             onTransition.getElse().orElse(null),
-            onTransition.getGuards(),
+            replaceNamedGuards(onTransition.getGuards()),
             onTransition.getActionGraph().getActions(),
             onTransition.getEventName()
         );
@@ -190,10 +201,22 @@ public abstract class TransitionClassBuilder {
         return new TransitionClass(
             transitionClass.getTargetStateName(),
             transitionClass.getElse().orElse(null),
-            transitionClass.getGuards(),
+            replaceNamedGuards(transitionClass.getGuards()),
             transitionClass.getActionGraph().getActions()
         );
       }
+    }
+
+    /**
+     * Replace guards in the list with named guards of this transition class builder if their names match
+     *
+     * @param guards The guards where named guards should be replaced.
+     * @return Guards where named guards are replaced by the named guards of this state builder.
+     */
+    private List<Guard> replaceNamedGuards(List<Guard> guards) {
+      return guards.stream()
+          .map(guard -> namedGuards.getOrDefault(guard.getName().orElse(null), guard))
+          .collect(Collectors.toList());
     }
   }
 }

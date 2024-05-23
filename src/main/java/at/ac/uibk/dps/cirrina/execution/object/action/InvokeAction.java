@@ -19,7 +19,7 @@ public final class InvokeAction extends Action {
 
   private final List<Event> done;
 
-  private final Optional<ContextVariableReferenceDescription> output;
+  private final List<ContextVariableReferenceDescription> output;
 
   InvokeAction(Parameters parameters) {
     super(parameters.name());
@@ -47,7 +47,7 @@ public final class InvokeAction extends Action {
     return done;
   }
 
-  public Optional<ContextVariableReferenceDescription> getOutput() {
+  public List<ContextVariableReferenceDescription> getOutput() {
     return output;
   }
 
@@ -57,7 +57,7 @@ public final class InvokeAction extends Action {
       boolean isLocal,
       List<ContextVariable> input,
       List<Event> done,
-      Optional<ContextVariableReferenceDescription> output
+      List<ContextVariableReferenceDescription> output
   ) {
 
   }

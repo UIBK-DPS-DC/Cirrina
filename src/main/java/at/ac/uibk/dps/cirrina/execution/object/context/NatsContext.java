@@ -34,8 +34,6 @@ public final class NatsContext extends Context implements AutoCloseable {
     try {
       connection = Nats.connect(natsUrl);
     } catch (InterruptedException | IOException e) {
-      Thread.currentThread().interrupt();
-
       throw new IOException("Could not connect to the NATS server", e);
     }
 
@@ -129,8 +127,6 @@ public final class NatsContext extends Context implements AutoCloseable {
 
       keyValue.put(name, toBytes(value));
     } catch (IOException | JetStreamApiException e) {
-      Thread.currentThread().interrupt();
-
       throw new IOException("Failed to assign to the variable '%s'".formatted(name), e);
     }
   }

@@ -265,7 +265,9 @@ public final class ChildStateMachineClassBuilder {
         .filter(state -> stateDescriptions.stream()
             .noneMatch(stateClass -> state.getName().equals(stateClass.name))
         )
-        .forEach(state -> stateMachineClass.addVertex(StateClassBuilder.from(stateMachineClass.getId(), state).build()));
+        .forEach(state -> stateMachineClass.addVertex(
+            StateClassBuilder.from(stateMachineClass.getId(), state, namedActions).build())
+        );
   }
 
   /**
@@ -309,7 +311,7 @@ public final class ChildStateMachineClassBuilder {
           target = overriddenTarget.orElse(target);
 
           // Recreate the transition
-          final var newTransition = TransitionClassBuilder.from(transition).build();
+          final var newTransition = TransitionClassBuilder.from(transition, namedGuards).build();
 
           // Add the edge
           stateMachineClass.addEdge(source, target, newTransition);
