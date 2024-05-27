@@ -47,7 +47,7 @@ public final class TimeoutActionManager {
     }
 
     // Schedule at an interval
-    final var future = timeoutTaskScheduler.scheduleWithFixedDelay(task, 0, ((Number) delayInMs).intValue(), TimeUnit.MILLISECONDS);
+    final var future = timeoutTaskScheduler.scheduleWithFixedDelay(task, delayInMs.intValue(), delayInMs.intValue(), TimeUnit.MILLISECONDS);
 
     // Keep the task
     timeoutTasks.put(actionName, future);

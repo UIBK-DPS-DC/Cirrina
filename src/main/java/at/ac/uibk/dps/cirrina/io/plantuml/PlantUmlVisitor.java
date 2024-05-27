@@ -53,7 +53,7 @@ public class PlantUmlVisitor {
   }
 
   public void visit(StateClass stateClass) {
-    plantUml.append(String.format("stateClass \"%s\" as %s%n    ", stateClass.getName(), getStateId(stateClass)));
+    plantUml.append(String.format("state \"%s\" as %s%n    ", stateClass.getName(), getStateId(stateClass)));
 
     if (stateClass.isInitial()) {
       plantUml.append(String.format("[*] --> %s%n    ", getStateId(stateClass)));
@@ -68,7 +68,7 @@ public class PlantUmlVisitor {
         actionBuilder.append("; ");
       });
       plantUml.append(
-          String.format("stateClass \"%s\" as %s : entry / %s%n    ", stateClass.getName(), getStateId(stateClass), actionBuilder));
+          String.format("state \"%s\" as %s : entry / %s%n    ", stateClass.getName(), getStateId(stateClass), actionBuilder));
     }
 
     if (!stateClass.getExitActionGraph().getActions().isEmpty()) {
@@ -78,7 +78,7 @@ public class PlantUmlVisitor {
         actionBuilder.append("; ");
       });
       plantUml.append(
-          String.format("stateClass \"%s\" as %s : exit / %s%n    ", stateClass.getName(), getStateId(stateClass), actionBuilder));
+          String.format("state \"%s\" as %s : exit / %s%n    ", stateClass.getName(), getStateId(stateClass), actionBuilder));
     }
 
     if (!stateClass.getWhileActionGraph().getActions().isEmpty()) {
@@ -89,7 +89,7 @@ public class PlantUmlVisitor {
         actionBuilder.append("; ");
       });
       plantUml.append(
-          String.format("stateClass \"%s\" as %s : while / %s%n    ", stateClass.getName(), getStateId(stateClass), actionBuilder));
+          String.format("state \"%s\" as %s : while / %s%n    ", stateClass.getName(), getStateId(stateClass), actionBuilder));
     }
   }
 
