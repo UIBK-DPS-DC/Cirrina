@@ -93,11 +93,11 @@ public class InheritanceTest {
 
     var transitions1 = stateMachine1.findOnTransitionsFromStateByEventName(stateMachine1State1.get(), "e1");
     assertEquals(1, transitions1.size());
-    assertEquals("state2", transitions1.getFirst().getTargetStateName());
+    assertEquals("state2", transitions1.getFirst().getTargetStateName().get());
 
     var transitions2 = stateMachine2.findOnTransitionsFromStateByEventName(stateMachine2State1.get(), "e1");
     assertEquals(1, transitions2.size());
-    assertEquals("state3", transitions2.getFirst().getTargetStateName());
+    assertEquals("state3", transitions2.getFirst().getTargetStateName().get());
   }
 
   @Test

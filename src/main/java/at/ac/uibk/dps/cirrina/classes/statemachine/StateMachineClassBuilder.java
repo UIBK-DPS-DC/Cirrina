@@ -235,9 +235,9 @@ public final class StateMachineClassBuilder {
           Consumer<List<? extends TransitionDescription>> processTransitions = (on) -> {
             for (var transitionClass : on) {
               // Acquire the target node, if the target is not provided, this is a self-transition
-              var targetStateClass = transitionClass.target == null
-                  ? sourceStateClass
-                  : stateMachine.findStateClassByName(transitionClass.target).get();
+              var targetStateClass = transitionClass.target
+                  .map(targetName -> stateMachine.findStateClassByName(targetName).get())
+                  .orElse(sourceStateClass);
 
               // Attempt to add an edge to the state machine graph that resembles the transition
               if (!stateMachine.addEdge(sourceStateClass, targetStateClass,
@@ -254,10 +254,11 @@ public final class StateMachineClassBuilder {
               .collect(Collectors.groupingBy(transitionClass -> transitionClass.event, Collectors.counting())).entrySet().stream()
               .anyMatch(entry -> entry.getValue() > 1);
 
-          if (hasDuplicateEdges) {
+          // TODO: This is actually allowed, depending on the guard conditions
+          /*if (hasDuplicateEdges) {
             throw new IllegalArgumentException(
                 "Multiple outwards transitions with the same event in '%s'".formatted(stateMachineDescription.name));
-          }
+          }*/
 
           processTransitions.accept(stateClass.on);
 

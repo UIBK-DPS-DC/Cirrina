@@ -1,28 +1,31 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_CHANNEL;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_TRANSITION_TARGET_STATE_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_TRANSITION_TYPE;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.EVENT_RECEIVED_EVENT;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_EXECUTED_ACTIONS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_EXTERNAL_TRANSITIONS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_HANDLED_EVENTS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_INTERNAL_TRANSITIONS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_RECEIVED_EVENTS;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_PARENT_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_TRANSITION_STATE_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.EVENT_STATE_SWITCHED;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_ACTIONS_EXECUTED;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_ACTION_ASSIGN_LATENCY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_ACTION_CREATE_LATENCY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_ACTION_INVOKE_LATENCY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_ACTION_RAISE_LATENCY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_EVENTS_RECEIVED;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_TRANSITIONS_HANDLED;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_TRANSITION_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_DO_ENTER;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_DO_EXIT;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_DO_TRANSITION;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_RUN;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_TIMEOUT;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_TRANSITION;
 
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClass;
+import at.ac.uibk.dps.cirrina.execution.command.ActionAssignCommand;
 import at.ac.uibk.dps.cirrina.execution.command.ActionCommand;
+import at.ac.uibk.dps.cirrina.execution.command.ActionCreateCommand;
+import at.ac.uibk.dps.cirrina.execution.command.ActionInvokeCommand;
 import at.ac.uibk.dps.cirrina.execution.command.ActionRaiseCommand;
 import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
 import at.ac.uibk.dps.cirrina.execution.command.ExecutionContext;
@@ -31,15 +34,18 @@ import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
+import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventListener;
 import at.ac.uibk.dps.cirrina.execution.object.state.State;
 import at.ac.uibk.dps.cirrina.execution.object.transition.Transition;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.Runtime;
+import at.ac.uibk.dps.cirrina.utils.Id;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -47,6 +53,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,7 +69,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   private static final Logger logger = LogManager.getLogger();
 
-  private final StateMachineId stateMachineId = new StateMachineId();
+  private final Id stateMachineId = new Id();
 
   private final TimeoutActionManager timeoutActionManager = new TimeoutActionManager();
 
@@ -70,13 +77,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   private final Runtime parentRuntime;
 
-  private final StateMachineClass stateMachineClassObject;
+  private final StateMachineClass stateMachineClass;
 
   private final ServiceImplementationSelector serviceImplementationSelector;
 
-  private final OpenTelemetry openTelemetry;
-
-  private final StateMachine parentStateMachine;
+  private final @Nullable StateMachine parentStateMachine;
 
   private final Tracer tracer;
 
@@ -87,6 +92,10 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   private final Context localContext;
 
   private final Map<String, State> stateInstances;
+
+  private final Map<Class<? extends ActionCommand>, DoubleGauge> latencyGauges = new HashMap<>();
+
+  private final DoubleGauge transitionLatencyGauge;
 
   private State activeState;
 
@@ -102,37 +111,36 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Additionally, a state machine instance may be parented in a state machine instance, forming a nested state machine instance.
    *
    * @param parentRuntime                 Parent runtime.
-   * @param stateMachineClassObject       StateClass machine object
+   * @param stateMachineClass             StateClass machine object
    * @param serviceImplementationSelector Service implementation selector.
    * @param parentStateMachine            Parent state machine instance or null.
    * @thread Runtime.
    */
   public StateMachine(
       Runtime parentRuntime,
-      StateMachineClass stateMachineClassObject,
+      StateMachineClass stateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector,
       OpenTelemetry openTelemetry,
       @Nullable StateMachine parentStateMachine
   ) {
     this.parentRuntime = parentRuntime;
-    this.stateMachineClassObject = stateMachineClassObject;
+    this.stateMachineClass = stateMachineClass;
     this.serviceImplementationSelector = serviceImplementationSelector;
-    this.openTelemetry = openTelemetry;
     this.parentStateMachine = parentStateMachine;
 
     final var instrumentationScopeName = String.format("stateMachine-%s", stateMachineId.toString());
 
     // Create an OpenTelemetry tracer
-    tracer = this.openTelemetry.getTracer(instrumentationScopeName);
+    tracer = openTelemetry.getTracer(instrumentationScopeName);
 
     // Create an OpenTelemetry meter
-    meter = this.openTelemetry.getMeter(instrumentationScopeName);
+    meter = openTelemetry.getMeter(instrumentationScopeName);
 
     stateMachineEventHandler = new StateMachineEventHandler(this, this.parentRuntime.getEventHandler());
 
     // Build the local context
     try {
-      localContext = stateMachineClassObject.getLocalContextClass()
+      localContext = stateMachineClass.getLocalContextClass()
           .map(ContextBuilder::from)
           .orElseGet(ContextBuilder::from)
           .inMemoryContext()
@@ -142,8 +150,19 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     }
 
     // Construct state instances
-    stateInstances = stateMachineClassObject.vertexSet().stream()
+    stateInstances = stateMachineClass.vertexSet().stream()
         .collect(Collectors.toMap(StateClass::getName, state -> new State(state, this)));
+
+    // Create latency counters
+    latencyGauges.putAll(Map.of(
+        ActionAssignCommand.class, meter.gaugeBuilder(METRIC_ACTION_ASSIGN_LATENCY).build(),
+        ActionCreateCommand.class, meter.gaugeBuilder(METRIC_ACTION_CREATE_LATENCY).build(),
+        ActionInvokeCommand.class, meter.gaugeBuilder(METRIC_ACTION_INVOKE_LATENCY).build(),
+        ActionRaiseCommand.class, meter.gaugeBuilder(METRIC_ACTION_RAISE_LATENCY).build()
+    ));
+
+    // Create transition latency gauge
+    transitionLatencyGauge = meter.gaugeBuilder(METRIC_TRANSITION_LATENCY).build();
   }
 
   /**
@@ -160,36 +179,6 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     }
 
     eventQueue.add(event);
-  }
-
-  /**
-   * Returns this scope's extent.
-   *
-   * @return Extent.
-   */
-  @Override
-  public Extent getExtent() {
-    return Optional.ofNullable(parentStateMachine)
-        .map(parent -> parent.getExtent().extend(localContext))
-        .orElseGet(() -> parentRuntime.getExtent().extend(localContext));
-  }
-
-  /**
-   * Returns the state machine instance ID.
-   *
-   * @return StateClass machine instance ID.
-   */
-  public StateMachineId getStateMachineInstanceId() {
-    return stateMachineId;
-  }
-
-  /**
-   * Returns the state machine object.
-   *
-   * @return StateClass machine object.
-   */
-  public StateMachineClass getStateMachineObject() {
-    return stateMachineClassObject;
   }
 
   /**
@@ -218,11 +207,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private CommandFactory stateMachineScopedCommandFactory(StateMachine stateMachine) {
     return new CommandFactory(new ExecutionContext(
-        stateMachine,             // Scope
-        serviceImplementationSelector,    // Service implementation selector
-        stateMachineEventHandler, // Event handler
-        this,                             // Event listener
-        false                             // Is while?
+        stateMachine,                  // Scope
+        serviceImplementationSelector, // Service implementation selector
+        stateMachineEventHandler,      // Event handler
+        this,                          // Event listener
+        false                          // Is while?
     ));
   }
 
@@ -235,11 +224,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private CommandFactory stateScopedCommandFactory(State state, boolean isWhile) {
     return new CommandFactory(new ExecutionContext(
-        state,                    // Scope
-        serviceImplementationSelector,    // Service implementation selector
-        stateMachineEventHandler, // Event handler
-        this,                             // Event listener
-        false                             // Is while?
+        state,                         // Scope
+        serviceImplementationSelector, // Service implementation selector
+        stateMachineEventHandler,      // Event handler
+        this,                          // Event listener
+        false                          // Is while?
     ));
   }
 
@@ -256,30 +245,32 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   /**
    * Attempts to select an on transition based on an event.
    *
-   * @param event Event to find an on transition for.
+   * @param event  Event to find an on transition for.
+   * @param extent Extent.
    * @return On transition or empty in case no matching on transition can be selected.
    * @throws IllegalStateException If non-determinism is detected.
    */
-  private Optional<Transition> trySelectOnTransition(Event event) throws IllegalStateException {
+  private Optional<Transition> trySelectOnTransition(Event event, Extent extent) throws IllegalStateException {
     // Find the transitions from the active state for the given event
-    final var transitionObjects = stateMachineClassObject
+    final var transitionObjects = stateMachineClass
         .findOnTransitionsFromStateByEventName(activeState.getStateObject(), event.getName());
 
-    return trySelectTransition(transitionObjects);
+    return trySelectTransition(transitionObjects, extent);
   }
 
   /**
    * Attempts to select an always transition.
    *
+   * @param extent Extent.
    * @return Always transition or empty in case no always transition can be selected.
    * @throws IllegalStateException If non-determinism is detected.
    */
-  private Optional<Transition> trySelectAlwaysTransition() throws IllegalStateException {
+  private Optional<Transition> trySelectAlwaysTransition(Extent extent) throws IllegalStateException {
     // Find the transitions from the active state for the given event
-    final var transitionObjects = stateMachineClassObject
+    final var transitionObjects = stateMachineClass
         .findAlwaysTransitionsFromState(activeState.getStateObject());
 
-    return trySelectTransition(transitionObjects);
+    return trySelectTransition(transitionObjects, extent);
   }
 
   /**
@@ -288,14 +279,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * A transition is selected if it its guards evaluate to true, or if it does not, and it has an else target state.
    *
    * @param transitionObjects Collection of transition objects to select from.
+   * @param extent            Extent.
    * @return Selected transition instance or empty in case no transition can be selected.
    * @throws IllegalStateException If non-determinism is detected.
    * @throws IllegalStateException If no transition could be selected.
    */
-  private Optional<Transition> trySelectTransition(List<? extends TransitionClass> transitionObjects) throws IllegalStateException {
+  private Optional<Transition> trySelectTransition(List<? extends TransitionClass> transitionObjects, Extent extent)
+      throws IllegalStateException {
     try {
-      final var extent = getExtent();
-
       // A transition is taken when its guard conditions evaluate to true, or they do not evaluate to true, but an else target state is provided
       final var selectedTransitions = new ArrayList<Transition>();
 
@@ -332,10 +323,16 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     try {
       for (final var actionCommand : actionCommands) {
         // Increment executed actions counter
-        meter.counterBuilder(METRIC_EXECUTED_ACTIONS).build().add(1);
+        meter.counterBuilder(METRIC_ACTIONS_EXECUTED)
+            .setDescription("The total number of actions executed.")
+            .build()
+            .add(1, getAttributes());
 
-        // Execute this command
-        final var newCommands = actionCommand.execute(tracer, parentSpan);
+        // Attempt to get the latency gauge
+        final var latencyGauge = latencyGauges.getOrDefault(actionCommand.getClass(), null);
+
+        // Execute and acquire new commands
+        final var newCommands = actionCommand.execute(tracer, parentSpan, latencyGauge);
 
         // Execute any subsequent command
         execute(newCommands, parentSpan);
@@ -386,7 +383,8 @@ public final class StateMachine implements Runnable, EventListener, Scope {
             .startSpan();
 
         // Span attributes
-        span.setAttribute(ATTR_ACTION_NAME, actionName);
+        span.setAllAttributes(getAttributes());
+        span.setAllAttributes(actionTimeoutCommand.getAttributes());
 
         try (final var scope = span.makeCurrent()) {
           execute(List.of(actionTimeoutCommand), span);
@@ -417,13 +415,23 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   /**
    * Switches the current active state to the provided state instance.
    *
-   * @param state New active state.
+   * @param state      New active state.
+   * @param parentSpan Parent span.
    * @throws IllegalArgumentException If the state is not known.
    */
-  private void switchActiveState(State state) throws IllegalArgumentException {
+  private void switchActiveState(State state, Span parentSpan) throws IllegalArgumentException {
+    final var stateName = state.getStateObject().getName();
+
     if (!stateInstances.containsValue(state)) {
-      throw new IllegalArgumentException("A state '%s' does not exist".formatted(state.getStateObject().getName()));
+      throw new IllegalArgumentException("A state '%s' does not exist".formatted(stateName));
     }
+
+    // Event attributes
+    final var eventAttributes = Attributes.of(
+        AttributeKey.stringKey(ATTR_TRANSITION_STATE_NAME), stateName
+    );
+
+    parentSpan.addEvent(EVENT_STATE_SWITCHED, eventAttributes);
 
     // Update the active state
     activeState = state;
@@ -444,6 +452,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     final var span = tracer.spanBuilder(SPAN_DO_EXIT)
         .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
         .startSpan();
+
+    // Span attributes
+    span.setAllAttributes(getAttributes());
 
     try (final var scope = span.makeCurrent()) {
       // Gather action commands
@@ -481,6 +492,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
         .startSpan();
 
+    // Span attributes
+    span.setAllAttributes(getAttributes());
+
     try (final var scope = span.makeCurrent()) {
       // Do not execute actions for else target transitions
       if (transition.isElse()) {
@@ -510,7 +524,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Any subsequent always actions are selected at the end.
    *
    * @param enteringState StateClass instance that is being entered.
-   * @param parentSpan    Parent span.
+   * @param parentSpan    Parent span or null.
    * @throws UnsupportedOperationException If the entry/while actions could not be executed.
    * @throws UnsupportedOperationException If the timeout actions could not be started.
    * @throws UnsupportedOperationException If the states could not be switched.
@@ -518,12 +532,17 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private Optional<Transition> doEnter(
       State enteringState,
-      Span parentSpan
+      @Nullable Span parentSpan
   ) throws UnsupportedOperationException, IllegalArgumentException {
     // Create span
-    final var span = tracer.spanBuilder(SPAN_DO_ENTER)
-        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
-        .startSpan();
+    final var spanBuilder = tracer.spanBuilder(SPAN_DO_ENTER)
+        .setParent(
+            parentSpan != null ? io.opentelemetry.context.Context.current().with(parentSpan) : io.opentelemetry.context.Context.root());
+
+    final var span = spanBuilder.startSpan();
+
+    // Span attributes
+    span.setAllAttributes(getAttributes());
 
     try (final var scope = span.makeCurrent()) {
       // Gather action commands
@@ -552,13 +571,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
       // Switch the active state to the entering state
       try {
-        switchActiveState(enteringState);
+        switchActiveState(enteringState, span);
       } catch (IllegalArgumentException e) {
         throw new UnsupportedOperationException("Could not switch states");
       }
 
       try {
-        return trySelectAlwaysTransition();
+        return trySelectAlwaysTransition(getExtent());
       } catch (IllegalStateException e) {
         throw new UnsupportedOperationException("Could not select always transition");
       }
@@ -571,21 +590,16 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Handles an internal transition.
    *
    * @param transition TransitionClass instance.
-   * @param parentSpan Parent span.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleInternalTransition(@NotNull Transition transition, Span parentSpan) throws UnsupportedOperationException {
-    // Increment internal transitions counter
-    meter.counterBuilder(METRIC_INTERNAL_TRANSITIONS).build().add(1);
-
+  private void handleInternalTransition(@NotNull Transition transition) throws UnsupportedOperationException {
     // Create span
     final var span = tracer.spanBuilder(SPAN_TRANSITION)
-        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
         .startSpan();
 
     // Span attributes
-    span.setAttribute(ATTR_TRANSITION_TARGET_STATE_NAME, "");
-    span.setAttribute(ATTR_TRANSITION_TYPE, "internal");
+    span.setAllAttributes(getAttributes());
+    span.setAllAttributes(transition.getAttributes());
 
     try (final var scope = span.makeCurrent()) {
       // Only perform the transition
@@ -599,25 +613,22 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Handles an external transition.
    *
    * @param transition TransitionClass instance.
-   * @param parentSpan Parent span.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleExternalTransition(@NotNull Transition transition, Span parentSpan) throws UnsupportedOperationException {
-    // Increment external transitions counter
-    meter.counterBuilder(METRIC_EXTERNAL_TRANSITIONS).build().add(1);
-
+  private void handleExternalTransition(@NotNull Transition transition) throws UnsupportedOperationException {
     // Create span
     final var span = tracer.spanBuilder(SPAN_TRANSITION)
-        .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
         .startSpan();
 
+    final var targetStateName = transition.getTargetStateName().get();
+
     // Span attributes
-    span.setAttribute(ATTR_TRANSITION_TARGET_STATE_NAME, transition.getTargetStateName());
-    span.setAttribute(ATTR_TRANSITION_TYPE, "external");
+    span.setAllAttributes(getAttributes());
+    span.setAllAttributes(transition.getAttributes());
 
     try (final var scope = span.makeCurrent()) {
       // Acquire the target state instance
-      final var targetStateInstance = findStateInstanceByName(transition.getTargetStateName())
+      final var targetStateInstance = findStateInstanceByName(targetStateName)
           .orElseThrow(() -> new IllegalArgumentException(
               "Target state '%s' cannot be found in state machine".formatted(transition.getTargetStateName())));
 
@@ -630,7 +641,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       // Enter the target state, if there is a follow-up transition, handle it recursively
       final var nextTransitionInstance = doEnter(targetStateInstance, span);
 
-      nextTransitionInstance.ifPresent(value -> handleTransition(value, span));
+      nextTransitionInstance.ifPresent(this::handleTransition);
     } finally {
       span.end();
     }
@@ -640,15 +651,25 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Handles a transition.
    *
    * @param transition TransitionClass instance.
-   * @param parentSpan Parent span.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleTransition(@NotNull Transition transition, Span parentSpan) throws UnsupportedOperationException {
+  private void handleTransition(@NotNull Transition transition) throws UnsupportedOperationException {
+    // Increment transitions counter
+    meter.counterBuilder(METRIC_TRANSITIONS_HANDLED)
+        .setDescription("The total number of transitions handled.")
+        .build()
+        .add(1, getAttributes());
+
+    final var a = System.nanoTime() / 1.0e6;
+
     if (transition.isInternalTransition()) {
-      handleInternalTransition(transition, parentSpan);
+      handleInternalTransition(transition);
     } else {
-      handleExternalTransition(transition, parentSpan);
+      handleExternalTransition(transition);
     }
+
+    // Transition handling latency
+    transitionLatencyGauge.set(System.nanoTime() / 1.0e6 - a);
   }
 
   /**
@@ -656,35 +677,35 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * <p>
    * This function blocks until a new event is received.
    *
-   * @param parentSpan Parent span.
    * @throws InterruptedException          If interrupted while waiting for an event.
    * @throws UnsupportedOperationException If an on transition could not be selected.
    */
-  private Optional<Transition> handleEvent(Span parentSpan) throws InterruptedException, UnsupportedOperationException {
+  private Optional<Transition> handleEvent() throws InterruptedException, UnsupportedOperationException {
     // Wait for the next event, this call is blocking
     final var event = eventQueue.take();
 
-    // Event attributes
-    final var eventAttributes = Attributes.of(
-        AttributeKey.stringKey(ATTR_EVENT_ID), event.getId(),
-        AttributeKey.stringKey(ATTR_EVENT_NAME), event.getName(),
-        AttributeKey.stringKey(ATTR_EVENT_CHANNEL), event.getChannel().toString()
-    );
-
-    parentSpan.addEvent(EVENT_RECEIVED_EVENT, eventAttributes);
-
-    // Increment received events counter
-    meter.counterBuilder(METRIC_RECEIVED_EVENTS).build().add(1);
+    // Increment handled events counter
+    meter.counterBuilder(METRIC_EVENTS_RECEIVED)
+        .setDescription("The total number of events handled.")
+        .build()
+        .add(1, getAttributes());
 
     // Find a matching transition
     try {
-      final var onTransition = trySelectOnTransition(event);
+      // Create a temporary in-memory context containing the event data
+      final var eventDataContext = new InMemoryContext();
 
-      // Set the event data
+      for (var contextVariable : event.getData()) {
+        eventDataContext.create(EVENT_DATA_VARIABLE_PREFIX + contextVariable.name(), contextVariable.value());
+      }
+
+      // Create a temporary extent that contains the event data
+      final var extent = getExtent().extend(eventDataContext);
+
+      final var onTransition = trySelectOnTransition(event, extent);
+
+      // Set the event data in the actual extent
       onTransition.ifPresent(transition -> {
-        // Increment handled events counter
-        meter.counterBuilder(METRIC_HANDLED_EVENTS).build().add(1);
-
         try {
           for (var contextVariable : event.getData()) {
             getExtent().setOrCreate(EVENT_DATA_VARIABLE_PREFIX + contextVariable.name(), contextVariable.value());
@@ -695,7 +716,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       });
 
       return onTransition;
-    } catch (IllegalStateException e) {
+    } catch (IOException | IllegalStateException e) {
       throw new UnsupportedOperationException("Could not select on transition", e);
     }
   }
@@ -707,28 +728,25 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   @Override
   public void run() {
-    // Create span
-    final var span = tracer.spanBuilder(SPAN_RUN).startSpan();
-
-    try (final var scope = span.makeCurrent()) {
+    try {
       // Acquire the initial state instance
-      final var initialStateInstance = stateInstances.get(stateMachineClassObject.getInitialState().getName());
+      final var initialStateInstance = stateInstances.get(stateMachineClass.getInitialState().getName());
 
       // TransitionClass into the initial state
-      var nextTransition = doEnter(initialStateInstance, span);
+      var nextTransition = doEnter(initialStateInstance, null);
 
       while (!isTerminated()) {
         // Wait for a next event, if no transition is selected. No transition is selected initially if the initial state has no selectable
         // always transition or thereafter if we've handled the selected transition
         if (nextTransition.isEmpty()) {
-          nextTransition = handleEvent(span);
+          nextTransition = handleEvent();
         }
 
         // If a transition is selected, handle it. The transition will be handled recursively; any transition selected due to entering a
         // next state is handled recursively. Therefore, if we're done handling this transition, we indicate that we need to wait for a new
         // event again
         if (nextTransition.isPresent()) {
-          handleTransition(nextTransition.get(), span);
+          handleTransition(nextTransition.get());
 
           nextTransition = Optional.empty();
         }
@@ -739,10 +757,53 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       Thread.currentThread().interrupt();
     } catch (Exception e) {
       logger.error("%s received a fatal error".formatted(stateMachineId.toString()), e);
-    } finally {
-      span.end();
     }
 
     logger.info("{} is done", stateMachineId.toString());
+  }
+
+  /**
+   * Returns this scope's extent.
+   *
+   * @return Extent.
+   */
+  @Override
+  public Extent getExtent() {
+    return Optional.ofNullable(parentStateMachine)
+        .map(parent -> parent.getExtent().extend(localContext))
+        .orElseGet(() -> parentRuntime.getExtent().extend(localContext));
+  }
+
+  /**
+   * Returns the state machine instance ID.
+   *
+   * @return StateClass machine instance ID.
+   */
+  public Id getStateMachineInstanceId() {
+    return stateMachineId;
+  }
+
+  /**
+   * Returns the state machine object.
+   *
+   * @return StateClass machine object.
+   */
+  public StateMachineClass getStateMachineClass() {
+    return stateMachineClass;
+  }
+
+  /**
+   * Get OpenTelemetry attributes of this state machine.
+   *
+   * @return Attributes.
+   */
+  public Attributes getAttributes() {
+    return Attributes.of(
+        AttributeKey.stringKey(ATTR_STATE_MACHINE_ID), stateMachineId.toString(),
+        AttributeKey.stringKey(ATTR_STATE_MACHINE_NAME), stateMachineClass.getName(),
+        AttributeKey.stringKey(ATTR_STATE_MACHINE_PARENT_ID), Optional.ofNullable(parentStateMachine)
+            .map(stateMachine -> stateMachine.getStateMachineInstanceId().toString())
+            .orElse("")
+    );
   }
 }

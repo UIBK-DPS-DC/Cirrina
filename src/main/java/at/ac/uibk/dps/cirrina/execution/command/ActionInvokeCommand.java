@@ -1,13 +1,15 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_COST;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_IS_LOCAL;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_PERFORMANCE;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_INVOKE_COMMAND_EXECUTE;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.ArrayList;
@@ -42,7 +44,13 @@ public final class ActionInvokeCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException {
+  public List<ActionCommand> execute(
+      Tracer tracer,
+      Span parentSpan,
+      DoubleGauge latencyGauge
+  ) throws UnsupportedOperationException {
+    final var a = System.nanoTime() / 1.0e6;
+
     try {
       final var serviceType = invokeAction.getServiceType();
       final var isLocal = invokeAction.isLocal();
@@ -61,10 +69,7 @@ public final class ActionInvokeCommand extends ActionCommand {
           .startSpan();
 
       // Span attributes
-      span.setAttribute(ATTR_SERVICE_NAME, serviceImplementation.getName());
-      span.setAttribute(ATTR_SERVICE_COST, serviceImplementation.getCost());
-      span.setAttribute(ATTR_SERVICE_PERFORMANCE, serviceImplementation.getPerformance());
-      span.setAttribute(ATTR_SERVICE_IS_LOCAL, serviceImplementation.isLocal());
+      span.setAllAttributes(getAttributes());
 
       try (final var scope = span.makeCurrent()) {
         final var commands = new ArrayList<ActionCommand>();
@@ -122,6 +127,9 @@ public final class ActionInvokeCommand extends ActionCommand {
 
               // Raise all events (internally)
               doneEvents.forEach(eventListener::onReceiveEvent);
+
+              // Record latency
+              latencyGauge.set(System.nanoTime() / 1.0e6 - a);
             });
 
         return commands;
@@ -131,5 +139,19 @@ public final class ActionInvokeCommand extends ActionCommand {
     } catch (Exception e) {
       throw new UnsupportedOperationException("Could not execute invoke action", e);
     }
+  }
+
+  /**
+   * Get OpenTelemetry attributes of this state machine.
+   *
+   * @return Attributes.
+   */
+  @Override
+  public Attributes getAttributes() {
+    return Attributes.of(
+        AttributeKey.stringKey(ATTR_ACTION_NAME), invokeAction.getName().orElse(""),
+        AttributeKey.stringKey(ATTR_SERVICE_NAME), invokeAction.getServiceType(),
+        AttributeKey.stringKey(ATTR_SERVICE_IS_LOCAL), invokeAction.isLocal() ? "true" : "false"
+    );
   }
 }

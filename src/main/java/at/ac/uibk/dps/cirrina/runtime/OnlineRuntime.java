@@ -7,21 +7,14 @@ import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
-import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachine;
-import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachineId;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
-import at.ac.uibk.dps.cirrina.execution.service.ServicesImplementationBuilder;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationsDescription;
-import at.ac.uibk.dps.cirrina.io.description.DescriptionParser;
 import at.ac.uibk.dps.cirrina.runtime.job.Job;
-import at.ac.uibk.dps.cirrina.runtime.job.JobDescriptionParser;
 import at.ac.uibk.dps.cirrina.runtime.job.JobListener;
 import at.ac.uibk.dps.cirrina.runtime.job.JobMonitor;
-import com.google.common.collect.ArrayListMultimap;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import org.apache.curator.framework.CuratorFramework;
 
 /**
@@ -35,7 +28,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
   /**
    * Start time.
    */
-  private final long startTime = System.currentTimeMillis();
+  private final double startTime = System.nanoTime() / 1.0e6;
 
   /**
    * Job monitor, using ZooKeeper to monitor new jobs.
@@ -85,6 +78,10 @@ public class OnlineRuntime extends Runtime implements JobListener {
         final var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(job.getJobDescription().collaborativeStateMachine)
             .build();
 
+        // Acquire the service implementation selector
+        final var serviceImplementationSelector = new ServiceImplementationSelector(
+            ServiceImplementationBuilder.from(jobDescription.serviceImplementations).build());
+
         // Acquire the state machine name
         final var stateMachineName = jobDescription.stateMachineName;
 
@@ -98,15 +95,6 @@ public class OnlineRuntime extends Runtime implements JobListener {
           throw new UnsupportedOperationException(
               "State machine '%s' is abstract and can not be instantiated".formatted(stateMachineName));
         }
-
-        // Acquire the service implementation selector
-        final var serviceImplementationsDescription = new ServiceImplementationsDescription();
-        serviceImplementationsDescription.serviceImplementations = job.getJobDescription().serviceImplementations;
-
-        final var servicesMap = ServicesImplementationBuilder.from(serviceImplementationsDescription)
-            .build();
-
-        final var serviceImplementationSelector = new ServiceImplementationSelector(servicesMap);
 
         // Create persistent variables
         final var persistentContextVariables = collaborativeStateMachine.getPersistentContextVariables();
@@ -160,7 +148,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
   public void run() {
     // Increment executed actions counter
     try (final var uptime = meter.gaugeBuilder(METRIC_UPTIME)
-        .buildWithCallback(measurement -> measurement.record(((double) System.currentTimeMillis() - startTime) / 1000.0))) {
+        .buildWithCallback(measurement -> measurement.record((System.nanoTime() / 1.0e6 - startTime)))) {
       final var SLEEP_TIME_IN_MS = 10000;
 
       try {

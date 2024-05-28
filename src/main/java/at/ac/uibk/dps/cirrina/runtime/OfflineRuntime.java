@@ -3,9 +3,9 @@ package at.ac.uibk.dps.cirrina.runtime;
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
-import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachineId;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.utils.BuildVersion;
+import at.ac.uibk.dps.cirrina.utils.Id;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -95,7 +95,7 @@ public class OfflineRuntime extends Runtime {
    * @return Instance IDs.
    * @throws UnsupportedOperationException If a state machine could not be instantiated.
    */
-  public List<StateMachineId> newInstance(
+  public List<Id> newInstance(
       CollaborativeStateMachineClass collaborativeStateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector
   ) throws UnsupportedOperationException {

@@ -1,8 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_PARENT_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_NEW_INSTANCE;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_INSTANCE_NEW;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
@@ -10,8 +8,8 @@ import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachine;
-import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachineId;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
+import at.ac.uibk.dps.cirrina.utils.Id;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
@@ -114,7 +112,7 @@ public abstract class Runtime implements EventListener {
    * @param stateMachineId StateClass machine instance id.
    * @return The state machine instance or an empty optional if no state machine instance was found for the given instance id.
    */
-  public Optional<StateMachine> findInstance(StateMachineId stateMachineId) {
+  public Optional<StateMachine> findInstance(Id stateMachineId) {
     try {
       stateMachineInstancesLock.lock();
 
@@ -137,7 +135,7 @@ public abstract class Runtime implements EventListener {
    * @return Instance IDs.
    * @throws UnsupportedOperationException If a state machine could not be instantiated.
    */
-  protected List<StateMachineId> newInstance(
+  protected List<Id> newInstance(
       CollaborativeStateMachineClass collaborativeStateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector
   ) throws UnsupportedOperationException {
@@ -153,12 +151,12 @@ public abstract class Runtime implements EventListener {
    * @return Instance IDs.
    * @throws UnsupportedOperationException If a state machine could not be instantiated.
    */
-  protected List<StateMachineId> newInstances(
+  protected List<Id> newInstances(
       List<StateMachineClass> stateMachineClasses,
       ServiceImplementationSelector serviceImplementationSelector,
-      @Nullable StateMachineId parentInstanceId
+      @Nullable Id parentInstanceId
   ) throws UnsupportedOperationException {
-    var instanceIds = new ArrayList<StateMachineId>();
+    var instanceIds = new ArrayList<Id>();
 
     for (var stateMachine : stateMachineClasses) {
       // Abstract state machines are skipped
@@ -195,10 +193,10 @@ public abstract class Runtime implements EventListener {
    * @throws UnsupportedOperationException If the runtime is shut down.
    * @throws UnsupportedOperationException If the parent state machine could not be found.
    */
-  protected StateMachineId newInstance(
+  protected Id newInstance(
       StateMachineClass stateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector,
-      @Nullable StateMachineId parentInstanceId
+      @Nullable Id parentInstanceId
   ) throws UnsupportedOperationException {
     if (stateMachineInstanceExecutorService.isShutdown()) {
       throw new UnsupportedOperationException("Runtime is shut down");
@@ -210,11 +208,7 @@ public abstract class Runtime implements EventListener {
     logger.info("Creating new instance of '{}' - parent is '{}'...", stateMachineName, parentIdAsString);
 
     // Create span
-    final var span = tracer.spanBuilder(SPAN_NEW_INSTANCE).startSpan();
-
-    // Span attributes
-    span.setAttribute(ATTR_STATE_MACHINE_NAME, stateMachineName);
-    span.setAttribute(ATTR_STATE_MACHINE_PARENT_ID, parentIdAsString);
+    final var span = tracer.spanBuilder(SPAN_INSTANCE_NEW).startSpan();
 
     try (final var scope = span.makeCurrent()) {
       stateMachineInstancesLock.lock();
@@ -235,6 +229,9 @@ public abstract class Runtime implements EventListener {
           openTelemetry,
           parentInstance
       );
+
+      // Span attributes
+      span.setAllAttributes(stateMachineInstance.getAttributes());
 
       // Add event listener to the event handler
       eventHandler.addListener(stateMachineInstance);

@@ -1,8 +1,14 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_CHANNEL;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_NAME;
+
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -143,5 +149,18 @@ public final class Event {
    */
   public List<ContextVariable> getData() {
     return data;
+  }
+
+  /**
+   * Get OpenTelemetry attributes of this state machine.
+   *
+   * @return Attributes.
+   */
+  public Attributes getAttributes() {
+    return Attributes.of(
+        AttributeKey.stringKey(ATTR_EVENT_ID), id,
+        AttributeKey.stringKey(ATTR_EVENT_NAME), name,
+        AttributeKey.stringKey(ATTR_EVENT_CHANNEL), channel.toString()
+    );
   }
 }

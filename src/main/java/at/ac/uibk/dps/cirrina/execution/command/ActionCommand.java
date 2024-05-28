@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.List;
@@ -16,5 +18,16 @@ public abstract class ActionCommand {
     this.executionContext = executionContext;
   }
 
-  public abstract List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException;
+  public abstract List<ActionCommand> execute(
+      Tracer tracer,
+      Span parentSpan,
+      DoubleGauge latencyGauge
+  ) throws UnsupportedOperationException;
+
+  /**
+   * Get OpenTelemetry attributes of this state machine.
+   *
+   * @return Attributes.
+   */
+  public abstract Attributes getAttributes();
 }

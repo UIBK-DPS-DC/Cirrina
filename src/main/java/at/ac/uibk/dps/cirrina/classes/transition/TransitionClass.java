@@ -29,7 +29,7 @@ public class TransitionClass extends DefaultEdge implements Exportable {
   /**
    * The name of the target state.
    */
-  private final String targetStateName;
+  private final @Nullable String targetStateName;
 
   /**
    * Collection of guards.
@@ -54,7 +54,7 @@ public class TransitionClass extends DefaultEdge implements Exportable {
    * @param guards              List of guards.
    * @param actions             List of actions.
    */
-  TransitionClass(String targetStateName, @Nullable String elseTargetStateName, List<Guard> guards, List<Action> actions) {
+  TransitionClass(@Nullable String targetStateName, @Nullable String elseTargetStateName, List<Guard> guards, List<Action> actions) {
     this.targetStateName = targetStateName;
     this.guards = guards;
     this.elseTargetStateName = elseTargetStateName;
@@ -137,8 +137,8 @@ public class TransitionClass extends DefaultEdge implements Exportable {
    *
    * @return Name of the target state.
    */
-  public String getTargetStateName() {
-    return targetStateName;
+  public Optional<String> getTargetStateName() {
+    return Optional.ofNullable(targetStateName);
   }
 
   /**

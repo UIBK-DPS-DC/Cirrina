@@ -1,10 +1,14 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_VARIABLE_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_CREATE_COMMAND_EXECUTE;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.ArrayList;
@@ -21,7 +25,13 @@ public final class ActionCreateCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(Tracer tracer, Span parentSpan) throws UnsupportedOperationException {
+  public List<ActionCommand> execute(
+      Tracer tracer,
+      Span parentSpan,
+      DoubleGauge latencyGauge
+  ) throws UnsupportedOperationException {
+    final var a = System.nanoTime() / 1.0e6;
+
     try {
       final var variable = createAction.getVariable();
       final var variableName = variable.name();
@@ -32,7 +42,7 @@ public final class ActionCreateCommand extends ActionCommand {
           .startSpan();
 
       // Span attributes
-      span.setAttribute(ATTR_VARIABLE_NAME, variableName);
+      span.setAllAttributes(getAttributes());
 
       try (final var scope = span.makeCurrent()) {
         final var commands = new ArrayList<ActionCommand>();
@@ -62,6 +72,9 @@ public final class ActionCreateCommand extends ActionCommand {
         // Attempt to create the variable
         targetContext.create(variableName, value);
 
+        // Record latency
+        latencyGauge.set(System.nanoTime() / 1.0e6 - a);
+
         return commands;
       } finally {
         span.end();
@@ -69,5 +82,18 @@ public final class ActionCreateCommand extends ActionCommand {
     } catch (Exception e) {
       throw new UnsupportedOperationException("Could not execute create action", e);
     }
+  }
+
+  /**
+   * Get OpenTelemetry attributes of this state machine.
+   *
+   * @return Attributes.
+   */
+  @Override
+  public Attributes getAttributes() {
+    return Attributes.of(
+        AttributeKey.stringKey(ATTR_ACTION_NAME), createAction.getName().orElse(""),
+        AttributeKey.stringKey(ATTR_VARIABLE_NAME), createAction.getVariable().name()
+    );
   }
 }

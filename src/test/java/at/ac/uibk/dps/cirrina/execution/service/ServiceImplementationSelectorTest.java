@@ -6,15 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationsDescription;
 import org.junit.jupiter.api.Test;
 
 public class ServiceImplementationSelectorTest {
 
   @Test
   public void testSelectMatchingServices() {
-    final var servicesDescription = new ServiceImplementationsDescription();
-
     final var serviceDescriptions = new ServiceImplementationDescription[5];
 
     // Service one
@@ -92,9 +89,7 @@ public class ServiceImplementationSelectorTest {
       serviceDescriptions[4] = service;
     }
 
-    servicesDescription.serviceImplementations = serviceDescriptions;
-
-    final var services = ServicesImplementationBuilder.from(servicesDescription).build();
+    final var services = ServiceImplementationBuilder.from(serviceDescriptions).build();
 
     final var serviceSelector = new ServiceImplementationSelector(services);
 

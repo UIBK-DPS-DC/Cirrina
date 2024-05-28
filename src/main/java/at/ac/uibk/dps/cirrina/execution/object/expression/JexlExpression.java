@@ -71,7 +71,7 @@ public class JexlExpression extends Expression {
       return jexlScript.execute(new ExtentJexlContext(extent));
     } catch (Exception e) {
       throw new UnsupportedOperationException(
-          "The JEXL expression '%s' could to be parsed".formatted(jexlScript.getSourceText()), e);
+          "The JEXL expression '%s' could not be parsed".formatted(jexlScript.getSourceText()), e);
     }
   }
 

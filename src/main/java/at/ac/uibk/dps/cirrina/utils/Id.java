@@ -1,9 +1,9 @@
-package at.ac.uibk.dps.cirrina.execution.object.statemachine;
+package at.ac.uibk.dps.cirrina.utils;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public final class StateMachineId {
+public final class Id {
 
   private final UUID uuid = UUID.randomUUID();
 
@@ -20,7 +20,7 @@ public final class StateMachineId {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    var instanceId = (StateMachineId) o;
+    var instanceId = (Id) o;
     return Objects.equals(uuid, instanceId.uuid);
   }
 

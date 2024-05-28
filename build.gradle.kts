@@ -52,7 +52,7 @@ dependencies {
 
     implementation("io.nats:jnats:2.17.3")
 
-    implementation(platform("io.opentelemetry:opentelemetry-bom:1.37.0"));
+    implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"));
     implementation("io.opentelemetry:opentelemetry-api");
     implementation("io.opentelemetry:opentelemetry-sdk");
     implementation("io.opentelemetry:opentelemetry-exporter-logging");

@@ -16,7 +16,9 @@ public class NatsEventHandler extends EventHandler {
   public static final String PERIPHERAL_SOURCE = "peripheral";
 
   private static final Logger logger = LogManager.getLogger();
+
   private final Connection connection;
+
   private final Dispatcher dispatcher;
 
   public NatsEventHandler(String natsUrl) throws IOException {
@@ -52,12 +54,10 @@ public class NatsEventHandler extends EventHandler {
       // * is used as a wildcard, for more information, refer to the NATS documentation:
       // https://docs.nats.io/using-nats/developer/receiving/wildcards
       var subject = Stream.of(event.getChannel())
-          .map(channel -> {
-            return switch (channel) {
-              case EXTERNAL -> String.format("%s.%s", source, event.getName());
-              case GLOBAL -> String.format("%s.%s", GLOBAL_SOURCE, event.getName());
-              default -> throw new IllegalArgumentException(String.format("Unsupported channel '%s'", channel));
-            };
+          .map(channel -> switch (channel) {
+            case EXTERNAL -> String.format("%s.%s", source, event.getName());
+            case GLOBAL -> String.format("%s.%s", GLOBAL_SOURCE, event.getName());
+            default -> throw new IllegalArgumentException(String.format("Unsupported channel '%s'", channel));
           })
           .findFirst()
           .orElseThrow(() -> new IllegalArgumentException("No channel specified for the event"));

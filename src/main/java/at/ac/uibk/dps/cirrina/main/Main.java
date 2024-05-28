@@ -8,6 +8,7 @@ import at.ac.uibk.dps.cirrina.execution.scheduler.RoundRobinRuntimeScheduler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RuntimeScheduler;
 import at.ac.uibk.dps.cirrina.main.MainDistributed.DistributedArgs;
 import at.ac.uibk.dps.cirrina.main.MainShared.SharedArgs;
+import at.ac.uibk.dps.cirrina.utils.Id;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -32,7 +33,12 @@ public abstract class Main {
   /**
    * Main logger.
    */
-  private static final Logger logger = LogManager.getLogger();
+  protected static final Logger logger = LogManager.getLogger();
+
+  /**
+   * Runtime ID.
+   */
+  protected final Id runtimeId = new Id();
 
   /**
    * Shared arguments.

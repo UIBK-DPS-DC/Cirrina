@@ -26,6 +26,8 @@ import java.util.concurrent.CompletionException;
  */
 public class HttpServiceImplementation extends ServiceImplementation {
 
+  private final HttpClient httpClient = HttpClient.newHttpClient();
+
   /**
    * HTTP scheme.
    */
@@ -85,6 +87,12 @@ public class HttpServiceImplementation extends ServiceImplementation {
     final var payload = response.body();
 
     try {
+      // Empty payload
+      if (payload.length == 0) {
+        return List.of();
+      }
+
+      // Otherwise we expect a serialized collection of context variables
       return ContextVariableProtos.ContextVariables.parseFrom(payload)
           .getDataList().stream()
           .map(ContextVariableExchange::fromProto)
@@ -107,7 +115,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
    */
   @Override
   public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws UnsupportedOperationException {
-    try (final var client = HttpClient.newHttpClient()) {
+    try {
       if (input.stream().anyMatch(ContextVariable::isLazy)) {
         throw new UnsupportedOperationException("All variables need to be evaluated before service input can be converted to bytes");
       }
@@ -130,7 +138,8 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .uri(uri)
           .build();
 
-      return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApplyAsync(HttpServiceImplementation::handleResponse);
+      return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+          .thenApplyAsync(HttpServiceImplementation::handleResponse);
     } catch (URISyntaxException | UnsupportedOperationException e) {
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     }

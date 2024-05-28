@@ -104,7 +104,7 @@ public class StateMachineClassTest {
     assertDoesNotThrow(() -> {
       var t = stateMachineClass.findOnTransitionsFromStateByEventName(stateMachineClass.findStateClassByName("state1").get(), "e1");
       assertEquals(1, t.size());
-      assertEquals("state2", t.getFirst().getTargetStateName());
+      assertEquals("state2", t.getFirst().getTargetStateName().get());
 
       assertEquals(0,
           stateMachineClass.findOnTransitionsFromStateByEventName(stateMachineClass.findStateClassByName("state1").get(), "nonExisting")

@@ -70,7 +70,7 @@ public class DescriptionParser<T> {
   public T parse(String json) throws IllegalArgumentException {
     try {
       return mapper.readValue(json, valueType);
-    } catch (JsonProcessingException | IllegalArgumentException e) {
+    } catch (JsonProcessingException e) {
       throw new IllegalArgumentException("Parsing error", e);
     }
   }

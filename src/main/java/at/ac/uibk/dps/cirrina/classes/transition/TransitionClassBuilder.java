@@ -132,7 +132,7 @@ public abstract class TransitionClassBuilder {
       switch (transitionDescription) {
         case OnTransitionDescription onTransitionClass -> {
           return new OnTransitionClass(
-              onTransitionClass.target,
+              onTransitionClass.target.orElse(null),
               transitionDescription.elsee.orElse(null),
               resolveGuards.apply(onTransitionClass.guards),
               resolveActions.apply(onTransitionClass.actions),
@@ -141,7 +141,7 @@ public abstract class TransitionClassBuilder {
         }
         default -> {
           return new TransitionClass(
-              transitionDescription.target,
+              transitionDescription.target.orElse(null),
               transitionDescription.elsee.orElse(null),
               resolveGuards.apply(transitionDescription.guards),
               resolveActions.apply(transitionDescription.actions)
@@ -191,7 +191,7 @@ public abstract class TransitionClassBuilder {
     public TransitionClass build() {
       if (transitionClass instanceof OnTransitionClass onTransition) {
         return new OnTransitionClass(
-            onTransition.getTargetStateName(),
+            onTransition.getTargetStateName().orElse(null),
             onTransition.getElse().orElse(null),
             replaceNamedGuards(onTransition.getGuards()),
             onTransition.getActionGraph().getActions(),
@@ -199,7 +199,7 @@ public abstract class TransitionClassBuilder {
         );
       } else {
         return new TransitionClass(
-            transitionClass.getTargetStateName(),
+            transitionClass.getTargetStateName().orElse(null),
             transitionClass.getElse().orElse(null),
             replaceNamedGuards(transitionClass.getGuards()),
             transitionClass.getActionGraph().getActions()

@@ -14,13 +14,12 @@ import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
-import at.ac.uibk.dps.cirrina.execution.service.ServicesImplementationBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationsDescription;
 import at.ac.uibk.dps.cirrina.io.description.DescriptionParser;
 import at.ac.uibk.dps.cirrina.runtime.OfflineRuntime;
 import com.sun.net.httpserver.HttpExchange;
@@ -145,8 +144,6 @@ public class ServiceInvocationTest {
 
       final var runtime = new OfflineRuntime(mockEventHandler, mockPersistentContext);
 
-      var servicesDescription = new ServiceImplementationsDescription();
-
       var serviceDescriptions = new ServiceImplementationDescription[1];
 
       {
@@ -164,9 +161,7 @@ public class ServiceInvocationTest {
         serviceDescriptions[0] = service;
       }
 
-      servicesDescription.serviceImplementations = serviceDescriptions;
-
-      final var services = ServicesImplementationBuilder.from(servicesDescription).build();
+      final var services = ServiceImplementationBuilder.from(serviceDescriptions).build();
       final var serviceImplementationSelector = new ServiceImplementationSelector(services);
 
       final var instances = runtime.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);

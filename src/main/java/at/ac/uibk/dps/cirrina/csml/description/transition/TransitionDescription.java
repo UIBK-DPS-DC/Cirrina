@@ -8,7 +8,6 @@ import at.ac.uibk.dps.cirrina.csml.description.helper.GuardOrGuardReferenceDescr
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 
 /**
  * TransitionClass construct. Represents a transition that is to be taken regardless of an event.
@@ -34,8 +33,10 @@ import javax.validation.constraints.NotNull;
  */
 public class TransitionDescription extends Construct {
 
-  @NotNull
-  public String target;
+  /**
+   * The optional target state name. If the target is omitted, the transition is internal.
+   */
+  public Optional<String> target = Optional.empty();
 
   /**
    * The optional guards. All guard expression need to evaluate to true before a transitions can be taken. Can be provided as guard
@@ -56,7 +57,7 @@ public class TransitionDescription extends Construct {
   public List<ActionOrActionReferenceDescription> actions = List.of();
 
   /**
-   * The optional else target. If the guards evaluate to false, the state machine ends up in this target state.
+   * The optional else target name. If the guards evaluate to false, the state machine ends up in this target state.
    */
   @JsonProperty("else")
   public Optional<String> elsee = Optional.empty();

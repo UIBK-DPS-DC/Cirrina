@@ -111,7 +111,7 @@ public class JobMonitor implements CuratorCacheListener {
 
         // Call listener
         jobListener.newJob(job);
-      } catch (UnsupportedOperationException e) {
+      } catch (UnsupportedOperationException | IllegalArgumentException e) {
         logger.error("Failed to register job", e);
       }
     });
