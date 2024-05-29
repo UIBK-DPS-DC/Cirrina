@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.exchange;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +15,8 @@ public class ValueExchangeTest {
     final var l = 1L;
     final var d = 1.0;
     final var s = "1";
-    final var b = true;
+    final var bo = true;
+    final var by = new byte[] { 8, 1, 16, 0, 0, 0, 63, 24, 0, 0, 0, 0, 0, 0, 0, 0, 33, 8, 49, 16, 1, 26, 1, 49, 8, 32 };
 
     assertDoesNotThrow(() -> {
       assertEquals(i, ValueExchange.fromBytes(new ValueExchange(i).toBytes()).getValue());
@@ -22,7 +24,8 @@ public class ValueExchangeTest {
       assertEquals(l, ValueExchange.fromBytes(new ValueExchange(l).toBytes()).getValue());
       assertEquals(d, ValueExchange.fromBytes(new ValueExchange(d).toBytes()).getValue());
       assertEquals(s, ValueExchange.fromBytes(new ValueExchange(s).toBytes()).getValue());
-      assertEquals(b, ValueExchange.fromBytes(new ValueExchange(b).toBytes()).getValue());
+      assertEquals(bo, ValueExchange.fromBytes(new ValueExchange(bo).toBytes()).getValue());
+      assertArrayEquals(by, (byte[]) ValueExchange.fromBytes(new ValueExchange(by).toBytes()).getValue());
     });
   }
 }

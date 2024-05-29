@@ -23,5 +23,6 @@ message Value {
     double double = 4;
     string string = 5;
     bool bool = 6;
+    bytes bytes = 7;
   }
 }

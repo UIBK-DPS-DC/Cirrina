@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.exchange;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
@@ -15,6 +16,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
  *   <li>Double-precision floating-point</li>
  *   <li>String</li>
  *   <li>Boolean</li>
+ *   <li>Byte array</li>
  * </ul>
  */
 public class ValueExchange {
@@ -76,6 +78,9 @@ public class ValueExchange {
       case BOOL -> {
         return proto.getBool();
       }
+      case BYTES -> {
+        return proto.getBytes().toByteArray();
+      }
       default -> throw new UnsupportedOperationException("Context variable value type could not be read");
     }
   }
@@ -105,6 +110,7 @@ public class ValueExchange {
       case Double d -> builder.setDouble(d);
       case String s -> builder.setString(s);
       case Boolean b -> builder.setBool(b);
+      case byte[] bytes -> builder.setBytes(ByteString.copyFrom(bytes));
       default -> throw new UnsupportedOperationException("Value type could not be converted to proto");
     }
 
