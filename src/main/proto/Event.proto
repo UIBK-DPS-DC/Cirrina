@@ -16,8 +16,9 @@ message Event {
     PERIPHERAL = 3;
   }
 
-  string id = 1;
-  string name = 2;
-  Channel channel = 3;
-  repeated ContextVariable data = 4;
+  double createdTime = 1;
+  string id = 2;
+  string name = 3;
+  Channel channel = 4;
+  repeated ContextVariable data = 5;
 }

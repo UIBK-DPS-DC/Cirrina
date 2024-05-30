@@ -9,6 +9,7 @@ import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlFeatures;
 import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 
 /**
  * JEXL expression, an expression based on Apache Commons Java Expression Language (JEXL).
@@ -43,9 +44,10 @@ public class JexlExpression extends Expression {
    * @return JEXL engine.
    */
   private static JexlEngine getJexlEngine() {
+    final Map<String, Object> namespaces = new HashMap<>();
 
-    Map<String, Object> namespaces = new HashMap<>();
     namespaces.put("math", Math.class); // Enable math methods, e.g. math:sin(x), math:min(x, y), math:random()
+    namespaces.put("utility", Utility.class);
 
     var features = new JexlFeatures()
         .sideEffectGlobal(false)
@@ -55,6 +57,7 @@ public class JexlExpression extends Expression {
         .features(features)
         .cache(CACHE_SIZE)
         .namespaces(namespaces)
+        .permissions(JexlPermissions.UNRESTRICTED)
         .create();
   }
 
@@ -71,7 +74,7 @@ public class JexlExpression extends Expression {
       return jexlScript.execute(new ExtentJexlContext(extent));
     } catch (Exception e) {
       throw new UnsupportedOperationException(
-          "The JEXL expression '%s' could not be parsed".formatted(jexlScript.getSourceText()), e);
+          "The JEXL expression '%s' could not be executed".formatted(jexlScript.getSourceText()), e);
     }
   }
 
@@ -84,7 +87,8 @@ public class JexlExpression extends Expression {
 
     @Override
     public Object get(String key) {
-      return extent.resolve(key).orElseThrow(() -> new NoSuchElementException(String.format("Variable not found: %s", key)));
+      return extent.resolve(key)
+          .orElseThrow(() -> new NoSuchElementException(String.format("Variable not found: %s", key)));
     }
 
     @Override

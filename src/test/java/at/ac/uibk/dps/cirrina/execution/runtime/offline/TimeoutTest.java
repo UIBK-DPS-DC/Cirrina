@@ -70,11 +70,11 @@ public class TimeoutTest {
         }
       };
 
-      var mockPersistentContext = new InMemoryContext() {
+      var mockPersistentContext = new InMemoryContext(true) {
         private int next = 1;
 
         @Override
-        public void assign(String name, Object value) throws IOException {
+        public int assign(String name, Object value) throws IOException {
           // Don't expect any variables assigned except for v
           assertEquals("v", name);
 
@@ -85,7 +85,7 @@ public class TimeoutTest {
           assertEquals(next++, value);
           assertTrue((Integer) value <= 10);
 
-          super.assign(name, value);
+          return super.assign(name, value);
         }
       };
 

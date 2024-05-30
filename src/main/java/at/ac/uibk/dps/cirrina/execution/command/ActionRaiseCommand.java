@@ -1,16 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_RAISE_COMMAND_EXECUTE;
-
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleGauge;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,63 +20,29 @@ public final class ActionRaiseCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(
-      Tracer tracer,
-      Span parentSpan,
-      DoubleGauge latencyGauge
-  ) throws UnsupportedOperationException {
-    final var a = System.nanoTime() / 1.0e6;
-
+  public List<ActionCommand> execute() throws UnsupportedOperationException {
     try {
       final var event = raiseAction.getEvent();
 
-      // Create span
-      final var span = tracer.spanBuilder(SPAN_ACTION_RAISE_COMMAND_EXECUTE)
-          .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
-          .startSpan();
+      final var commands = new ArrayList<ActionCommand>();
 
-      // Span attributes
-      span.setAllAttributes(getAttributes());
-      span.setAllAttributes(event.getAttributes());
+      final var extent = executionContext.scope().getExtent();
+      final var eventHandler = executionContext.eventHandler();
+      final var eventListener = executionContext.eventListener();
 
-      try (final var scope = span.makeCurrent()) {
-        final var commands = new ArrayList<ActionCommand>();
+      final var evaluatedEvent = Event.ensureHasEvaluatedData(event, extent);
 
-        final var extent = executionContext.scope().getExtent();
-        final var eventHandler = executionContext.eventHandler();
-        final var eventListener = executionContext.eventListener();
-
-        final var evaluatedEvent = Event.ensureHasEvaluatedData(event, extent);
-
-        // Dispatch the event
-        if (evaluatedEvent.getChannel() == EventChannel.INTERNAL) {
-          eventListener.onReceiveEvent(evaluatedEvent);
-        } else {
-          // Send the event through the event handler
-          eventHandler.sendEvent(evaluatedEvent);
-        }
-
-        // Record latency
-        latencyGauge.set(System.nanoTime() / 1.0e6 - a);
-
-        return commands;
-      } finally {
-        span.end();
+      // Dispatch the event
+      if (evaluatedEvent.getChannel() == EventChannel.INTERNAL) {
+        eventListener.onReceiveEvent(evaluatedEvent);
+      } else {
+        // Send the event through the event handler
+        eventHandler.sendEvent(evaluatedEvent);
       }
+
+      return commands;
     } catch (Exception e) {
       throw new UnsupportedOperationException("Could not execute raise action", e);
     }
-  }
-
-  /**
-   * Get OpenTelemetry attributes of this state machine.
-   *
-   * @return Attributes.
-   */
-  @Override
-  public Attributes getAttributes() {
-    return Attributes.of(
-        AttributeKey.stringKey(ATTR_ACTION_NAME), raiseAction.getName().orElse("")
-    );
   }
 }

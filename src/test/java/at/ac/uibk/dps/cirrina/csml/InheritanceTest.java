@@ -167,7 +167,7 @@ public class InheritanceTest {
   @Test
   public void testMergeAndOverrideActions() throws Exception {
     var csm = getCollaborativeStateMachine();
-    try (var context = new InMemoryContext()) {
+    try (var context = new InMemoryContext(true)) {
       var stateMachine1 = getStateMachine1(csm);
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);

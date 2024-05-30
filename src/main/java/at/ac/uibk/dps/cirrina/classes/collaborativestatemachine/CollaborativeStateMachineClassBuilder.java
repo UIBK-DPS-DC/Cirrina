@@ -160,7 +160,7 @@ public final class CollaborativeStateMachineClassBuilder {
             contextDescription -> {
               try {
                 return ContextBuilder.from(contextDescription)
-                    .inMemoryContext()
+                    .inMemoryContext(true)
                     .build();
               } catch (IOException ignored) {
                 throw new IllegalStateException();

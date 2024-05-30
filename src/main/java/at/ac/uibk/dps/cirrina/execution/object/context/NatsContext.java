@@ -26,10 +26,13 @@ public final class NatsContext extends Context implements AutoCloseable {
   /**
    * Initializes an empty persistent context.
    *
+   * @param isLocal True if this context is local, otherwise false.
    * @param natsUrl NATS server URL.
    * @throws IOException If a connection could not be made to the NATS server.
    */
-  public NatsContext(String natsUrl, String bucketName) throws IOException {
+  public NatsContext(boolean isLocal, String natsUrl, String bucketName) throws IOException {
+    super(isLocal);
+
     // Attempt to connect to the NATS server
     try {
       connection = Nats.connect(natsUrl);
@@ -92,19 +95,24 @@ public final class NatsContext extends Context implements AutoCloseable {
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
+   * @return Byte size of stored data.
    * @throws IOException If a variable with the same name already exists.
    * @throws IOException If the variable could not be created.
    */
   @Override
-  public void create(String name, Object value) throws IOException {
+  public int create(String name, Object value) throws IOException {
     try {
       if (knownKeys.contains(name)) {
         throw new IOException("A variable with the name '%s' already exists".formatted(name));
       }
 
-      keyValue.create(name, toBytes(value));
+      final var data = toBytes(value);
+
+      keyValue.create(name, data);
 
       knownKeys.add(name);
+
+      return data.length;
     } catch (IOException | JetStreamApiException | UnsupportedOperationException e) {
       throw new IOException("Failed to create variable '%s'".formatted(name), e);
     }
@@ -115,17 +123,22 @@ public final class NatsContext extends Context implements AutoCloseable {
    *
    * @param name  Name of the context variable.
    * @param value New value of the context variable.
+   * @return Byte size of stored data.
    * @throws IOException If a variable with the same does not exist.
    * @throws IOException If the variable could not be assigned to.
    */
   @Override
-  public void assign(String name, Object value) throws IOException {
+  public int assign(String name, Object value) throws IOException {
     try {
       if (!knownKeys.contains(name)) {
         throw new IOException("A variable with the name '%s' does not exist".formatted(name));
       }
 
-      keyValue.put(name, toBytes(value));
+      final var data = toBytes(value);
+
+      keyValue.put(name, data);
+
+      return data.length;
     } catch (IOException | JetStreamApiException e) {
       throw new IOException("Failed to assign to the variable '%s'".formatted(name), e);
     }

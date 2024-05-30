@@ -125,16 +125,16 @@ public class ServiceInvocationTest {
       };
 
       // Mock a persistent context using an in-memory context
-      var mockPersistentContext = new InMemoryContext() {
+      var mockPersistentContext = new InMemoryContext(true) {
         @Override
-        public void assign(String name, Object value) throws IOException {
+        public int assign(String name, Object value) throws IOException {
           // Don't expect any variables assigned except for v
           assertTrue(name.equals("v") || name.equals("e"));
 
           // Which is an integer
           assertInstanceOf(Integer.class, value);
 
-          super.assign(name, value);
+          return super.assign(name, value);
         }
       };
 

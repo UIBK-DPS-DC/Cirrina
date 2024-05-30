@@ -1,13 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.object.transition;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_TRANSITION_TARGET_STATE_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_TRANSITION_TYPE;
-
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClass;
 import at.ac.uibk.dps.cirrina.execution.command.ActionCommand;
 import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,12 +44,5 @@ public final class Transition {
 
   public boolean isElse() {
     return isElse;
-  }
-
-  public Attributes getAttributes() {
-    return Attributes.of(
-        AttributeKey.stringKey(ATTR_TRANSITION_TARGET_STATE_NAME), getTargetStateName().orElse(""),
-        AttributeKey.stringKey(ATTR_TRANSITION_TYPE), isInternalTransition() ? "internal" : "external"
-    );
   }
 }

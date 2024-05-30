@@ -29,31 +29,32 @@ public class Extent {
         .toList();
   }
 
-  public void setOrCreate(String name, Object value) throws IOException {
+  public int setOrCreate(String name, Object value) throws IOException {
     final var last = extent.getLast();
 
     try {
-      last.assign(name, value);
+      return last.assign(name, value);
     } catch (IOException e) {
-      last.create(name, value);
+      return last.create(name, value);
     }
   }
 
-  public void trySet(String name, Object value) throws IOException {
-    var exceptions = extent.reversed().stream()
-        .map(context -> {
-          try {
-            context.assign(name, value);
-            return Optional.<IOException>empty();
-          } catch (IOException e) {
-            return Optional.of(e);
-          }
-        })
-        .flatMap(Optional::stream)
-        .toList();
+  public SetResult trySet(String name, Object value) throws IOException {
+    IOException lastException = null;
 
-    if (exceptions.size() == extent.size()) {
-      throw exceptions.getLast();
+    for (final var context : extent.reversed()) {
+      try {
+        final var size = context.assign(name, value);
+        return new SetResult(size, context);
+      } catch (IOException e) {
+        lastException = e;
+      }
+    }
+
+    if (lastException != null) {
+      throw lastException;
+    } else {
+      throw new IOException("Could not set variable value, no context could be found to assign to");
     }
   }
 
@@ -81,5 +82,9 @@ public class Extent {
         .filter(Optional::isPresent)
         .map(Optional::get)
         .findFirst();
+  }
+
+  public record SetResult(int size, Context context) {
+
   }
 }

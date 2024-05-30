@@ -15,7 +15,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public final class State implements Scope {
 
-  private final Context localContext = new InMemoryContext();
+  private final Context localContext = new InMemoryContext(true);
 
   private final StateClass stateClassObject;
 

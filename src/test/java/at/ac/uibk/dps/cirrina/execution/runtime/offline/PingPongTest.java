@@ -20,8 +20,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 
 public class PingPongTest {
 
@@ -73,11 +71,11 @@ public class PingPongTest {
         }
       };
 
-      final var mockPersistentContext = new InMemoryContext() {
+      final var mockPersistentContext = new InMemoryContext(true) {
         private int next = 1;
 
         @Override
-        public void assign(String name, Object value) throws IOException {
+        public int assign(String name, Object value) throws IOException {
           // Don't expect any variables assigned except for v
           assertEquals("v", name);
 
@@ -88,7 +86,7 @@ public class PingPongTest {
           assertEquals(next++, value);
           assertTrue((Integer) value <= 100);
 
-          super.assign(name, value);
+          return super.assign(name, value);
         }
       };
 

@@ -1,7 +1,5 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_INSTANCE_NEW;
-
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
@@ -164,15 +162,25 @@ public abstract class Runtime implements EventListener {
         continue;
       }
 
-      // Instantiate
+      // Instantiate the state machine instance hierarchy
       try {
+        // Parent
         var instanceId = newInstance(stateMachine, serviceImplementationSelector, parentInstanceId);
         instanceIds.add(instanceId);
 
+        final var nestedStateMachineIds = new ArrayList<Id>();
+
         // Add nested state machines
         if (!stateMachine.getNestedStateMachineClasses().isEmpty()) {
-          instanceIds.addAll(newInstances(stateMachine.getNestedStateMachineClasses(), serviceImplementationSelector, instanceId));
+          nestedStateMachineIds.addAll(
+              newInstances(stateMachine.getNestedStateMachineClasses(), serviceImplementationSelector, instanceId));
         }
+
+        // Add to the collection of created state machine instance IDs
+        instanceIds.addAll(nestedStateMachineIds);
+
+        // Provide the parent state machine with the IDs of its children
+        findInstance(instanceId).get().setNestedStateMachineIds(nestedStateMachineIds);
       } catch (UnsupportedOperationException e) {
         throw new UnsupportedOperationException("Could not instantiate state machine", e);
       }
@@ -207,10 +215,7 @@ public abstract class Runtime implements EventListener {
 
     logger.info("Creating new instance of '{}' - parent is '{}'...", stateMachineName, parentIdAsString);
 
-    // Create span
-    final var span = tracer.spanBuilder(SPAN_INSTANCE_NEW).startSpan();
-
-    try (final var scope = span.makeCurrent()) {
+    try {
       stateMachineInstancesLock.lock();
 
       // Find the parent state machine instance
@@ -230,9 +235,6 @@ public abstract class Runtime implements EventListener {
           parentInstance
       );
 
-      // Span attributes
-      span.setAllAttributes(stateMachineInstance.getAttributes());
-
       // Add event listener to the event handler
       eventHandler.addListener(stateMachineInstance);
 
@@ -249,8 +251,6 @@ public abstract class Runtime implements EventListener {
       return stateMachineInstanceId;
     } finally {
       stateMachineInstancesLock.unlock();
-
-      span.end();
     }
   }
 

@@ -4,6 +4,6 @@ public class InMemoryContextTest extends ContextTest {
 
   @Override
   protected Context createContext() {
-    return new InMemoryContext();
+    return new InMemoryContext(true);
   }
 }

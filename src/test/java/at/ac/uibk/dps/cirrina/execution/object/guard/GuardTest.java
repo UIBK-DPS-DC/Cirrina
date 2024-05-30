@@ -17,7 +17,7 @@ public class GuardTest {
 
   @Test
   public void testGuard() throws Exception {
-    try (var context = new InMemoryContext()) {
+    try (var context = new InMemoryContext(true)) {
       context.create("v", 5);
 
       var extent = new Extent(context);

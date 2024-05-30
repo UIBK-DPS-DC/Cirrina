@@ -59,7 +59,7 @@ public class PingPongTest {
           .getOpenTelemetrySdk();
 
       try (final var eventHandler = new NatsEventHandler(natsServerURL)) {
-        try (final var persistentContext = new NatsContext(natsServerURL, natsBucketName)) {
+        try (final var persistentContext = new NatsContext(true, natsServerURL, natsBucketName)) {
           final var curatorFramework = getCuratorFramework();
           curatorFramework.start();
 

@@ -52,10 +52,11 @@ public class ContextBuilder {
   /**
    * Build an in-memory context.
    *
+   * @param isLocal True if this context is local, otherwise false.
    * @return This builder.
    */
-  public ContextBuilder inMemoryContext() {
-    context = new InMemoryContext();
+  public ContextBuilder inMemoryContext(boolean isLocal) {
+    context = new InMemoryContext(isLocal);
 
     return this;
   }
@@ -63,14 +64,15 @@ public class ContextBuilder {
   /**
    * Build a NATS context.
    *
+   * @param isLocal    True if this context is local, otherwise false.
    * @param natsUrl    NATS url.
    * @param bucketName NATS bucket name.
    * @return This builder.
    * @throws IOException If the context could not be built.
    * @see NatsContext
    */
-  public ContextBuilder natsContext(String natsUrl, String bucketName) throws IOException {
-    context = new NatsContext(natsUrl, bucketName);
+  public ContextBuilder natsContext(boolean isLocal, String natsUrl, String bucketName) throws IOException {
+    context = new NatsContext(isLocal, natsUrl, bucketName);
 
     return this;
   }

@@ -38,7 +38,7 @@ public class NatsEventHandlerTest {
       }
     };
 
-    var localContext = new InMemoryContext();
+    var localContext = new InMemoryContext(true);
 
     var natsEventHandler = new NatsEventHandler(natsServerURL);
 
@@ -117,7 +117,7 @@ public class NatsEventHandlerTest {
       }
     };
 
-    var localContext = new InMemoryContext();
+    var localContext = new InMemoryContext(true);
 
     var natsEventHandler = new NatsEventHandler(natsServerURL);
 

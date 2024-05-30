@@ -1,14 +1,9 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_CHANNEL;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_NAME;
-
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
+import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +13,11 @@ import java.util.UUID;
  * Event, resembles an event as it is sent to state machine instances.
  */
 public final class Event {
+
+  /**
+   * Event created time.
+   */
+  private final double createdTime;
 
   /**
    * Event ID, is unique.
@@ -40,6 +40,21 @@ public final class Event {
   private final List<ContextVariable> data;
 
   /**
+   * Initializes this event. A random ID will be assigned to identify this event.
+   *
+   * @param name    Event name.
+   * @param channel Event channel.
+   * @param data    Event data.
+   */
+  public Event(String name, EventChannel channel, List<ContextVariable> data) {
+    this.createdTime = Time.timeInMillisecondsSinceEpoch();
+    this.id = UUID.randomUUID().toString();
+    this.name = name;
+    this.channel = channel;
+    this.data = data;
+  }
+
+  /**
    * Initializes this event.
    *
    * @param id      Event ID.
@@ -48,6 +63,7 @@ public final class Event {
    * @param data    Event data.
    */
   public Event(String id, String name, EventChannel channel, List<ContextVariable> data) {
+    this.createdTime = Time.timeInMillisecondsSinceEpoch();
     this.id = id;
     this.name = name;
     this.channel = channel;
@@ -55,14 +71,17 @@ public final class Event {
   }
 
   /**
-   * Initializes this event. A random ID will be assigned to identify this event.
+   * Initializes this event.
    *
-   * @param name    Event name.
-   * @param channel Event channel.
-   * @param data    Event data.
+   * @param createdTime Event created time.
+   * @param id          Event ID.
+   * @param name        Event name.
+   * @param channel     Event channel.
+   * @param data        Event data.
    */
-  public Event(String name, EventChannel channel, List<ContextVariable> data) {
-    this.id = UUID.randomUUID().toString();
+  public Event(double createdTime, String id, String name, EventChannel channel, List<ContextVariable> data) {
+    this.createdTime = createdTime;
+    this.id = id;
     this.name = name;
     this.channel = channel;
     this.data = data;
@@ -116,6 +135,15 @@ public final class Event {
   }
 
   /**
+   * Returns the created time.
+   *
+   * @return Created time.
+   */
+  public double getCreatedTime() {
+    return createdTime;
+  }
+
+  /**
    * Returns the ID.
    *
    * @return ID.
@@ -149,18 +177,5 @@ public final class Event {
    */
   public List<ContextVariable> getData() {
     return data;
-  }
-
-  /**
-   * Get OpenTelemetry attributes of this state machine.
-   *
-   * @return Attributes.
-   */
-  public Attributes getAttributes() {
-    return Attributes.of(
-        AttributeKey.stringKey(ATTR_EVENT_ID), id,
-        AttributeKey.stringKey(ATTR_EVENT_NAME), name,
-        AttributeKey.stringKey(ATTR_EVENT_CHANNEL), channel.toString()
-    );
   }
 }

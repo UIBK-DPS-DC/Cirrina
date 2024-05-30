@@ -1,7 +1,5 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.METRIC_UPTIME;
-
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
@@ -12,6 +10,7 @@ import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.job.Job;
 import at.ac.uibk.dps.cirrina.runtime.job.JobListener;
 import at.ac.uibk.dps.cirrina.runtime.job.JobMonitor;
+import at.ac.uibk.dps.cirrina.utils.Time;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.util.List;
@@ -28,7 +27,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
   /**
    * Start time.
    */
-  private final double startTime = System.nanoTime() / 1.0e6;
+  private final double startTime = Time.timeInMillisecondsSinceStart();
 
   /**
    * Job monitor, using ZooKeeper to monitor new jobs.
@@ -112,15 +111,17 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
         // Assign local data from the job description if the job description contains any local data
         if (!job.getJobDescription().localData.isEmpty()) {
+          // Get the created state machine instance, this is assuming that the first ID is the parent state machine instance ID
+          final var parentInstanceId = instanceIds.stream()
+              .findFirst()
+              .orElseThrow(() -> new UnsupportedOperationException(
+                  "State machine '%s' was not instantiated.".formatted(stateMachine.getName())));
 
-          // Get the created state machine instance
-          final var parentInstanceId = instanceIds.stream().findFirst().orElseThrow(() -> new UnsupportedOperationException(
-              "State machine '%s' was not instantiated.".formatted(stateMachine.getName())));
-          final var stateMachineInstance = findInstance(parentInstanceId).orElseThrow(() -> new UnsupportedOperationException(
-              "State machine '%s' with id '%s' was not instantiated.".formatted(stateMachine.getName(), parentInstanceId)));
+          final var stateMachineInstance = findInstance(parentInstanceId)
+              .orElseThrow(() -> new UnsupportedOperationException(
+                  "State machine '%s' with id '%s' was not instantiated.".formatted(stateMachine.getName(), parentInstanceId)));
 
           for (final var localData : job.getJobDescription().localData.entrySet()) {
-
             try {
               // Assign local data entry, evaluate the value as an expression
               final var valueExpression = ExpressionBuilder.from(new ExpressionDescription(localData.getValue())).build();
@@ -146,18 +147,14 @@ public class OnlineRuntime extends Runtime implements JobListener {
    * Run until shut down.
    */
   public void run() {
-    // Increment executed actions counter
-    try (final var uptime = meter.gaugeBuilder(METRIC_UPTIME)
-        .buildWithCallback(measurement -> measurement.record((System.nanoTime() / 1.0e6 - startTime)))) {
-      final var SLEEP_TIME_IN_MS = 10000;
+    final var SLEEP_TIME_IN_MS = 10000;
 
-      try {
-        while (!isShutdown()) {
-          Thread.sleep(SLEEP_TIME_IN_MS);
-        }
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+    try {
+      while (!isShutdown()) {
+        Thread.sleep(SLEEP_TIME_IN_MS);
       }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 }

@@ -182,7 +182,7 @@ public abstract class Main {
    * @throws IOException If the persistent context could not be constructed.
    */
   private NatsContext newNatsPersistentContext() throws IOException {
-    return new NatsContext(args.natsPersistentContextArgs.natsUrl, args.natsPersistentContextArgs.bucketName);
+    return new NatsContext(false, args.natsPersistentContextArgs.natsUrl, args.natsPersistentContextArgs.bucketName);
   }
 
   /**

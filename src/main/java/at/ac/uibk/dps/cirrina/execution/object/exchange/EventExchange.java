@@ -53,6 +53,7 @@ public class EventExchange {
    */
   public static Event fromProto(EventProtos.Event proto) {
     try {
+      final var createdTime = proto.getCreatedTime();
       final var id = proto.getId();
       final var name = proto.getName();
       final var channel = EventChannel.valueOf(proto.getChannel().name());
@@ -60,7 +61,7 @@ public class EventExchange {
           .map(ContextVariableExchange::fromProto)
           .toList();
 
-      return new Event(id, name, channel, data);
+      return new Event(createdTime, id, name, channel, data);
     } catch (IllegalArgumentException e) {
       throw new UnsupportedOperationException("Event has an unrecognized channel", e);
     }
@@ -102,6 +103,7 @@ public class EventExchange {
         .toList();
 
     return EventProtos.Event.newBuilder()
+        .setCreatedTime(event.getCreatedTime())
         .setId(event.getId())
         .setName(event.getName())
         .setChannel(channel)

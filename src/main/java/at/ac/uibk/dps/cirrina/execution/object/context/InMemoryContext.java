@@ -14,8 +14,11 @@ public class InMemoryContext extends Context {
 
   /**
    * Initializes an empty in-memory context.
+   *
+   * @param isLocal True if this context is local, otherwise false.
    */
-  public InMemoryContext() {
+  public InMemoryContext(boolean isLocal) {
+    super(isLocal);
   }
 
   /**
@@ -37,36 +40,56 @@ public class InMemoryContext extends Context {
 
   /**
    * Creates a context variable.
+   * <p>
+   * The byte size is only returned for binary (byte array) data, and is 0 otherwise.
    *
    * @param name  Name of the context variable.
    * @param value Value of the context variable.
+   * @return Byte size of stored data.
    * @throws IOException If a variable with the same name already exists.
    * @throws IOException If the variable could not be created.
    */
   @Override
-  public void create(String name, Object value) throws IOException {
+  public int create(String name, Object value) throws IOException {
     if (values.containsKey(name)) {
       throw new IOException("A variable with the name '%s' already exists".formatted(name));
     }
 
     values.put(name, value);
+
+    // We only return the byte size for byte arrays
+    if (value instanceof byte[]) {
+      return ((byte[]) value).length;
+    }
+
+    return 0;
   }
 
   /**
    * Assigns to a context variable.
+   * <p>
+   * The byte size is only returned for binary (byte array) data, and is 0 otherwise.
    *
    * @param name  Name of the context variable.
    * @param value New value of the context variable.
+   * @return Byte size of stored data.
    * @throws IOException If a variable with the same does not exist.
    * @throws IOException If the variable could not be assigned to.
    */
   @Override
-  public void assign(String name, Object value) throws IOException {
+  public int assign(String name, Object value) throws IOException {
     if (!values.containsKey(name)) {
       throw new IOException("A variable with the name '%s' does not exist".formatted(name));
     }
 
     values.put(name, value);
+
+    // We only return the byte size for byte arrays
+    if (value instanceof byte[]) {
+      return ((byte[]) value).length;
+    }
+
+    return 0;
   }
 
   /**

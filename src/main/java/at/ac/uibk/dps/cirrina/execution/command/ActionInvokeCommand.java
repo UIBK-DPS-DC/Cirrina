@@ -1,17 +1,11 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_IS_LOCAL;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_SERVICE_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.SPAN_ACTION_INVOKE_COMMAND_EXECUTE;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleGauge;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
+import at.ac.uibk.dps.cirrina.tracing.Gauges;
+import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -44,12 +38,8 @@ public final class ActionInvokeCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(
-      Tracer tracer,
-      Span parentSpan,
-      DoubleGauge latencyGauge
-  ) throws UnsupportedOperationException {
-    final var a = System.nanoTime() / 1.0e6;
+  public List<ActionCommand> execute() throws UnsupportedOperationException {
+    final var start = Time.timeInMillisecondsSinceStart();
 
     try {
       final var serviceType = invokeAction.getServiceType();
@@ -63,95 +53,71 @@ public final class ActionInvokeCommand extends ActionCommand {
               () -> new IllegalArgumentException(
                   "Could not find a service implementation for the service type '%s'".formatted(serviceType)));
 
-      // Create span
-      final var span = tracer.spanBuilder(SPAN_ACTION_INVOKE_COMMAND_EXECUTE)
-          .setParent(io.opentelemetry.context.Context.current().with(parentSpan))
-          .startSpan();
+      final var commands = new ArrayList<ActionCommand>();
 
-      // Span attributes
-      span.setAllAttributes(getAttributes());
+      final var extent = executionContext.scope().getExtent();
+      final var eventListener = executionContext.eventListener();
 
-      try (final var scope = span.makeCurrent()) {
-        final var commands = new ArrayList<ActionCommand>();
+      // Evaluate all input
+      var input = new ArrayList<ContextVariable>();
 
-        final var extent = executionContext.scope().getExtent();
-        final var eventListener = executionContext.eventListener();
+      for (var variable : invokeAction.getInput()) {
+        input.add(variable.evaluate(extent));
+      }
 
-        // Evaluate all input
-        var input = new ArrayList<ContextVariable>();
+      // Invoke (asynchronously)
+      serviceImplementation.invoke(input)
+          .exceptionally(e -> {
+            logger.error("Service invocation failed: {}", e.getMessage());
+            return null;
+          }).thenAccept(output -> {
+            // Assign service output to the provided output context variables
+            for (final var outputReference : invokeAction.getOutput()) {
 
-        for (var variable : invokeAction.getInput()) {
-          input.add(variable.evaluate(extent));
-        }
+              // Find output reference in the service output
+              final var outputVariable = output.stream()
+                  .filter(variable -> variable.name().equals(outputReference.reference))
+                  .findFirst();
 
-        // Invoke (asynchronously)
-        serviceImplementation.invoke(input)
-            .exceptionally(e -> {
-              span.addEvent("responseFailure");
-
-              logger.error("Service invocation failed: {}", e.getMessage());
-              return null;
-            }).thenAccept(output -> {
-              span.addEvent("responseSuccess");
-
-              // Assign service output to the provided output context variables
-              for (final var outputReference : invokeAction.getOutput()) {
-
-                // Find output reference in the service output
-                final var outputVariable = output.stream()
-                    .filter(variable -> variable.name().equals(outputReference.reference))
-                    .findFirst();
-
-                if (outputVariable.isEmpty()) {
-                  logger.warn(
-                      "Service invocation output does not contain the expected output variable '{}'.",
-                      outputReference.reference
-                  );
-                  continue;
-                }
-
-                try {
-                  extent.trySet(outputReference.reference, outputVariable.get().value());
-                } catch (Exception e) {
-                  logger.error(
-                      "Failed to assign service output to output variable '{}': {}",
-                      outputReference.reference, e.getMessage()
-                  );
-                }
+              if (outputVariable.isEmpty()) {
+                logger.warn(
+                    "Service invocation output does not contain the expected output variable '{}'.",
+                    outputReference.reference
+                );
+                continue;
               }
 
-              // Create new events with output data as event data
-              final var doneEvents = invokeAction.getDone().stream()
-                  .map(event -> event.withData(output))
-                  .toList();
+              try {
+                extent.trySet(outputReference.reference, outputVariable.get().value());
+              } catch (Exception e) {
+                logger.error(
+                    "Failed to assign service output to output variable '{}': {}",
+                    outputReference.reference, e.getMessage()
+                );
+              }
+            }
 
-              // Raise all events (internally)
-              doneEvents.forEach(eventListener::onReceiveEvent);
+            // Create new events with output data as event data
+            final var doneEvents = invokeAction.getDone().stream()
+                .map(event -> event.withData(output))
+                .toList();
 
-              // Record latency
-              latencyGauge.set(System.nanoTime() / 1.0e6 - a);
-            });
+            // Raise all events (internally)
+            doneEvents.forEach(eventListener::onReceiveEvent);
 
-        return commands;
-      } finally {
-        span.end();
-      }
+            // Measure latency
+            final var now = Time.timeInMillisecondsSinceStart();
+            final var delta = now - start;
+
+            executionContext.gauges().getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(delta,
+                Gauges.attributesForInvocation(
+                    serviceImplementation.isLocal() ? "local" : "remote"
+                ));
+          });
+
+      return commands;
     } catch (Exception e) {
       throw new UnsupportedOperationException("Could not execute invoke action", e);
     }
-  }
-
-  /**
-   * Get OpenTelemetry attributes of this state machine.
-   *
-   * @return Attributes.
-   */
-  @Override
-  public Attributes getAttributes() {
-    return Attributes.of(
-        AttributeKey.stringKey(ATTR_ACTION_NAME), invokeAction.getName().orElse(""),
-        AttributeKey.stringKey(ATTR_SERVICE_NAME), invokeAction.getServiceType(),
-        AttributeKey.stringKey(ATTR_SERVICE_IS_LOCAL), invokeAction.isLocal() ? "true" : "false"
-    );
   }
 }
