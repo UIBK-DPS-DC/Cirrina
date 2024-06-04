@@ -119,7 +119,7 @@ public final class StateClass implements Exportable {
     this.entryActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.entryActionGraph), childParameters.entryActions).build();
     this.exitActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.exitActionGraph), childParameters.exitActions).build();
     this.whileActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.whileActionGraph), childParameters.whileActions).build();
-    this.afterActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.afterActionGraph), childParameters.whileActions).build();
+    this.afterActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.afterActionGraph), childParameters.afterActions).build();
 
     this.abstractt = childParameters.abstractt;
 

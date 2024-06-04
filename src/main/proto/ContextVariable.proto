@@ -24,5 +24,21 @@ message Value {
     string string = 5;
     bool bool = 6;
     bytes bytes = 7;
+    ValueCollection array = 8;
+    ValueCollection list = 9;
+    ValueMap map = 10;
   }
+}
+
+message ValueCollection {
+  repeated Value entry = 1;
+}
+
+message ValueMap {
+  repeated ValueMapEntry entry = 1;
+}
+
+message ValueMapEntry {
+  Value key = 1;
+  Value value = 2;
 }
