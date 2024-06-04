@@ -60,7 +60,7 @@ public final class ActionCreateCommand extends ActionCommand {
 
       executionContext.gauges().getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
           Gauges.attributesForData(
-              "assign",
+              "create",
               !isPersistent ? "local" : "persistent",
               size
           ));

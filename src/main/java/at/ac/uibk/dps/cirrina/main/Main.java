@@ -6,8 +6,7 @@ import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.event.NatsEventHandler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RoundRobinRuntimeScheduler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RuntimeScheduler;
-import at.ac.uibk.dps.cirrina.main.MainDistributed.DistributedArgs;
-import at.ac.uibk.dps.cirrina.main.MainShared.SharedArgs;
+import at.ac.uibk.dps.cirrina.runtime.OnlineRuntime;
 import at.ac.uibk.dps.cirrina.utils.Id;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -28,17 +27,17 @@ import org.apache.logging.log4j.core.LoggerContext;
 /**
  * Main, is the entry-point to the runtime system.
  */
-public abstract class Main {
+public class Main {
 
   /**
    * Main logger.
    */
-  protected static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   /**
    * Runtime ID.
    */
-  protected final Id runtimeId = new Id();
+  private final Id runtimeId = new Id();
 
   /**
    * Shared arguments.
@@ -50,7 +49,7 @@ public abstract class Main {
    *
    * @param args The arguments to the main object.
    */
-  protected Main(Args args) {
+  private Main(Args args) {
     this.args = args;
   }
 
@@ -61,39 +60,17 @@ public abstract class Main {
     // Construct shared arguments
     final var args = new Args();
 
-    // Construct actionCommand arguments
-    final var distributedArgs = new DistributedArgs();
-    final var sharedArgs = new SharedArgs();
-
     // Construct argument parser
     final var jc = JCommander.newBuilder()
         .addObject(args)
-        .addCommand("distributed", distributedArgs)
-        .addCommand("shared", sharedArgs)
         .build();
 
     try {
       // Parse arguments
       jc.parse(argv);
 
-      // Acquire requested actionCommand
-      final var command = jc.getParsedCommand();
-
-      if (command == null) {
-        throw new ParameterException("Provide either distributed or shared ");
-      }
-
-      // Instantiate either the distributed or shared runtime main
-      switch (command) {
-        case "distributed":
-          new MainDistributed(args, distributedArgs).run();
-          break;
-        case "shared":
-          new MainShared(args, sharedArgs).run();
-          break;
-        default:
-          throw new ParameterException("Provide either distributed or shared ");
-      }
+      // Instantiate the runtime main
+      new Main(args).run();
     } catch (ParameterException e) {
       logger.error(e.getMessage());
     }
@@ -113,7 +90,37 @@ public abstract class Main {
   /**
    * Run the runtime.
    */
-  public abstract void run();
+  public void run() {
+    // Connect to event system
+    try (final var eventHandler = newEventHandler()) {
+      eventHandler.subscribe(NatsEventHandler.GLOBAL_SOURCE, "*");
+      eventHandler.subscribe(NatsEventHandler.PERIPHERAL_SOURCE, "*");
+
+      // Connect to persistent context system
+      try (final var persistentContext = newPersistentContext()) {
+        // Connect to coordination system
+        try (final var curatorFramework = newCuratorFramework()) {
+          curatorFramework.start();
+
+          // Acquire OpenTelemetry instance
+          final var openTelemetry = getOpenTelemetry();
+
+          // Create the shared runtime
+          final var runtime = new OnlineRuntime(eventHandler, persistentContext, openTelemetry, curatorFramework);
+
+          runtime.run();
+
+          logger.info("Done running");
+        }
+      }
+    } catch (InterruptedException e) {
+      logger.info("Interrupted.");
+
+      Thread.currentThread().interrupt();
+    } catch (Exception e) {
+      logger.error("Could not initialize the shared runtime", e);
+    }
+  }
 
   /**
    * Constructs a new runtime scheduler according to the provided arguments.

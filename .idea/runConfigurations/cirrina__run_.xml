@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cirrina [run shared]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="cirrina [run]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
@@ -16,7 +16,6 @@
       <option name="taskNames">
         <list>
           <option value="run" />
-          <option value="--args=&quot;shared&quot;" />
         </list>
       </option>
       <option name="vmOptions" value="" />
