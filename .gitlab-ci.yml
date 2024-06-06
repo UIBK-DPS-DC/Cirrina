@@ -21,6 +21,32 @@ build:
       - "**/build/generated/source/proto/main/*"
     expire_in: 1 week
 
+docker-build-main:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
+  rules:
+    - if: '$CI_REPOSITORY == "upstream" && $CI_COMMIT_REF_NAME == "main"'
+
+docker-build-develop:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  rules:
+    - if: '$CI_REPOSITORY == "upstream" && $CI_COMMIT_REF_NAME == "develop"'
+
 test:
   stage: test
   before_script:
