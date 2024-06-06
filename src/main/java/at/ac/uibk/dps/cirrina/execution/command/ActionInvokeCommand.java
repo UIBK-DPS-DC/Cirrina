@@ -1,9 +1,11 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
+import at.ac.uibk.dps.cirrina.tracing.Counters;
 import at.ac.uibk.dps.cirrina.tracing.Gauges;
 import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
@@ -39,6 +41,10 @@ public final class ActionInvokeCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
+    // Increment events received counter
+    executionContext.counters().getCounter(COUNTER_INVOCATIONS).add(1,
+        Counters.attributesForInvocation());
+
     final var start = Time.timeInMillisecondsSinceStart();
 
     try {

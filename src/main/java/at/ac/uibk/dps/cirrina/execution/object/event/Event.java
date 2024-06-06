@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
+import static at.ac.uibk.dps.cirrina.utils.Uuid.insecureUuid;
+
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
@@ -7,7 +9,6 @@ import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Event, resembles an event as it is sent to state machine instances.
@@ -48,7 +49,7 @@ public final class Event {
    */
   public Event(String name, EventChannel channel, List<ContextVariable> data) {
     this.createdTime = Time.timeInMillisecondsSinceEpoch();
-    this.id = UUID.randomUUID().toString();
+    this.id = insecureUuid().toString();
     this.name = name;
     this.channel = channel;
     this.data = data;

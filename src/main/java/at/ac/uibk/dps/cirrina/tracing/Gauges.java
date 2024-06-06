@@ -1,9 +1,9 @@
 package at.ac.uibk.dps.cirrina.tracing;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_DATA_LOCALITY;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_DATA_OPERATION;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_DATA_SIZE;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_INVOCATION_LOCALITY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_LOCALITY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_OPERATION;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_SIZE;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_INVOCATION_LOCALITY;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleGauge;
@@ -23,15 +23,15 @@ public class Gauges {
 
   public static Attributes attributesForData(String operation, String dataLocality, int dataSize) {
     return Attributes.builder()
-        .put(COUNTER_ATTR_DATA_OPERATION, operation)
-        .put(COUNTER_ATTR_DATA_LOCALITY, dataLocality)
-        .put(COUNTER_ATTR_DATA_SIZE, dataSize)
+        .put(GAUGE_ATTR_DATA_OPERATION, operation)
+        .put(GAUGE_ATTR_DATA_LOCALITY, dataLocality)
+        .put(GAUGE_ATTR_DATA_SIZE, dataSize)
         .build();
   }
 
   public static Attributes attributesForInvocation(String serviceLocality) {
     return Attributes.builder()
-        .put(COUNTER_ATTR_INVOCATION_LOCALITY, serviceLocality)
+        .put(GAUGE_ATTR_INVOCATION_LOCALITY, serviceLocality)
         .build();
   }
 

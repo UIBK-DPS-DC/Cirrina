@@ -31,6 +31,11 @@ public class Counters {
         .build();
   }
 
+  public static Attributes attributesForInvocation() {
+    return Attributes.builder()
+        .build();
+  }
+
   public void addCounter(String name) {
     counters.put(name, meter.counterBuilder(name).build());
   }

@@ -17,6 +17,8 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * HTTP service implementation, a service implementation that is accessible through HTTP.
@@ -27,7 +29,17 @@ import java.util.concurrent.CompletionException;
  */
 public class HttpServiceImplementation extends ServiceImplementation {
 
-  private final HttpClient httpClient = HttpClient.newHttpClient();
+  /**
+   * HTTP client.
+   */
+  private final HttpClient httpClient = HttpClient.newBuilder()
+      .executor(Executors.newCachedThreadPool())
+      .build();
+
+  /**
+   * Handle executor.
+   */
+  private final Executor handleExecutor = Executors.newCachedThreadPool();
 
   /**
    * HTTP scheme.
@@ -140,7 +152,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-          .thenApplyAsync(HttpServiceImplementation::handleResponse);
+          .thenApplyAsync(HttpServiceImplementation::handleResponse, handleExecutor);
     } catch (URISyntaxException | UnsupportedOperationException e) {
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     }

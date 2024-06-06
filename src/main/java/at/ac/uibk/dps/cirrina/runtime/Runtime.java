@@ -16,10 +16,11 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -75,14 +76,9 @@ public abstract class Runtime implements EventListener {
   private final ExecutorService stateMachineInstanceExecutorService = Executors.newCachedThreadPool();
 
   /**
-   * StateClass machine instance collection lock.
-   */
-  private final ReentrantLock stateMachineInstancesLock = new ReentrantLock();
-
-  /**
    * List of instantiated state machines.
    */
-  private final List<StateMachine> stateMachines = new ArrayList<>();
+  private final Queue<StateMachine> stateMachines = new ConcurrentLinkedQueue<>();
 
   /**
    * Initializes this runtime instance.
@@ -111,15 +107,9 @@ public abstract class Runtime implements EventListener {
    * @return The state machine instance or an empty optional if no state machine instance was found for the given instance id.
    */
   public Optional<StateMachine> findInstance(Id stateMachineId) {
-    try {
-      stateMachineInstancesLock.lock();
-
-      return stateMachines.stream()
-          .filter(stateMachineInstance -> stateMachineInstance.getStateMachineInstanceId().equals(stateMachineId))
-          .findFirst();
-    } finally {
-      stateMachineInstancesLock.unlock();
-    }
+    return stateMachines.stream()
+        .filter(stateMachineInstance -> stateMachineInstance.getStateMachineInstanceId().equals(stateMachineId))
+        .findFirst();
   }
 
   /**
@@ -215,43 +205,37 @@ public abstract class Runtime implements EventListener {
 
     logger.info("Creating new instance of '{}' - parent is '{}'...", stateMachineName, parentIdAsString);
 
-    try {
-      stateMachineInstancesLock.lock();
+    // Find the parent state machine instance
+    final var parentInstance = parentInstanceId == null ? null : findInstance(parentInstanceId).orElse(null);
 
-      // Find the parent state machine instance
-      final var parentInstance = parentInstanceId == null ? null : findInstance(parentInstanceId).orElse(null);
-
-      if (parentInstanceId != null && parentInstance == null) {
-        throw new UnsupportedOperationException(
-            "The parent state machine instance with ID '%s' could not be found".formatted(parentInstanceId.toString()));
-      }
-
-      // Create the state machine instance
-      final var stateMachineInstance = new StateMachine(
-          this,
-          stateMachineClass,
-          serviceImplementationSelector,
-          openTelemetry,
-          parentInstance
-      );
-
-      // Add event listener to the event handler
-      eventHandler.addListener(stateMachineInstance);
-
-      // Add to the collection of state machine instances
-      stateMachines.add(stateMachineInstance);
-
-      // Execute
-      stateMachineInstanceExecutorService.submit(stateMachineInstance);
-
-      final var stateMachineInstanceId = stateMachineInstance.getStateMachineInstanceId();
-
-      logger.info("Created an instance of '{}' with ID '{}'", stateMachineName, stateMachineInstanceId.toString());
-
-      return stateMachineInstanceId;
-    } finally {
-      stateMachineInstancesLock.unlock();
+    if (parentInstanceId != null && parentInstance == null) {
+      throw new UnsupportedOperationException(
+          "The parent state machine instance with ID '%s' could not be found".formatted(parentInstanceId.toString()));
     }
+
+    // Create the state machine instance
+    final var stateMachineInstance = new StateMachine(
+        this,
+        stateMachineClass,
+        serviceImplementationSelector,
+        openTelemetry,
+        parentInstance
+    );
+
+    // Add event listener to the event handler
+    eventHandler.addListener(stateMachineInstance);
+
+    // Add to the collection of state machine instances
+    stateMachines.add(stateMachineInstance);
+
+    // Execute
+    stateMachineInstanceExecutorService.submit(stateMachineInstance);
+
+    final var stateMachineInstanceId = stateMachineInstance.getStateMachineInstanceId();
+
+    logger.info("Created an instance of '{}' with ID '{}'", stateMachineName, stateMachineInstanceId.toString());
+
+    return stateMachineInstanceId;
   }
 
   /**
@@ -268,16 +252,12 @@ public abstract class Runtime implements EventListener {
    */
   public boolean waitForCompletion(int timeoutInMs) {
     try {
-      stateMachineInstancesLock.lock();
-
       shutdown();
 
       // Wait for completion
       return stateMachineInstanceExecutorService.awaitTermination(timeoutInMs, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-    } finally {
-      stateMachineInstancesLock.unlock();
     }
 
     return false;

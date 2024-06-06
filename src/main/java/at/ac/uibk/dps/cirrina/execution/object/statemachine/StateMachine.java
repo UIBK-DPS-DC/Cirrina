@@ -2,6 +2,7 @@ package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_EVENTS_HANDLED;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_EVENTS_RECEIVED;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_RAISE_LATENCY;
@@ -37,8 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,7 +69,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   /**
    * Event queue, contains events received by the state machine.
    */
-  private final BlockingQueue<Event> eventQueue = new LinkedBlockingDeque<>();
+  private final Queue<Event> eventQueue = new ConcurrentLinkedQueue<>();
 
   /**
    * Parent runtime.
@@ -165,6 +166,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
     counters.addCounter(COUNTER_EVENTS_RECEIVED);
     counters.addCounter(COUNTER_EVENTS_HANDLED);
+    counters.addCounter(COUNTER_INVOCATIONS);
   }
 
   /**
@@ -187,6 +189,10 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
     // Add to the internal event queue
     eventQueue.add(event);
+
+    synchronized (this) {
+      notify();
+    }
 
     // Propagate internal events to nested state machines
     if (event.getChannel() == EventChannel.INTERNAL) {
@@ -230,6 +236,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         stateMachineEventHandler,      // Event handler
         this,                          // Event listener
         gauges,                        // Gauges
+        counters,                      // Counters
         false                          // Is while?
     ));
   }
@@ -248,6 +255,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         stateMachineEventHandler,      // Event handler
         this,                          // Event listener
         gauges,                        // Gauges
+        counters,                      // Counters
         false                          // Is while?
     ));
   }
@@ -594,7 +602,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private Optional<Transition> handleEvent() throws InterruptedException, UnsupportedOperationException {
     // Wait for the next event, this call is blocking
-    final var event = eventQueue.take();
+    Event event;
+    synchronized (this) {
+      while (eventQueue.isEmpty()) {
+        wait();
+      }
+      event = eventQueue.poll();
+    }
 
     // Increment events received counter
     counters.getCounter(COUNTER_EVENTS_HANDLED).add(1,
