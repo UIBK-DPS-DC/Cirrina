@@ -11,7 +11,7 @@ import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
-import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
+import at.ac.uibk.dps.cirrina.execution.service.OptimalServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.io.description.DescriptionParser;
 import at.ac.uibk.dps.cirrina.runtime.OfflineRuntime;
 import com.google.common.collect.ArrayListMultimap;
@@ -91,8 +91,8 @@ public class TimeoutTest {
 
       mockPersistentContext.create("v", 0);
 
-      final var runtime = new OfflineRuntime(mockEventHandler, mockPersistentContext);
-      final var serviceImplementationSelector = new ServiceImplementationSelector(ArrayListMultimap.create());
+      final var runtime = new OfflineRuntime("runtime", mockEventHandler, mockPersistentContext);
+      final var serviceImplementationSelector = new OptimalServiceImplementationSelector(ArrayListMultimap.create());
 
       final var instances = runtime.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);
 

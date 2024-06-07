@@ -42,11 +42,12 @@ public class OfflineRuntime extends Runtime {
   /**
    * Initializes this offline runtime instance.
    *
+   * @param name              Name.
    * @param eventHandler      Event handler.
    * @param persistentContext Persistent context.
    */
-  public OfflineRuntime(EventHandler eventHandler, Context persistentContext) {
-    super(eventHandler, persistentContext, getOpenTelemetry());
+  public OfflineRuntime(String name, EventHandler eventHandler, Context persistentContext) {
+    super(name, eventHandler, persistentContext, getOpenTelemetry());
   }
 
   /**

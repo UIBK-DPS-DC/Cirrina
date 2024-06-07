@@ -63,7 +63,7 @@ public class PingPongTest {
           final var curatorFramework = getCuratorFramework();
           curatorFramework.start();
 
-          final var runtime = new OnlineRuntime(eventHandler, persistentContext, openTelemetry, curatorFramework);
+          final var runtime = new OnlineRuntime("runtime", eventHandler, persistentContext, openTelemetry, curatorFramework);
           runtime.run();
 
           curatorFramework.close();

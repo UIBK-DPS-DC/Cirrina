@@ -968,7 +968,8 @@ public class DefaultDescriptions {
           localData: {
             foo: "bar"
           },
-          bindEventInstanceIds: []
+          bindEventInstanceIds: [],
+          runtimeName: "runtime"
         }
       """, serviceImplementationsDescription, pingPong);
 }

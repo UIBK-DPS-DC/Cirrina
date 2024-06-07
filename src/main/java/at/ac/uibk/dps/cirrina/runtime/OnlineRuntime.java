@@ -5,8 +5,8 @@ import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
+import at.ac.uibk.dps.cirrina.execution.service.RandomServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
-import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.runtime.job.Job;
 import at.ac.uibk.dps.cirrina.runtime.job.JobListener;
 import at.ac.uibk.dps.cirrina.runtime.job.JobMonitor;
@@ -37,18 +37,20 @@ public class OnlineRuntime extends Runtime implements JobListener {
   /**
    * Initializes this online runtime instance.
    *
+   * @param name              Name.
    * @param eventHandler      Event handler.
    * @param persistentContext Persistent context.
    * @param openTelemetry     OpenTelemetry.
    * @param curatorFramework  CuratorFramework.
    */
   public OnlineRuntime(
+      String name,
       EventHandler eventHandler,
       Context persistentContext,
       OpenTelemetry openTelemetry,
       CuratorFramework curatorFramework
   ) {
-    super(eventHandler, persistentContext, openTelemetry);
+    super(name, eventHandler, persistentContext, openTelemetry);
 
     // Create a job monitor
     this.jobMonitor = new JobMonitor(curatorFramework, this);
@@ -62,7 +64,16 @@ public class OnlineRuntime extends Runtime implements JobListener {
    */
   @Override
   public void newJob(Job job) throws UnsupportedOperationException {
-    // TODO: Check if job can be executed, would be nice to add some conditions
+    // TODO: Add additional conditions/rules
+
+    final var jobDescriptionRuntimeName = job.getJobDescription().runtimeName;
+
+    if (!name.equals(jobDescriptionRuntimeName)) {
+      logger.info(
+          "Found job for runtime '%s' which does not match this runtime's name '%s', ignoring".formatted(jobDescriptionRuntimeName, name));
+
+      return;
+    }
 
     try {
       // Attempt to lock the job
@@ -78,7 +89,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
             .build();
 
         // Acquire the service implementation selector
-        final var serviceImplementationSelector = new ServiceImplementationSelector(
+        final var serviceImplementationSelector = new RandomServiceImplementationSelector(
             ServiceImplementationBuilder.from(jobDescription.serviceImplementations).build());
 
         // Acquire the state machine name

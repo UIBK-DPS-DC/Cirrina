@@ -14,8 +14,8 @@ import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
+import at.ac.uibk.dps.cirrina.execution.service.OptimalServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
-import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
@@ -142,7 +142,7 @@ public class ServiceInvocationTest {
       mockPersistentContext.create("v", 0);
       mockPersistentContext.create("e", 0);
 
-      final var runtime = new OfflineRuntime(mockEventHandler, mockPersistentContext);
+      final var runtime = new OfflineRuntime("runtime", mockEventHandler, mockPersistentContext);
 
       var serviceDescriptions = new ServiceImplementationDescription[1];
 
@@ -162,7 +162,7 @@ public class ServiceInvocationTest {
       }
 
       final var services = ServiceImplementationBuilder.from(serviceDescriptions).build();
-      final var serviceImplementationSelector = new ServiceImplementationSelector(services);
+      final var serviceImplementationSelector = new OptimalServiceImplementationSelector(services);
 
       final var instances = runtime.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);
 

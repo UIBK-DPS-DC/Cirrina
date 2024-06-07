@@ -20,6 +20,7 @@ public class JobDescriptionParserTest {
       assertEquals(1, jobDescription.localData.size());
       assertEquals(0, jobDescription.bindEventInstanceIds.size());
       assertEquals(1, jobDescription.serviceImplementations.length);
+      assertEquals("runtime", jobDescription.runtimeName);
     });
   }
 }

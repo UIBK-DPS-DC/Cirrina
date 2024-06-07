@@ -41,4 +41,10 @@ public class JobDescription {
    */
   @NotNull
   public List<String> bindEventInstanceIds;
+
+  /**
+   * The runtime name.
+   */
+  @NotNull
+  public String runtimeName;
 }

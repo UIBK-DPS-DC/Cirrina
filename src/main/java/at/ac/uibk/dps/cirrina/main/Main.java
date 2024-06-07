@@ -106,7 +106,7 @@ public class Main {
           final var openTelemetry = getOpenTelemetry();
 
           // Create the shared runtime
-          final var runtime = new OnlineRuntime(eventHandler, persistentContext, openTelemetry, curatorFramework);
+          final var runtime = new OnlineRuntime("runtime", eventHandler, persistentContext, openTelemetry, curatorFramework);
 
           runtime.run();
 

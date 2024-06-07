@@ -91,7 +91,7 @@ public class ServiceImplementationSelectorTest {
 
     final var services = ServiceImplementationBuilder.from(serviceDescriptions).build();
 
-    final var serviceSelector = new ServiceImplementationSelector(services);
+    final var serviceSelector = new OptimalServiceImplementationSelector(services);
 
     assertDoesNotThrow(() -> {
       var selected = serviceSelector.select("A", false);

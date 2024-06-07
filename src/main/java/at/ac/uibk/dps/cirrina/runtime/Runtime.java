@@ -46,6 +46,11 @@ public abstract class Runtime implements EventListener {
   protected static final Logger logger = LogManager.getLogger();
 
   /**
+   * Runtime name.
+   */
+  protected final String name;
+
+  /**
    * Event handler.
    */
   protected final EventHandler eventHandler;
@@ -83,11 +88,14 @@ public abstract class Runtime implements EventListener {
   /**
    * Initializes this runtime instance.
    *
+   * @param name              Name.
    * @param eventHandler      Event handler.
    * @param persistentContext Persistent context.
    * @param openTelemetry     OpenTelemetry.
    */
-  public Runtime(EventHandler eventHandler, Context persistentContext, OpenTelemetry openTelemetry) {
+  public Runtime(String name, EventHandler eventHandler, Context persistentContext, OpenTelemetry openTelemetry) {
+    this.name = name;
+
     // Keep dependencies
     this.eventHandler = eventHandler;
     this.persistentContext = persistentContext;

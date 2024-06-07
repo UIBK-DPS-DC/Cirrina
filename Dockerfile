@@ -31,4 +31,4 @@ RUN unzip /tmp/${CIRRINA_VERSION}.zip -d /usr/bin \
 WORKDIR /usr/bin/cirrina
 
 # Use shell form ENTRYPOINT to execute the application
-ENTRYPOINT ["/bin/sh", "-c", "/usr/bin/cirrina/bin/cirrina"]
+ENTRYPOINT ["/usr/bin/cirrina/bin/cirrina"]
