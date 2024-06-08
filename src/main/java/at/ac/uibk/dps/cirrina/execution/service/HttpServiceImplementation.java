@@ -122,12 +122,13 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * All input variables must be evaluated.
    *
    * @param input Input to the service invocation.
+   * @param id    Sender ID.
    * @return The service invocation output.
    * @throws UnsupportedOperationException If not all variables are evaluated.
    * @throws UnsupportedOperationException If the invocation failed.
    */
   @Override
-  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws UnsupportedOperationException {
+  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws UnsupportedOperationException {
     try {
       if (input.stream().anyMatch(ContextVariable::isLazy)) {
         throw new UnsupportedOperationException("All variables need to be evaluated before service input can be converted to bytes");
@@ -147,6 +148,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
       final var request = HttpRequest.newBuilder()
           .version(Version.HTTP_1_1)
+          .header("Cirrina-Sender-ID", id)
           .method(method.toString(), BodyPublishers.ofByteArray(payload))
           .uri(uri)
           .build();

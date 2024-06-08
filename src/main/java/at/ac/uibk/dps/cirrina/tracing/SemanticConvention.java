@@ -9,7 +9,6 @@ public class SemanticConvention {
 
   // Counter attributes
   public static final String COUNTER_ATTR_EVENT_CHANNEL = "cirrina.event.channel";
-  public static final String COUNTER_ATTR_TRANSITION_TYPE = "cirrina.transition.type";
 
   // Gauge names
   public static final String GAUGE_ACTION_DATA_LATENCY = "cirrina.action.data_latency_ms";
@@ -22,4 +21,7 @@ public class SemanticConvention {
   public static final String GAUGE_ATTR_DATA_SIZE = "cirrina.data.size";
 
   public static final String GAUGE_ATTR_INVOCATION_LOCALITY = "cirrina.invocation.locality";
+
+  // General attributes
+  public static final String ATTR_STATE_MACHINE_ID = "cirrina.state_machine.id";
 }

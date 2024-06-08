@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.tracing;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_LOCALITY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_OPERATION;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_SIZE;
@@ -17,21 +18,26 @@ public class Gauges {
 
   private final Meter meter;
 
-  public Gauges(Meter meter) {
+  private final String stateMachineId;
+
+  public Gauges(Meter meter, String stateMachineId) {
     this.meter = meter;
+    this.stateMachineId = stateMachineId;
   }
 
-  public static Attributes attributesForData(String operation, String dataLocality, int dataSize) {
+  public Attributes attributesForData(String operation, String dataLocality, int dataSize) {
     return Attributes.builder()
         .put(GAUGE_ATTR_DATA_OPERATION, operation)
         .put(GAUGE_ATTR_DATA_LOCALITY, dataLocality)
         .put(GAUGE_ATTR_DATA_SIZE, dataSize)
+        .put(ATTR_STATE_MACHINE_ID, stateMachineId)
         .build();
   }
 
-  public static Attributes attributesForInvocation(String serviceLocality) {
+  public Attributes attributesForInvocation(String serviceLocality) {
     return Attributes.builder()
         .put(GAUGE_ATTR_INVOCATION_LOCALITY, serviceLocality)
+        .put(ATTR_STATE_MACHINE_ID, stateMachineId)
         .build();
   }
 

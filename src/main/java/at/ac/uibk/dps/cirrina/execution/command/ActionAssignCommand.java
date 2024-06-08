@@ -4,7 +4,6 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DAT
 
 import at.ac.uibk.dps.cirrina.execution.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
-import at.ac.uibk.dps.cirrina.tracing.Gauges;
 import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +47,10 @@ public final class ActionAssignCommand extends ActionCommand {
       final var now = Time.timeInMillisecondsSinceStart();
       final var delta = now - start;
 
-      executionContext.gauges().getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
-          Gauges.attributesForData(
+      final var gauges = executionContext.gauges();
+      
+      gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
+          gauges.attributesForData(
               "assign",
               result.context().isLocal() ? "local" : "persistent",
               result.size()

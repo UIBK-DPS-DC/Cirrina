@@ -120,27 +120,23 @@ public class OnlineRuntime extends Runtime implements JobListener {
         // Create instances, newInstances will also instantiate nested state machines
         final var instanceIds = newInstances(List.of(stateMachine), serviceImplementationSelector, null);
 
-        // Assign local data from the job description if the job description contains any local data
+        // Assign local data from the job description if the job description contains any local data. Assign to the parent and nested state machines
         if (!job.getJobDescription().localData.isEmpty()) {
-          // Get the created state machine instance, this is assuming that the first ID is the parent state machine instance ID
-          final var parentInstanceId = instanceIds.stream()
-              .findFirst()
-              .orElseThrow(() -> new UnsupportedOperationException(
-                  "State machine '%s' was not instantiated.".formatted(stateMachine.getName())));
+          for (final var instanceId : instanceIds) {
+            final var stateMachineInstance = findInstance(instanceId)
+                .orElseThrow(() -> new UnsupportedOperationException(
+                    "State machine '%s' with id '%s' was not instantiated.".formatted(stateMachine.getName(), instanceId)));
 
-          final var stateMachineInstance = findInstance(parentInstanceId)
-              .orElseThrow(() -> new UnsupportedOperationException(
-                  "State machine '%s' with id '%s' was not instantiated.".formatted(stateMachine.getName(), parentInstanceId)));
+            for (final var localData : job.getJobDescription().localData.entrySet()) {
+              try {
+                // Assign local data entry, evaluate the value as an expression
+                final var valueExpression = ExpressionBuilder.from(new ExpressionDescription(localData.getValue())).build();
 
-          for (final var localData : job.getJobDescription().localData.entrySet()) {
-            try {
-              // Assign local data entry, evaluate the value as an expression
-              final var valueExpression = ExpressionBuilder.from(new ExpressionDescription(localData.getValue())).build();
-
-              stateMachineInstance.getExtent().trySet(localData.getKey(), valueExpression.execute(stateMachineInstance.getExtent()));
-            } catch (IOException | IllegalArgumentException e) {
-              throw new UnsupportedOperationException(
-                  "Could not assign value '%s' to local data variable '%s'".formatted(localData.getKey(), localData.getValue()), e);
+                stateMachineInstance.getExtent().setOrCreate(localData.getKey(), valueExpression.execute(stateMachineInstance.getExtent()));
+              } catch (IOException | IllegalArgumentException e) {
+                throw new UnsupportedOperationException(
+                    "Could not assign value '%s' to local data variable '%s'".formatted(localData.getKey(), localData.getValue()), e);
+              }
             }
           }
         }

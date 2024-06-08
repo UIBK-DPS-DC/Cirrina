@@ -18,6 +18,26 @@ Universität Innsbruck](https://dps.uibk.ac.at/).
 
 [![pipeline status](https://git.uibk.ac.at/informatik/dps/dps-dc-software/cirrina/badges/develop/pipeline.svg)](https://git.uibk.ac.at/informatik/dps/dps-dc-software/cirrina/-/commits/develop)
 
+## Running
+
+To run a Cirrina runtime without compiling or building a Docker image manually, the
+[Cirrina Docker Image](https://hub.docker.com/r/marlonetheredgeuibk/cirrina) can be used as follows:
+
+```bash
+docker run \ 
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://192.168.64.84:4317/ \
+  marlonetheredgeuibk/cirrina:develop \
+    --nats-persistent-context-url nats://192.168.64.84:4222/ \
+    --nats-event-handler-url nats://192.168.64.84:4222/ \
+    --zookeeper-connect-string 192.168.64.84:2181
+```
+
+The following arguments are expected to be provided (otherwise it is assumed that the dependent services are running on the local host).
+
+- `--nats-persistent-context-url` The NATS server URL where the persistent context resides.
+- `--nats-event-handler-url` The NATS server URL where the event bus resides.
+- `--zookeeper-connect-string` The ZooKeeper server connection string.
+
 ## License
 
 GPLv3 licensed, see [LICENSE](LICENSE).

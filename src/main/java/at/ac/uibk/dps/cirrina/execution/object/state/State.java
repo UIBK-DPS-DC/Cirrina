@@ -31,6 +31,11 @@ public final class State implements Scope {
     return parent.getExtent().extend(localContext);
   }
 
+  @Override
+  public String getId() {
+    return parent.getId();
+  }
+
   public StateClass getStateObject() {
     return stateClassObject;
   }

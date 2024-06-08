@@ -155,14 +155,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     final var meter = openTelemetry.getMeter("stateMachine-%s".formatted(stateMachineId.toString()));
 
     // Create gauges
-    gauges = new Gauges(meter);
+    gauges = new Gauges(meter, getId());
 
     gauges.addGauge(GAUGE_ACTION_DATA_LATENCY);
     gauges.addGauge(GAUGE_ACTION_INVOKE_LATENCY);
     gauges.addGauge(GAUGE_ACTION_RAISE_LATENCY);
 
     // Create counters
-    counters = new Counters(meter);
+    counters = new Counters(meter, getId());
 
     counters.addCounter(COUNTER_EVENTS_RECEIVED);
     counters.addCounter(COUNTER_EVENTS_HANDLED);
@@ -184,7 +184,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
     // Increment events received counter
     counters.getCounter(COUNTER_EVENTS_RECEIVED).add(1,
-        Counters.attributesForEvent(
+        counters.attributesForEvent(
             event.getChannel().toString()));
 
     // Add to the internal event queue
@@ -612,7 +612,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
     // Increment events received counter
     counters.getCounter(COUNTER_EVENTS_HANDLED).add(1,
-        Counters.attributesForEvent(
+        counters.attributesForEvent(
             event.getChannel().toString()));
 
     // Find a matching transition
@@ -697,6 +697,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     return Optional.ofNullable(parentStateMachine)
         .map(parent -> parent.getExtent().extend(localContext))
         .orElseGet(() -> parentRuntime.getExtent().extend(localContext));
+  }
+
+  @Override
+  public String getId() {
+    return getStateMachineInstanceId().toString();
   }
 
   /**

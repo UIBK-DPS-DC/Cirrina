@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.tracing;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_EVENT_CHANNEL;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_TRANSITION_TYPE;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -15,24 +15,23 @@ public class Counters {
 
   private final Meter meter;
 
-  public Counters(Meter meter) {
+  private final String stateMachineId;
+
+  public Counters(Meter meter, String stateMachineId) {
     this.meter = meter;
+    this.stateMachineId = stateMachineId;
   }
 
-  public static Attributes attributesForEvent(String eventChannel) {
+  public Attributes attributesForEvent(String eventChannel) {
     return Attributes.builder()
         .put(COUNTER_ATTR_EVENT_CHANNEL, eventChannel)
+        .put(ATTR_STATE_MACHINE_ID, stateMachineId)
         .build();
   }
 
-  public static Attributes attributesForTransition(String transitionType) {
+  public Attributes attributesForInvocation() {
     return Attributes.builder()
-        .put(COUNTER_ATTR_TRANSITION_TYPE, transitionType)
-        .build();
-  }
-
-  public static Attributes attributesForInvocation() {
-    return Attributes.builder()
+        .put(ATTR_STATE_MACHINE_ID, stateMachineId)
         .build();
   }
 

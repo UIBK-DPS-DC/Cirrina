@@ -33,10 +33,11 @@ public abstract class ServiceImplementation {
    * Invoke this service implementation.
    *
    * @param input Input to the service invocation.
+   * @param id    Sender ID.
    * @return The service invocation output.
    * @throws IOException If the service invocation failed.
    */
-  public abstract CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input) throws IOException;
+  public abstract CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws IOException;
 
 
   /**

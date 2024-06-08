@@ -36,6 +36,8 @@ public class HttpServiceImplementationTest {
 
     httpServer.createContext("/plus", new HttpHandler() {
       public void handle(HttpExchange exchange) throws IOException {
+        assertEquals("some-id", exchange.getRequestHeaders().get("Cirrina-Sender-ID").getFirst());
+
         final var payload = exchange.getRequestBody().readAllBytes();
 
         final var in = ContextVariableProtos.ContextVariables.parseFrom(payload)
@@ -144,7 +146,7 @@ public class HttpServiceImplementationTest {
                 "/plus",
                 Method.POST));
 
-            final var output = service.invoke(variables).get();
+            final var output = service.invoke(variables, "some-id").get();
 
             assertEquals(output.size(), 1);
 
@@ -165,7 +167,7 @@ public class HttpServiceImplementationTest {
                 "/error",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>()).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id").get();
           });
 
           // Invalid response type
@@ -180,7 +182,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response1",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>()).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id").get();
           });
 
           // Invalid response type
@@ -195,7 +197,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response2",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>()).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id").get();
           });
         });
   }

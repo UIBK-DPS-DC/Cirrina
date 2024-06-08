@@ -5,8 +5,6 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INV
 
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
-import at.ac.uibk.dps.cirrina.tracing.Counters;
-import at.ac.uibk.dps.cirrina.tracing.Gauges;
 import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +40,10 @@ public final class ActionInvokeCommand extends ActionCommand {
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
     // Increment events received counter
-    executionContext.counters().getCounter(COUNTER_INVOCATIONS).add(1,
-        Counters.attributesForInvocation());
+    final var counters = executionContext.counters();
+
+    counters.getCounter(COUNTER_INVOCATIONS).add(1,
+        counters.attributesForInvocation());
 
     final var start = Time.timeInMillisecondsSinceStart();
 
@@ -72,7 +72,7 @@ public final class ActionInvokeCommand extends ActionCommand {
       }
 
       // Invoke (asynchronously)
-      serviceImplementation.invoke(input)
+      serviceImplementation.invoke(input, executionContext.scope().getId())
           .exceptionally(e -> {
             logger.error("Service invocation failed: {}", e.getMessage());
             return null;
@@ -115,8 +115,10 @@ public final class ActionInvokeCommand extends ActionCommand {
             final var now = Time.timeInMillisecondsSinceStart();
             final var delta = now - start;
 
-            executionContext.gauges().getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(delta,
-                Gauges.attributesForInvocation(
+            final var gauges = executionContext.gauges();
+
+            gauges.getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(delta,
+                gauges.attributesForInvocation(
                     serviceImplementation.isLocal() ? "local" : "remote"
                 ));
           });
