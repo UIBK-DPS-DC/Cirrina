@@ -3,7 +3,7 @@
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="OTEL_METRIC_EXPORT_INTERVAL" value="1000" />
+          <entry key="OTEL_METRIC_EXPORT_INTERVAL" value="60000" />
         </map>
       </option>
       <option name="executionName" />
@@ -16,9 +16,10 @@
       <option name="taskNames">
         <list>
           <option value="run" />
+          <option value="--args=&quot;--name runtime&quot;" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" value=" " />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>

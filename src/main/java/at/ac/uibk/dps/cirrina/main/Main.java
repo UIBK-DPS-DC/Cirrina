@@ -106,7 +106,7 @@ public class Main {
           final var openTelemetry = getOpenTelemetry();
 
           // Create the shared runtime
-          final var runtime = new OnlineRuntime("runtime", eventHandler, persistentContext, openTelemetry, curatorFramework);
+          final var runtime = new OnlineRuntime(args.name, eventHandler, persistentContext, openTelemetry, curatorFramework);
 
           runtime.run();
 
@@ -274,6 +274,9 @@ public class Main {
 
     @Parameter(names = {"--persistent-context", "-p"})
     private PersistentContext persistentContext = PersistentContext.Nats;
+
+    @Parameter(names = {"--name", "-n"}, required = true)
+    private String name;
 
     enum Scheduler {
       RoundRobin
