@@ -20,9 +20,11 @@ services:
     image: "telegraf:latest"
     ports:
       - "4317:4317"
-    configs:
-      - source: telegraf_config
-        target: /etc/telegraf/telegraf.conf
+    #configs:
+     # - source: telegraf_config
+     #   target: /etc/telegraf/telegraf.conf
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
   nats:
     image: "nats:latest"
     command:
