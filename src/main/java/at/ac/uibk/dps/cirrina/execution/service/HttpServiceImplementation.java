@@ -144,7 +144,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .toByteArray();
 
       // Create URL
-      final var uri = new URI(scheme, "", host, port, endPoint, "", "");
+      final var uri = new URI(scheme, null, host, port, endPoint, null, null);
 
       final var request = HttpRequest.newBuilder()
           .version(Version.HTTP_1_1)
@@ -168,6 +168,22 @@ public class HttpServiceImplementation extends ServiceImplementation {
   @Override
   public float getPerformance() {
     return 1.0f; // TODO: Implement measuring of performance
+  }
+
+  /**
+   * Returns a string for informative purposes (a service implementation is abstract, so can provide no information about the details).
+   *
+   * @return Information string.
+   */
+  @Override
+  public String getInformationString() {
+    try {
+      final var uri = new URI(scheme, null, host, port, endPoint, null, null);
+
+      return "%s".formatted(uri.toString());
+    } catch (URISyntaxException e) {
+      return "Invalid information string: %s".formatted(e.getMessage());
+    }
   }
 
   public record Parameters(

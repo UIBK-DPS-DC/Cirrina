@@ -111,9 +111,11 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
         persistentContextVariables.forEach(variable -> {
           try {
+            logger.info("Creating persistent context variable '{}'", variable.name());
+
             persistentContext.create(variable.name(), variable.value());
-          } catch (IOException ignored) {
-            // Variable likely already exists, ignore. We probably ignore too many errors here, should there be a legitimate error
+          } catch (IOException e) {
+            logger.error("Did not create persistent context variable '{}', possibly already exists: {}", variable.name(), e.getMessage());
           }
         });
 

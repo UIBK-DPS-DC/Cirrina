@@ -74,7 +74,7 @@ public final class ActionInvokeCommand extends ActionCommand {
       // Invoke (asynchronously)
       serviceImplementation.invoke(input, executionContext.scope().getId())
           .exceptionally(e -> {
-            logger.error("Service invocation failed: {}", e.getMessage());
+            logger.error("Service invocation failed: {}", serviceImplementation.getInformationString());
             return null;
           }).thenAccept(output -> {
             // Assign service output to the provided output context variables
