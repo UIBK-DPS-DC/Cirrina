@@ -1,6 +1,9 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import java.util.ArrayList;
@@ -19,6 +22,9 @@ public final class ActionRaiseCommand extends ActionCommand {
     this.raiseAction = raiseAction;
   }
 
+  @TracesGeneral
+  @LogGeneral
+  @LogAction
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
     try {

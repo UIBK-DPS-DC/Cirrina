@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,6 +42,8 @@ public final class TimeoutActionManager {
    * @param task       The task to execute.
    * @throws IllegalArgumentException If two timeout actions with the same name have been started without being stopped.
    */
+  @TracesGeneral
+  @LogGeneral
   public void start(String actionName, Number delayInMs, Runnable task) throws IllegalArgumentException {
     // Ensure unique timeout action names
     if (timeoutTasks.containsKey(actionName)) {
@@ -61,6 +65,8 @@ public final class TimeoutActionManager {
    * @param actionName Name of action to stop.
    * @throws IllegalArgumentException If not exactly one timeout action was found with the provided name.
    */
+  @TracesGeneral
+  @LogGeneral
   public void stop(String actionName) throws IllegalArgumentException {
     // Retrieve the timeout task
     final var timeoutTasksWithName = timeoutTasks.entrySet().stream()
@@ -84,6 +90,7 @@ public final class TimeoutActionManager {
   /**
    * Stops all timeout actions.
    */
+  @TracesGeneral
   public void stopAll() {
     // Cancel all tasks
     timeoutTasks.values()

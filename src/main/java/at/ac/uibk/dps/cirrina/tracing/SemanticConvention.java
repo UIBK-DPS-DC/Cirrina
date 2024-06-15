@@ -6,6 +6,7 @@ public class SemanticConvention {
   public static final String COUNTER_EVENTS_RECEIVED = "cirrina.events.received";
   public static final String COUNTER_EVENTS_HANDLED = "cirrina.events.handled";
   public static final String COUNTER_INVOCATIONS = "cirrina.invocations";
+  public static final String COUNTER_TRANSITIONS = "cirrina.transitions";
 
   // Counter attributes
   public static final String COUNTER_ATTR_EVENT_CHANNEL = "cirrina.event.channel";
@@ -24,4 +25,5 @@ public class SemanticConvention {
 
   // General attributes
   public static final String ATTR_STATE_MACHINE_ID = "cirrina.state_machine.id";
+  public static final String ATTR_TRANSITION_INTERNAL = "cirrina.transition.internal";
 }

@@ -3,6 +3,9 @@ package at.ac.uibk.dps.cirrina.execution.command;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.utils.Time;
@@ -37,6 +40,9 @@ public final class ActionInvokeCommand extends ActionCommand {
     this.invokeAction = invokeAction;
   }
 
+  @TracesGeneral
+  @LogGeneral
+  @LogAction
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
     // Increment events received counter

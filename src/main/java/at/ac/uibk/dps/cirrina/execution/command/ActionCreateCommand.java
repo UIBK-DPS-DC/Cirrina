@@ -2,6 +2,9 @@ package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.utils.Time;
@@ -18,6 +21,9 @@ public final class ActionCreateCommand extends ActionCommand {
     this.createAction = createAction;
   }
 
+  @TracesGeneral
+  @LogGeneral
+  @LogAction
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
     final var start = Time.timeInMillisecondsSinceStart();

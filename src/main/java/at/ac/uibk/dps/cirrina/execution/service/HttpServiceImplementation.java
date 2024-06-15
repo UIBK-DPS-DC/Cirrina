@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
@@ -88,7 +89,9 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
-  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
+  @TracesGeneral
+  private static List<ContextVariable>
+  handleResponse(HttpResponse<byte[]> response) {
     // Require HTTP OK
     final var errorCode = response.statusCode();
 
@@ -127,6 +130,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws UnsupportedOperationException If not all variables are evaluated.
    * @throws UnsupportedOperationException If the invocation failed.
    */
+  @TracesGeneral
   @Override
   public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws UnsupportedOperationException {
     try {

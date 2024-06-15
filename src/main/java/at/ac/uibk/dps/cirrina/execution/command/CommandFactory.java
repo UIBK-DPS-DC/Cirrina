@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.execution.object.action.CreateAction;
@@ -16,6 +17,7 @@ public class CommandFactory {
     this.executionContext = executionContext;
   }
 
+  @TracesGeneral
   public ActionCommand createActionCommand(Action action) {
     switch (action) {
       case AssignAction assignAction -> {
