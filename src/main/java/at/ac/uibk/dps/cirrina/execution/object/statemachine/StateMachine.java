@@ -655,7 +655,6 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @param raisingEvent The raising event or null.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-
   @TracesGeneral
   @LogGeneral
   private void handleTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {

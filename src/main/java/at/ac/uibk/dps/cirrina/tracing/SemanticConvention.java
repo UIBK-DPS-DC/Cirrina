@@ -11,6 +11,8 @@ public class SemanticConvention {
 
   public static final String COUNTER_STATE_MACHINE_INSTANCES = "cirrina.state_machine_instances";
 
+  public static final String COUNTER_STATE_MACHINE_INSTANCES = "cirrina.state_machine_instances";
+
   // Counter attributes
   public static final String COUNTER_ATTR_EVENT_CHANNEL = "cirrina.event.channel";
 

@@ -92,6 +92,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
+
   @TracesGeneral
   private static List<ContextVariable> handleResponse(SimpleHttpResponse response) {
     // Require HTTP OK

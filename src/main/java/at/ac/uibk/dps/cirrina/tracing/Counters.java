@@ -36,15 +36,15 @@ public class Counters {
         .build();
   }
 
+  public Attributes attributesForInstances() {
+    return Attributes.builder()
+        .build();
+  }
+
   public Attributes attributesForTransition(Boolean isInternal){
     return Attributes.builder()
         .put(ATTR_TRANSITION_INTERNAL, isInternal)
         .put(ATTR_STATE_MACHINE_ID, stateMachineId)
-        .build();
-  }
-
-  public Attributes attributesForInstances() {
-    return Attributes.builder()
         .build();
   }
 
