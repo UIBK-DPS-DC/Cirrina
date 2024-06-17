@@ -73,4 +73,11 @@ public abstract class ServiceImplementation {
   public float getCost() {
     return cost;
   }
+
+  /**
+   * Returns a string for informative purposes (a service implementation is abstract, so can provide no information about the details).
+   *
+   * @return Information string.
+   */
+  public abstract String getInformationString();
 }
