@@ -3,9 +3,12 @@ package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_EVENTS_HANDLED;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_EVENTS_RECEIVED;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_STATE_MACHINE_INSTANCES;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_RAISE_LATENCY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE;
 
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
@@ -30,6 +33,7 @@ import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.tracing.Counters;
 import at.ac.uibk.dps.cirrina.tracing.Gauges;
 import at.ac.uibk.dps.cirrina.utils.Id;
+import at.ac.uibk.dps.cirrina.utils.Time;
 import io.opentelemetry.api.OpenTelemetry;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -91,6 +95,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private final @Nullable StateMachine parentStateMachine;
 
+  /**
+   * End time of this state machine in milliseconds since the start of the runtime.
+   */
+  private final double endTimeInMs;
+
   private final StateMachineEventHandler stateMachineEventHandler;
 
   private final Context localContext;
@@ -120,6 +129,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @param stateMachineClass             StateClass machine object
    * @param serviceImplementationSelector Service implementation selector.
    * @param parentStateMachine            Parent state machine instance or null.
+   * @param endTimeInMs                   The end time of this state machine in milliseconds since the start of the runtime.
    * @thread Runtime.
    */
   public StateMachine(
@@ -127,12 +137,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       StateMachineClass stateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector,
       OpenTelemetry openTelemetry,
-      @Nullable StateMachine parentStateMachine
+      @Nullable StateMachine parentStateMachine,
+      double endTimeInMs
   ) {
     this.parentRuntime = parentRuntime;
     this.stateMachineClass = stateMachineClass;
     this.serviceImplementationSelector = serviceImplementationSelector;
     this.parentStateMachine = parentStateMachine;
+    this.endTimeInMs = endTimeInMs;
 
     stateMachineEventHandler = new StateMachineEventHandler(this, this.parentRuntime.getEventHandler());
 
@@ -157,6 +169,8 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     // Create gauges
     gauges = new Gauges(meter, getId());
 
+    gauges.addGauge(GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE);
+    gauges.addGauge(GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE);
     gauges.addGauge(GAUGE_ACTION_DATA_LATENCY);
     gauges.addGauge(GAUGE_ACTION_INVOKE_LATENCY);
     gauges.addGauge(GAUGE_ACTION_RAISE_LATENCY);
@@ -167,6 +181,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     counters.addCounter(COUNTER_EVENTS_RECEIVED);
     counters.addCounter(COUNTER_EVENTS_HANDLED);
     counters.addCounter(COUNTER_INVOCATIONS);
+    counters.addCounter(COUNTER_STATE_MACHINE_INSTANCES);
   }
 
   /**
@@ -176,10 +191,10 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @thread Events.
    */
   @Override
-  public void onReceiveEvent(Event event) {
+  public boolean onReceiveEvent(Event event) {
     // Nothing to do if the state machine is terminated
     if (isTerminated()) {
-      return;
+      return false;
     }
 
     // Increment events received counter
@@ -203,6 +218,8 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         nestedStateMachineInstance.onReceiveEvent(event);
       }
     }
+
+    return true;
   }
 
   /**
@@ -215,8 +232,16 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     if (activeState == null) {
       return false;
     }
+
     // The state machine instance should be terminated if it is nested and its parent is terminated.
     if (parentStateMachine != null && parentStateMachine.isTerminated()) {
+      return true;
+    }
+
+    // The state machine instance should be terminated if its end time has passed
+    final var currentTime = Time.timeInMillisecondsSinceStart();
+
+    if (endTimeInMs > 0.0 && currentTime > endTimeInMs) {
       return true;
     }
 
@@ -227,11 +252,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Creates a state machine instance-scoped command factory.
    *
    * @param stateMachine StateClass machine instance (scope).
+   * @param raisingEvent The raising event.
    * @return Command factory.
    */
-  private CommandFactory stateMachineScopedCommandFactory(StateMachine stateMachine) {
+  private CommandFactory stateMachineScopedCommandFactory(StateMachine stateMachine, @Nullable Event raisingEvent) {
     return new CommandFactory(new ExecutionContext(
         stateMachine,                  // Scope
+        raisingEvent,                  // Raising event
         serviceImplementationSelector, // Service implementation selector
         stateMachineEventHandler,      // Event handler
         this,                          // Event listener
@@ -244,13 +271,15 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   /**
    * Creates a state instance-scoped command factory.
    *
-   * @param state   StateClass instance (scope).
-   * @param isWhile Whether the command factory build while actions.
+   * @param state        StateClass instance (scope).
+   * @param raisingEvent The raising event.
+   * @param isWhile      Whether the command factory build while actions.
    * @return Command factory.
    */
-  private CommandFactory stateScopedCommandFactory(State state, boolean isWhile) {
+  private CommandFactory stateScopedCommandFactory(State state, @Nullable Event raisingEvent, boolean isWhile) {
     return new CommandFactory(new ExecutionContext(
         state,                         // Scope
+        raisingEvent,                  // Raising event
         serviceImplementationSelector, // Service implementation selector
         stateMachineEventHandler,      // Event handler
         this,                          // Event listener
@@ -385,7 +414,8 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       }
 
       // Create action command
-      final var actionTimeoutCommand = stateMachineScopedCommandFactory(this).createActionCommand(timeoutActionObject.getAction());
+      final var actionTimeoutCommand = stateMachineScopedCommandFactory(this, null)
+          .createActionCommand(timeoutActionObject.getAction());
 
       if (!(actionTimeoutCommand instanceof ActionRaiseCommand)) {
         throw new IllegalArgumentException("A timeout action must be a raise action");
@@ -443,12 +473,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * actions.
    *
    * @param exitingState StateClass instance that is being exited.
+   * @param raisingEvent The raising event or null.
    * @throws UnsupportedOperationException If the exit action cannot be executed.
    */
-  private void doExit(State exitingState) throws UnsupportedOperationException {
+  private void doExit(State exitingState, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     // Gather action commands
     final var exitActionCommands = exitingState.getExitActionCommands(
-        stateScopedCommandFactory(exitingState, false));
+        stateScopedCommandFactory(exitingState, raisingEvent, false));
 
     // Stop timeout actions
     stopAllTimeoutActions();
@@ -468,10 +499,11 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * <p>
    * The order of execution is as follows: execute transition commands.
    *
-   * @param transition TransitionClass instance that is being taken.
+   * @param transition   TransitionClass instance that is being taken.
+   * @param raisingEvent The raising event or null.
    * @throws UnsupportedOperationException If the transition action cannot be executed.
    */
-  private void doTransition(Transition transition) throws UnsupportedOperationException {
+  private void doTransition(Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     // Do not execute actions for else target transitions
     if (transition.isElse()) {
       return;
@@ -479,7 +511,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
     // Gather action commands
     final var transitionActionCommands = transition.getActionCommands(
-        stateMachineScopedCommandFactory(this));
+        stateMachineScopedCommandFactory(this, raisingEvent));
 
     // Execute in order
     try {
@@ -497,18 +529,22 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * Any subsequent always actions are selected at the end.
    *
    * @param enteringState StateClass instance that is being entered.
+   * @param raisingEvent  The raising event or null.
    * @throws UnsupportedOperationException If the entry/while actions could not be executed.
    * @throws UnsupportedOperationException If the timeout actions could not be started.
    * @throws UnsupportedOperationException If the states could not be switched.
    * @throws UnsupportedOperationException If an always transition could not be selected.
    */
-  private Optional<Transition> doEnter(State enteringState) throws UnsupportedOperationException, IllegalArgumentException {
+  private Optional<Transition> doEnter(
+      State enteringState,
+      @Nullable Event raisingEvent
+  ) throws UnsupportedOperationException, IllegalArgumentException {
     // Gather action commands
     final var entryActionCommands = enteringState.getEntryActionCommands(
-        stateScopedCommandFactory(enteringState, false));
+        stateScopedCommandFactory(enteringState, raisingEvent, false));
 
     final var whileActionCommands = enteringState.getWhileActionCommands(
-        stateScopedCommandFactory(enteringState, true));
+        stateScopedCommandFactory(enteringState, raisingEvent, true));
 
     final var timeoutActionObjects = enteringState.getTimeoutActionObjects();
 
@@ -544,21 +580,23 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   /**
    * Handles an internal transition.
    *
-   * @param transition TransitionClass instance.
+   * @param transition   TransitionClass instance.
+   * @param raisingEvent The raising event or null.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleInternalTransition(@NotNull Transition transition) throws UnsupportedOperationException {
+  private void handleInternalTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     // Only perform the transition
-    doTransition(transition);
+    doTransition(transition, raisingEvent);
   }
 
   /**
    * Handles an external transition.
    *
-   * @param transition TransitionClass instance.
+   * @param transition   TransitionClass instance.
+   * @param raisingEvent The raising event or null.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleExternalTransition(@NotNull Transition transition) throws UnsupportedOperationException {
+  private void handleExternalTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     final var targetStateName = transition.getTargetStateName().get();
 
     // Acquire the target state instance
@@ -567,28 +605,29 @@ public final class StateMachine implements Runnable, EventListener, Scope {
             "Target state '%s' cannot be found in state machine".formatted(transition.getTargetStateName())));
 
     // Exit the current state
-    doExit(activeState);
+    doExit(activeState, raisingEvent);
 
     // Perform the transition
-    doTransition(transition);
+    doTransition(transition, raisingEvent);
 
     // Enter the target state, if there is a follow-up transition, handle it recursively
-    final var nextTransitionInstance = doEnter(targetStateInstance);
+    final var nextTransitionInstance = doEnter(targetStateInstance, raisingEvent);
 
-    nextTransitionInstance.ifPresent(this::handleTransition);
+    nextTransitionInstance.ifPresent(t -> handleTransition(t, raisingEvent));
   }
 
   /**
    * Handles a transition.
    *
-   * @param transition TransitionClass instance.
+   * @param transition   TransitionClass instance.
+   * @param raisingEvent The raising event or null.
    * @throws UnsupportedOperationException If the transition could not be handled.
    */
-  private void handleTransition(@NotNull Transition transition) throws UnsupportedOperationException {
+  private void handleTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     if (transition.isInternalTransition()) {
-      handleInternalTransition(transition);
+      handleInternalTransition(transition, raisingEvent);
     } else {
-      handleExternalTransition(transition);
+      handleExternalTransition(transition, raisingEvent);
     }
   }
 
@@ -600,16 +639,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @throws InterruptedException          If interrupted while waiting for an event.
    * @throws UnsupportedOperationException If an on transition could not be selected.
    */
-  private Optional<Transition> handleEvent() throws InterruptedException, UnsupportedOperationException {
-    // Wait for the next event, this call is blocking
-    Event event;
-    synchronized (this) {
-      while (eventQueue.isEmpty()) {
-        wait();
-      }
-      event = eventQueue.poll();
-    }
-
+  private Optional<Transition> handleEvent(Event event) throws InterruptedException, UnsupportedOperationException {
     // Increment events received counter
     counters.getCounter(COUNTER_EVENTS_HANDLED).add(1,
         counters.attributesForEvent(
@@ -653,27 +683,50 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   @Override
   public void run() {
+    // Increment state machine instances counter
+    counters.getCounter(COUNTER_STATE_MACHINE_INSTANCES).add(1,
+        counters.attributesForInstances());
+
     try {
       // Acquire the initial state instance
       final var initialStateInstance = stateInstances.get(stateMachineClass.getInitialState().getName());
 
       // TransitionClass into the initial state
-      var nextTransition = doEnter(initialStateInstance);
+      var nextTransition = doEnter(initialStateInstance, null);
 
       while (!isTerminated()) {
+        Event event = null;
+
         // Wait for a next event, if no transition is selected. No transition is selected initially if the initial state has no selectable
         // always transition or thereafter if we've handled the selected transition
         if (nextTransition.isEmpty()) {
-          nextTransition = handleEvent();
+          synchronized (this) {
+            while (eventQueue.isEmpty()) {
+              wait();
+            }
+            event = eventQueue.poll();
+          }
+
+          nextTransition = handleEvent(event);
         }
 
         // If a transition is selected, handle it. The transition will be handled recursively; any transition selected due to entering a
         // next state is handled recursively. Therefore, if we're done handling this transition, we indicate that we need to wait for a new
         // event again
         if (nextTransition.isPresent()) {
-          handleTransition(nextTransition.get());
+          handleTransition(nextTransition.get(), event);
 
           nextTransition = Optional.empty();
+        }
+
+        // Record event handling time
+        if (event != null) {
+          final var delta = Time.timeInMillisecondsSinceEpoch() - event.getCreatedTime();
+
+          gauges.getGauge(GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE).set(delta,
+              gauges.attributesForEvent(
+                  event.getChannel().toString()
+              ));
         }
       }
     } catch (InterruptedException e) {
@@ -684,7 +737,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       logger.error("%s received a fatal error".formatted(stateMachineId.toString()), e);
     }
 
-    logger.info("{} is done", stateMachineId.toString());
+    logger.info("{} has stopped", stateMachineId.toString());
+
+    // Decrement state machine instances counter
+    counters.getCounter(COUNTER_STATE_MACHINE_INSTANCES).add(-1,
+        counters.attributesForInstances());
+
+    // Remove the state machine instance from the runtime
+    parentRuntime.remove(this);
   }
 
   /**

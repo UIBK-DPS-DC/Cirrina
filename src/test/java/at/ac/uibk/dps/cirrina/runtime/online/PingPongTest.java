@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.execution.runtime.online;
+package at.ac.uibk.dps.cirrina.runtime.online;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
@@ -63,7 +63,7 @@ public class PingPongTest {
           final var curatorFramework = getCuratorFramework();
           curatorFramework.start();
 
-          final var runtime = new OnlineRuntime("runtime", eventHandler, persistentContext, openTelemetry, curatorFramework);
+          final var runtime = new OnlineRuntime("runtime", eventHandler, persistentContext, openTelemetry, curatorFramework, false);
           runtime.run();
 
           curatorFramework.close();

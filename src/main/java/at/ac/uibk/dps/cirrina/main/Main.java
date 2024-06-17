@@ -75,7 +75,7 @@ public class Main {
       logger.error(e.getMessage());
     }
 
-    logger.error("Runtime out");
+    logger.error("Runtime has stopped");
   }
 
   private static void setupLogging() {
@@ -106,7 +106,13 @@ public class Main {
           final var openTelemetry = getOpenTelemetry();
 
           // Create the shared runtime
-          final var runtime = new OnlineRuntime(args.name, eventHandler, persistentContext, openTelemetry, curatorFramework);
+          final var runtime = new OnlineRuntime(
+              args.name,
+              eventHandler,
+              persistentContext,
+              openTelemetry,
+              curatorFramework,
+              args.deleteJob);
 
           runtime.run();
 
@@ -277,6 +283,9 @@ public class Main {
 
     @Parameter(names = {"--name", "-n"}, required = true)
     private String name;
+
+    @Parameter(names = {"--delete-job", "-d"}, arity = 1)
+    private boolean deleteJob = true;
 
     enum Scheduler {
       RoundRobin

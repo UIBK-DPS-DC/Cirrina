@@ -31,10 +31,12 @@ public class NatsEventHandlerTest {
       public List<Event> events = new ArrayList<>();
 
       @Override
-      public void onReceiveEvent(Event event) {
+      public boolean onReceiveEvent(Event event) {
         events.add(event);
 
         latch.countDown();
+
+        return true;
       }
     };
 
@@ -110,10 +112,12 @@ public class NatsEventHandlerTest {
       public List<Event> events = new ArrayList<>();
 
       @Override
-      public void onReceiveEvent(Event event) {
+      public boolean onReceiveEvent(Event event) {
         events.add(event);
 
         latch.countDown();
+
+        return true;
       }
     };
 

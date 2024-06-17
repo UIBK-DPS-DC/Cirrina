@@ -4,6 +4,7 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHI
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_LOCALITY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_OPERATION;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_DATA_SIZE;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_EVENT_CHANNEL;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ATTR_INVOCATION_LOCALITY;
 
 import io.opentelemetry.api.common.Attributes;
@@ -37,6 +38,13 @@ public class Gauges {
   public Attributes attributesForInvocation(String serviceLocality) {
     return Attributes.builder()
         .put(GAUGE_ATTR_INVOCATION_LOCALITY, serviceLocality)
+        .put(ATTR_STATE_MACHINE_ID, stateMachineId)
+        .build();
+  }
+
+  public Attributes attributesForEvent(String eventChannel) {
+    return Attributes.builder()
+        .put(GAUGE_ATTR_EVENT_CHANNEL, eventChannel)
         .put(ATTR_STATE_MACHINE_ID, stateMachineId)
         .build();
   }

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cirrina [run]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="cirrina [run]" type="GradleRunConfiguration" factoryName="Gradle" singleton="false">
     <ExternalSystemSettings>
       <option name="env">
         <map>
@@ -16,7 +16,7 @@
       <option name="taskNames">
         <list>
           <option value="run" />
-          <option value="--args=&quot;--name runtime&quot;" />
+          <option value="--args=&quot;--name runtime --delete-job false&quot;" />
         </list>
       </option>
       <option name="vmOptions" value=" " />

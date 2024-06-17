@@ -47,4 +47,14 @@ public class JobDescription {
    */
   @NotNull
   public String runtimeName;
+
+  /**
+   * The start time of this job in milliseconds since the start of the runtime.
+   */
+  public double startTime = -1.0;
+
+  /**
+   * The end time of this job in milliseconds since the start of the runtime.
+   */
+  public double endTime = -1.0;
 }

@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.execution.runtime.offline;
+package at.ac.uibk.dps.cirrina.runtime.offline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

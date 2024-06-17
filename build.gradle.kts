@@ -66,6 +66,8 @@ dependencies {
 
     implementation("org.apache.curator:curator-framework:5.6.0")
     implementation("org.apache.curator:curator-recipes:5.6.0")
+    
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
 

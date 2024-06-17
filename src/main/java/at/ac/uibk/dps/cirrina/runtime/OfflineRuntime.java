@@ -100,6 +100,6 @@ public class OfflineRuntime extends Runtime {
       CollaborativeStateMachineClass collaborativeStateMachineClass,
       ServiceImplementationSelector serviceImplementationSelector
   ) throws UnsupportedOperationException {
-    return super.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);
+    return super.newInstance(collaborativeStateMachineClass, serviceImplementationSelector, -1.0);
   }
 }
