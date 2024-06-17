@@ -23,16 +23,6 @@ public abstract class EventHandler implements AutoCloseable {
     }
   }
 
-  public void removeListener(EventListener listener) {
-    try {
-      lock.lock();
-
-      listeners.remove(listener);
-    } finally {
-      lock.unlock();
-    }
-  }
-
   public abstract void subscribe(String subject);
 
   public abstract void unsubscribe(String subject);
@@ -45,8 +35,7 @@ public abstract class EventHandler implements AutoCloseable {
     try {
       lock.lock();
 
-      listeners.stream()
-          .forEach(listener -> listener.onReceiveEvent(event));
+      listeners.removeIf(eventListener -> !eventListener.onReceiveEvent(event));
     } finally {
       lock.unlock();
     }

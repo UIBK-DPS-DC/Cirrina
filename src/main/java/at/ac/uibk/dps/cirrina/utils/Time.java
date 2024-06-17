@@ -1,8 +1,11 @@
 package at.ac.uibk.dps.cirrina.utils;
 
+import java.time.Duration;
 import java.time.Instant;
 
 public class Time {
+
+  private static final Instant processStartTime = Instant.now();
 
   public static double timeInMillisecondsSinceEpoch() {
     final var now = Instant.now();
@@ -10,6 +13,7 @@ public class Time {
   }
 
   public static double timeInMillisecondsSinceStart() {
-    return System.nanoTime() / 1.0e6;
+    Instant now = Instant.now();
+    return Duration.between(processStartTime, now).toMillis();
   }
 }

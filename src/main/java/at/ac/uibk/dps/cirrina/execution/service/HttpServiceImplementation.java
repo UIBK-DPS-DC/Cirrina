@@ -7,19 +7,18 @@ import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.ContentType;
 
 /**
  * HTTP service implementation, a service implementation that is accessible through HTTP.
@@ -33,14 +32,18 @@ public class HttpServiceImplementation extends ServiceImplementation {
   /**
    * HTTP client.
    */
-  private final HttpClient httpClient = HttpClient.newBuilder()
-      .executor(Executors.newCachedThreadPool())
-      .build();
+  private static final CloseableHttpAsyncClient httpClient;
 
-  /**
-   * Handle executor.
-   */
-  private final Executor handleExecutor = Executors.newCachedThreadPool();
+  static {
+    final var connectionManager = new PoolingAsyncClientConnectionManager();
+    connectionManager.setMaxTotal(100);
+    connectionManager.setDefaultMaxPerRoute(100);
+
+    httpClient = HttpAsyncClients.custom()
+        .setConnectionManager(connectionManager)
+        .build();
+    httpClient.start();
+  }
 
   /**
    * HTTP scheme.
@@ -90,16 +93,16 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws CompletionException In case of error.
    */
   @TracesGeneral
-  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
+  private static List<ContextVariable> handleResponse(SimpleHttpResponse response) {
     // Require HTTP OK
-    final var errorCode = response.statusCode();
+    final var errorCode = response.getCode();
 
-    if (errorCode != HttpURLConnection.HTTP_OK) {
+    if (errorCode != 200) {
       throw new CompletionException(new IOException("HTTP error (%d)".formatted(errorCode)));
     }
 
     // Acquire the payload
-    final var payload = response.body();
+    final var payload = response.getBodyBytes();
 
     try {
       // Empty payload
@@ -138,27 +141,48 @@ public class HttpServiceImplementation extends ServiceImplementation {
       }
 
       // Serialize the data
-      final byte[] payload = ContextVariableProtos.ContextVariables.newBuilder()
-          .addAllData(input.stream()
-              .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
-              .toList()
-          )
-          .build()
-          .toByteArray();
+      final byte[] payload = input.isEmpty()
+          ? new byte[0] // Send no data if there are no input variables, avoid serialization of nothing
+          : ContextVariableProtos.ContextVariables.newBuilder()
+              .addAllData(input.stream()
+                  .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
+                  .toList()
+              )
+              .build()
+              .toByteArray();
 
       // Create URL
       final var uri = new URI(scheme, null, host, port, endPoint, null, null);
 
-      final var request = HttpRequest.newBuilder()
-          .version(Version.HTTP_1_1)
-          .header("Cirrina-Sender-ID", id)
-          .method(method.toString(), BodyPublishers.ofByteArray(payload))
-          .uri(uri)
-          .build();
+      final var request = new SimpleHttpRequest(method.toString(), uri);
+      request.setBody(payload, ContentType.APPLICATION_OCTET_STREAM);
+      request.setHeader("Cirrina-Sender-ID", id);
 
-      return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-          .thenApplyAsync(HttpServiceImplementation::handleResponse, handleExecutor);
-    } catch (URISyntaxException | UnsupportedOperationException e) {
+      final CompletableFuture<List<ContextVariable>> future = new CompletableFuture<>();
+
+      httpClient.execute(request, new FutureCallback<SimpleHttpResponse>() {
+        @Override
+        public void completed(SimpleHttpResponse response) {
+          try {
+            future.complete(handleResponse(response));
+          } catch (Exception e) {
+            future.completeExceptionally(e);
+          }
+        }
+
+        @Override
+        public void failed(Exception ex) {
+          future.completeExceptionally(ex);
+        }
+
+        @Override
+        public void cancelled() {
+          future.completeExceptionally(new IOException("Request cancelled"));
+        }
+      });
+
+      return future;
+    } catch (URISyntaxException e) {
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     }
   }

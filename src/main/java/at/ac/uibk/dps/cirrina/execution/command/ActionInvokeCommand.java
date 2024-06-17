@@ -2,6 +2,7 @@ package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE;
 
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
@@ -119,14 +120,23 @@ public final class ActionInvokeCommand extends ActionCommand {
 
             // Measure latency
             final var now = Time.timeInMillisecondsSinceStart();
-            final var delta = now - start;
 
             final var gauges = executionContext.gauges();
 
-            gauges.getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(delta,
+            gauges.getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(now - start,
                 gauges.attributesForInvocation(
                     serviceImplementation.isLocal() ? "local" : "remote"
                 ));
+
+            // Measure inclusive response time
+            final var raisingEvent = executionContext.raisingEvent();
+
+            if (raisingEvent != null) {
+              gauges.getGauge(GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE).set(Time.timeInMillisecondsSinceEpoch() - raisingEvent.getCreatedTime(),
+                  gauges.attributesForEvent(
+                      raisingEvent.getChannel().toString()
+                  ));
+            }
           });
 
       return commands;

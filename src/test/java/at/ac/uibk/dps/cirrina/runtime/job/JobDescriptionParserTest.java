@@ -1,10 +1,9 @@
-package at.ac.uibk.dps.cirrina.execution.runtime.job;
+package at.ac.uibk.dps.cirrina.runtime.job;
 
 import static at.ac.uibk.dps.cirrina.data.DefaultDescriptions.jobDescription;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import at.ac.uibk.dps.cirrina.runtime.job.JobDescriptionParser;
 import org.junit.jupiter.api.Test;
 
 public class JobDescriptionParserTest {
