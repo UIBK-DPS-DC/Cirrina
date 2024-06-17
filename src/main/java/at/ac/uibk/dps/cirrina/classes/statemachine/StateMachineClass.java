@@ -159,7 +159,7 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   /**
    * Returns an action by its name. If not one action is known with the supplied name, empty is returned.
    *
-   * @param actionName Name of the action to return
+   * @param actionName Name of the action to return.
    * @return The action with the supplied name or empty.
    */
   public Optional<Action> findActionByName(String actionName) {

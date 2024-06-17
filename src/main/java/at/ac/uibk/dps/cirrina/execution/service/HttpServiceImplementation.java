@@ -90,8 +90,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws CompletionException In case of error.
    */
   @TracesGeneral
-  private static List<ContextVariable>
-  handleResponse(HttpResponse<byte[]> response) {
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
     // Require HTTP OK
     final var errorCode = response.statusCode();
 
