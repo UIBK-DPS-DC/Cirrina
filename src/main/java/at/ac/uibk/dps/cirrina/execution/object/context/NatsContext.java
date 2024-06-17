@@ -18,9 +18,24 @@ import org.apache.logging.log4j.Logger;
  */
 public final class NatsContext extends Context implements AutoCloseable {
 
+  /**
+   * The NATS context logger.
+   */
   private static final Logger logger = LogManager.getLogger();
+
+  /**
+   * The NATS connection.
+   */
   private final Connection connection;
+
+  /**
+   * The key-value.
+   */
   private final KeyValue keyValue;
+
+  /**
+   * The collection of known keys.
+   */
   private final Vector<String> knownKeys = new Vector<>();
 
   /**
@@ -46,22 +61,22 @@ public final class NatsContext extends Context implements AutoCloseable {
       var keyValueManagement = connection.keyValueManagement();
 
       // Bucket should not exist yet
-      if (keyValueManagement.getBucketNames().contains(bucketName)) {
-        logger.warn("A bucket with the name '{}' already exists, deleting the existing bucket", bucketName);
+      if (!keyValueManagement.getBucketNames().contains(bucketName)) {
+        logger.warn("A bucket with the name '{}' does not exists, creating the bucket", bucketName);
 
-        keyValueManagement.delete(bucketName);
+        // Create the bucket
+        keyValueManagement.create(new KeyValueConfiguration.Builder().name(bucketName).build());
       }
-
-      // Create the bucket
-      keyValueManagement.create(new KeyValueConfiguration.Builder().name(bucketName).build());
 
       // Retrieve the bucket
       keyValue = connection.keyValue(bucketName);
-    } catch (IOException | JetStreamApiException e) {
-      throw new IOException("Failed to create the persistent context bucket");
+
+      // Add all currently known keys, this may lead to issues when a lot of runtimes stop the key-value store, but we'll see that later
+      knownKeys.addAll(keyValue.keys());
+    } catch (IOException | JetStreamApiException | InterruptedException e) {
+      throw new IOException("Failed to create the persistent context bucket: %s".formatted(e.getMessage()));
     }
   }
-
 
   /**
    * Retrieve a context variable.
