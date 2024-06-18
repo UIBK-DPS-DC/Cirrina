@@ -4,36 +4,32 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.AfterThrowing;
+import io.opentelemetry.context.Scope;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
 public class TracingGeneral {
-  private final Tracer tracer = GlobalOpenTelemetry.getTracer("Action");
+  private final Tracer tracer = GlobalOpenTelemetry.getTracer("General");
 
-  @AfterThrowing(pointcut = "@annotation(TracesGeneral))", throwing = "ex")
-  public void exceptionProcessor(Exception ex){
-    Span span = Span.current();
-    span.recordException(ex);
-    span.setStatus(StatusCode.ERROR, ex.getMessage());
-  }
-
-  @After("@annotation(TracesGeneral)")
-  public void stopTracing(){
-    Span span = Span.current();
-    span.end();
-  }
-
-  @Before("@annotation(TracesGeneral)")
-  public void startTracing(JoinPoint joinPoint) throws Throwable {
+  @Around("@annotation(TracesGeneral)")
+  public <T> T startTracing(ProceedingJoinPoint joinPoint){
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     String methodName = methodSignature.getName();
     String className = joinPoint.getTarget().getClass().getName();
 
     Span span = tracer.spanBuilder(className + ": " + methodName).startSpan();
+    T result = null;
+    try(Scope scope = span.makeCurrent()){
+      result = (T) joinPoint.proceed();
+    } catch (Throwable ex){
+      span.setStatus(StatusCode.ERROR, ex.getMessage());
+      span.recordException(ex);
+    } finally {
+      span.end();
+    }
+    return result;
   }
 }

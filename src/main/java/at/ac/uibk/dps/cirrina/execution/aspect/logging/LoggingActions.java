@@ -18,7 +18,7 @@ public class LoggingActions {
   StateMachine stateMachine;
 
   @Before("@annotation(LogAction)")
-  public void logExecution(JoinPoint joinPoint) throws Throwable {
+  public void logExecution(JoinPoint joinPoint) {
     stateMachine = (StateMachine) joinPoint.getThis();
 
     String activeStateName = null;
@@ -28,15 +28,15 @@ public class LoggingActions {
       activeStateName = (String) activeStateField.get(stateMachine);
       activeStateField.setAccessible(false);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
 
-    logger.info("State Machine " + stateMachine + "executing action: " +
-        joinPoint.getThis().getClass().getSimpleName() + " in state: " + activeStateName);
+    logger.info("State Machine {}executing action: {} in state: {}",
+        stateMachine, joinPoint.getThis().getClass().getSimpleName(), activeStateName);
   }
 
   @AfterReturning(value = "@annotation(LogAction)", returning = "result")
   public void logResult(List<ActionCommand> result) {
-    logger.info("Result: " + (result.isEmpty() ? "None" : result.toString()));
+    logger.info("Result: {}", result.isEmpty() ? "None" : result.toString());
   }
 }

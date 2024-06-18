@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.execution.aspect.logging;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -25,12 +24,12 @@ public class LoggingTimeoutManager {
 
   @Before("start() && args(actionName)")
   public void start(String actionName) {
-    logger.info("TIMEOUT: Starting " + actionName);
+    logger.info("TIMEOUT: Starting {}", actionName);
   }
 
   @Before("stop() && args(actionName)")
   public void stop(String actionName) {
-    logger.info("TIMEOUT: Stopping " + actionName);
+    logger.info("TIMEOUT: Stopping {}", actionName);
   }
 
   @Before("stopAll()")

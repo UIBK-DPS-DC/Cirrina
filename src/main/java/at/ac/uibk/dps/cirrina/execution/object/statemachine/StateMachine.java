@@ -194,7 +194,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @param event Received event.
    * @thread Events.
    */
-  @TracesGeneral
+
   @Override
   public boolean onReceiveEvent(Event event) {
     // Nothing to do if the state machine is terminated
@@ -475,7 +475,6 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @throws IllegalArgumentException If the state is not known.
    */
 
-  @TracesGeneral
   @LogGeneral
   private void switchActiveState(State state) throws IllegalArgumentException {
     final var stateName = state.getStateObject().getName();

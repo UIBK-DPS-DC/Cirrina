@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
@@ -134,6 +135,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws UnsupportedOperationException If the invocation failed.
    */
   @TracesGeneral
+  @LogGeneral
   @Override
   public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws UnsupportedOperationException {
     try {

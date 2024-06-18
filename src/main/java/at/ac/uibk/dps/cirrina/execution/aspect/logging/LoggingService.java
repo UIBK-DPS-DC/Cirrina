@@ -1,10 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.aspect.logging;
 
-import java.net.http.HttpResponse;
-import java.util.Arrays;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -22,11 +20,11 @@ public class LoggingService {
 
   @Before("invoke() && args(id)")
   public void invoke(String id) {
-    logger.info("Service invoked by " + id);
+    logger.info("Service invoked by Sender with ID: {}", id);
   }
 
   @Before("handleResponse() && args(response)")
-  public void handleResponse(JoinPoint joinPoint, HttpResponse<byte[]> response) {
-    logger.info("Handling response: " + Arrays.toString(response.body()));
+  public void handleResponse(SimpleHttpResponse response) {
+    logger.info("Handling response: {}", response.getBodyText());
   }
 }
