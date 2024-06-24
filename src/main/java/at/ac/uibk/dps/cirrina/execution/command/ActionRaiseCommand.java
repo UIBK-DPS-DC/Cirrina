@@ -1,11 +1,10 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
-import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,12 +21,11 @@ public final class ActionRaiseCommand extends ActionCommand {
     this.raiseAction = raiseAction;
   }
 
-  @TracesGeneral
-  @LogGeneral
-  @LogAction
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
-    try {
+    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get(): "null");
+    Span span = tracing.initianlizeSpan("Assign Action", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
       final var event = raiseAction.getEvent();
 
       final var commands = new ArrayList<ActionCommand>();
@@ -48,7 +46,11 @@ public final class ActionRaiseCommand extends ActionCommand {
 
       return commands;
     } catch (Exception e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
       throw new UnsupportedOperationException("Could not execute raise action", e);
+    } finally {
+      span.end();
     }
   }
 }

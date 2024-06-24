@@ -1,16 +1,20 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
-import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
@@ -20,6 +24,7 @@ import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
 import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.logging.log4j.core.layout.CsvParameterLayout;
 
 /**
  * HTTP service implementation, a service implementation that is accessible through HTTP.
@@ -71,6 +76,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
    */
   private final Method method;
 
+  private static final Logging logging = new Logging();
+  private static final Tracing tracing = new Tracing();
+  private static final Tracer tracer = tracing.initializeTracer("HTTP Service");
+
   /**
    * Initializes this HTTP service implementation.
    *
@@ -94,32 +103,46 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws CompletionException In case of error.
    */
 
-  @TracesGeneral
+
   private static List<ContextVariable> handleResponse(SimpleHttpResponse response) {
-    // Require HTTP OK
-    final var errorCode = response.getCode();
+    logging.logServiceResponseHandling("HTTP Sercice", response);
+    Span span = tracing.initianlizeSpan("Handle Response", tracer, null);
+    tracing.addAttributes(Map.of("Response", response.getBodyText().toString()), span);
+    try(Scope scope = span.makeCurrent()) {
+      // Require HTTP OK
+      final var errorCode = response.getCode();
 
-    if (errorCode != 200) {
-      throw new CompletionException(new IOException("HTTP error (%d)".formatted(errorCode)));
-    }
-
-    // Acquire the payload
-    final var payload = response.getBodyBytes();
-
-    try {
-      // Empty payload
-      if (payload.length == 0) {
-        return List.of();
+      try {
+        if (errorCode != 200) {
+          throw new CompletionException(new IOException("HTTP error (%d)".formatted(errorCode)));
+        }
+      } catch(CompletionException e){
+        tracing.recordException(e, span);
+        throw e;
       }
 
-      // Otherwise we expect a serialized collection of context variables
-      return ContextVariableProtos.ContextVariables.parseFrom(payload)
-          .getDataList().stream()
-          .map(ContextVariableExchange::fromProto)
-          .toList();
-    } catch (InvalidProtocolBufferException e) {
-      throw new CompletionException(
-          new IOException("Unexpected HTTP service invocation value type"));
+      // Acquire the payload
+      final var payload = response.getBodyBytes();
+
+      try {
+        // Empty payload
+        if (payload.length == 0) {
+          return List.of();
+        }
+
+        // Otherwise we expect a serialized collection of context variables
+        return ContextVariableProtos.ContextVariables.parseFrom(payload)
+            .getDataList().stream()
+            .map(ContextVariableExchange::fromProto)
+            .toList();
+      } catch (InvalidProtocolBufferException e) {
+        tracing.recordException(e, span);
+        logging.logExeption(e);
+        throw new CompletionException(
+            new IOException("Unexpected HTTP service invocation value type"));
+      }
+    } finally {
+      span.end();
     }
   }
 
@@ -134,13 +157,22 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @throws UnsupportedOperationException If not all variables are evaluated.
    * @throws UnsupportedOperationException If the invocation failed.
    */
-  @TracesGeneral
-  @LogGeneral
+
   @Override
   public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws UnsupportedOperationException {
-    try {
-      if (input.stream().anyMatch(ContextVariable::isLazy)) {
-        throw new UnsupportedOperationException("All variables need to be evaluated before service input can be converted to bytes");
+    logging.logServiceInvocation("HTTPS", id);
+    Span span = tracing.initianlizeSpan("Invoke Service", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
+      tracing.addAttributes(Map.of("Invoked by", id),span);
+
+
+      try {
+        if (input.stream().anyMatch(ContextVariable::isLazy)) {
+          throw new UnsupportedOperationException("All variables need to be evaluated before service input can be converted to bytes");
+        }
+      } catch (UnsupportedOperationException e) {
+        tracing.recordException(e, span);
+        throw e;
       }
 
       // Serialize the data
@@ -186,6 +218,8 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
       return future;
     } catch (URISyntaxException e) {
+      tracing.recordException(e, span);
+      logging.logExeption(e);
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     }
   }

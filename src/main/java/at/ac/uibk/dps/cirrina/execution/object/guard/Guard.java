@@ -1,7 +1,12 @@
 package at.ac.uibk.dps.cirrina.execution.object.guard;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import jakarta.annotation.Nullable;
 import java.util.Optional;
 
@@ -19,6 +24,10 @@ public class Guard {
    * Guard expression.
    */
   private final Expression expression;
+
+  private final Logging logging = new Logging();
+  private final Tracing tracing = new Tracing();
+  private final Tracer tracer = tracing.initializeTracer("Guard");
 
   /**
    * Initializes this guard object.
@@ -42,13 +51,25 @@ public class Guard {
    * @throws IllegalArgumentException      If the expression could not be evaluated, or the expression does not produce a boolean value.
    */
   public boolean evaluate(Extent extent) throws IllegalArgumentException, UnsupportedOperationException {
-    var result = expression.execute(extent);
+    logging.logGuardEvaluation();
+    Span span = tracer.spanBuilder("Evaluate Guard").startSpan();
+    try(Scope scope = span.makeCurrent()) {
+      var result = expression.execute(extent);
 
-    if (!(result instanceof Boolean)) {
-      throw new IllegalArgumentException("Guard expression '%s' does not produce a boolean value".formatted(expression));
+      try {
+        if (!(result instanceof Boolean)) {
+          throw new IllegalArgumentException("Guard expression '%s' does not produce a boolean value".formatted(expression));
+        }
+      } catch (IllegalArgumentException e) {
+        tracing.recordException(e, span);
+        logging.logExeption(e);
+        throw e;
+      }
+
+      return (Boolean) result;
+    }finally {
+      span.end();
     }
-
-    return (Boolean) result;
   }
 
   /**

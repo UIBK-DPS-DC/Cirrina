@@ -1,9 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
-import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.MatchAction;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +16,11 @@ public final class ActionMatchCommand extends ActionCommand {
     this.matchAction = matchAction;
   }
 
-  @TracesGeneral
-  @LogGeneral
-  @LogAction
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
-    try {
+    logging.logAction(this.matchAction.getName().isPresent() ? this.matchAction.getName().get() : "null");
+    Span span = tracing.initianlizeSpan("Match Action", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
       final var commands = new ArrayList<ActionCommand>();
 
       final var extent = executionContext.scope().getExtent();
@@ -45,7 +43,11 @@ public final class ActionMatchCommand extends ActionCommand {
 
       return commands;
     } catch (Exception e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
       throw new UnsupportedOperationException("Could not execute match action", e);
+    } finally {
+      span.end();
     }
   }
 }

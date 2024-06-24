@@ -1,5 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
+import io.opentelemetry.api.trace.Tracer;
 import java.util.List;
 
 /**
@@ -7,6 +10,10 @@ import java.util.List;
  * executed and may produce new commands and have side effects.
  */
 public abstract class ActionCommand {
+
+  protected final Tracing tracing = new Tracing();
+  protected final Tracer tracer = tracing.initializeTracer("Action");
+  protected final Logging logging = new Logging();
 
   protected final ExecutionContext executionContext;
 

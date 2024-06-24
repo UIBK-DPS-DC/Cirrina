@@ -1,9 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogAction;
-import at.ac.uibk.dps.cirrina.execution.aspect.logging.LogGeneral;
-import at.ac.uibk.dps.cirrina.execution.aspect.traces.TracesGeneral;
 import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.util.List;
 
 public final class ActionTimeoutCommand extends ActionCommand {
@@ -16,13 +15,16 @@ public final class ActionTimeoutCommand extends ActionCommand {
     this.timeoutAction = timeoutAction;
   }
 
-  @TracesGeneral
-  @LogGeneral
-  @LogAction
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
-    final var commandFactory = new CommandFactory(executionContext);
+    logging.logAction(this.timeoutAction.getName().isPresent() ? this.timeoutAction.getName().get(): "null");
+    Span span = tracing.initianlizeSpan("Timeout Action", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
+      final var commandFactory = new CommandFactory(executionContext);
 
-    return List.of(commandFactory.createActionCommand(timeoutAction.getAction()));
+      return List.of(commandFactory.createActionCommand(timeoutAction.getAction()));
+    } finally {
+      span.end();
+    }
   }
 }
