@@ -3,8 +3,12 @@ package at.ac.uibk.dps.cirrina.execution.command;
 import at.ac.uibk.dps.cirrina.execution.object.action.MatchAction;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ActionMatchCommand extends ActionCommand {
+
+  private static final Logger logger = LogManager.getLogger();
 
   private final MatchAction matchAction;
 
@@ -16,9 +20,9 @@ public final class ActionMatchCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
-    try {
-      final var commands = new ArrayList<ActionCommand>();
+    final var commands = new ArrayList<ActionCommand>();
 
+    try {
       final var extent = executionContext.scope().getExtent();
       final var conditionValue = matchAction.getValue().execute(extent);
 
@@ -36,10 +40,10 @@ public final class ActionMatchCommand extends ActionCommand {
           commands.add(command);
         }
       }
-
-      return commands;
-    } catch (Exception e) {
-      throw new UnsupportedOperationException("Could not execute match action", e);
+    } catch (UnsupportedOperationException e) {
+      logger.error("Could not execute match action: {}", e.getMessage());
     }
+
+    return commands;
   }
 }

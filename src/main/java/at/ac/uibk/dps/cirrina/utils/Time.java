@@ -14,6 +14,6 @@ public class Time {
 
   public static double timeInMillisecondsSinceStart() {
     Instant now = Instant.now();
-    return Duration.between(processStartTime, now).toMillis();
+    return Duration.between(processStartTime, now).toNanos() / 1_000_000.0;
   }
 }
