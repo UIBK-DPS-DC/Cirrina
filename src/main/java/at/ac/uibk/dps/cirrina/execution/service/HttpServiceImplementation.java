@@ -11,12 +11,20 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
@@ -38,18 +46,14 @@ public class HttpServiceImplementation extends ServiceImplementation {
   /**
    * HTTP client.
    */
-  private static final CloseableHttpAsyncClient httpClient;
+  private final HttpClient httpClient = HttpClient.newBuilder()
+      .executor(Executors.newCachedThreadPool())
+      .build();
 
-  static {
-    final var connectionManager = new PoolingAsyncClientConnectionManager();
-    connectionManager.setMaxTotal(100);
-    connectionManager.setDefaultMaxPerRoute(100);
-
-    httpClient = HttpAsyncClients.custom()
-        .setConnectionManager(connectionManager)
-        .build();
-    httpClient.start();
-  }
+  /**
+   * Handle executor.
+   */
+  private final Executor handleExecutor = Executors.newCachedThreadPool();
 
   /**
    * HTTP scheme.
@@ -102,27 +106,25 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
-
-
-  private static List<ContextVariable> handleResponse(SimpleHttpResponse response) {
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
     logging.logServiceResponseHandling("HTTP Sercice", response);
     Span span = tracing.initianlizeSpan("Handle Response", tracer, null);
-    tracing.addAttributes(Map.of("Response", response.getBodyText().toString()), span);
+    tracing.addAttributes(Map.of("Response", response.body().toString()), span);
     try(Scope scope = span.makeCurrent()) {
-      // Require HTTP OK
-      final var errorCode = response.getCode();
+    // Require HTTP OK
+    final var errorCode = response.statusCode();
 
-      try {
-        if (errorCode != 200) {
-          throw new CompletionException(new IOException("HTTP error (%d)".formatted(errorCode)));
-        }
-      } catch(CompletionException e){
-        tracing.recordException(e, span);
-        throw e;
-      }
+    try {
+    if (errorCode != HttpURLConnection.HTTP_OK) {
+      throw new CompletionException(new IOException("HTTP error (%d)".formatted(errorCode)));
+    }
+    } catch(CompletionException e){
+      tracing.recordException(e, span);
+      throw e;
+    }
 
-      // Acquire the payload
-      final var payload = response.getBodyBytes();
+    // Acquire the payload
+    final var payload = response.body();
 
       try {
         // Empty payload
@@ -176,48 +178,27 @@ public class HttpServiceImplementation extends ServiceImplementation {
       }
 
       // Serialize the data
-      final byte[] payload = input.isEmpty()
-          ? new byte[0] // Send no data if there are no input variables, avoid serialization of nothing
-          : ContextVariableProtos.ContextVariables.newBuilder()
-              .addAllData(input.stream()
-                  .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
-                  .toList()
-              )
-              .build()
-              .toByteArray();
+      final byte[] payload = input.isEmpty() ? new byte[0] : ContextVariableProtos.ContextVariables.newBuilder()
+          .addAllData(input.stream()
+              .map(contextVariable -> new ContextVariableExchange(contextVariable).toProto())
+              .toList()
+          )
+          .build()
+          .toByteArray();
 
       // Create URL
       final var uri = new URI(scheme, null, host, port, endPoint, null, null);
 
-      final var request = new SimpleHttpRequest(method.toString(), uri);
-      request.setBody(payload, ContentType.APPLICATION_OCTET_STREAM);
-      request.setHeader("Cirrina-Sender-ID", id);
+      final var request = HttpRequest.newBuilder()
+          .version(Version.HTTP_1_1)
+          .header("Cirrina-Sender-ID", id)
+          .method(method.toString(), BodyPublishers.ofByteArray(payload))
+          .uri(uri)
+          .build();
 
-      final CompletableFuture<List<ContextVariable>> future = new CompletableFuture<>();
-
-      httpClient.execute(request, new FutureCallback<SimpleHttpResponse>() {
-        @Override
-        public void completed(SimpleHttpResponse response) {
-          try {
-            future.complete(handleResponse(response));
-          } catch (Exception e) {
-            future.completeExceptionally(e);
-          }
-        }
-
-        @Override
-        public void failed(Exception ex) {
-          future.completeExceptionally(ex);
-        }
-
-        @Override
-        public void cancelled() {
-          future.completeExceptionally(new IOException("Request cancelled"));
-        }
-      });
-
-      return future;
-    } catch (URISyntaxException e) {
+      return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+          .thenApplyAsync(HttpServiceImplementation::handleResponse, handleExecutor);
+    } catch (URISyntaxException | UnsupportedOperationException e) {
       tracing.recordException(e, span);
       logging.logExeption(e);
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);

@@ -3,7 +3,7 @@
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="OTEL_METRIC_EXPORT_INTERVAL" value="60000" />
+          <entry key="OTEL_METRIC_EXPORT_INTERVAL" value="1000" />
         </map>
       </option>
       <option name="executionName" />

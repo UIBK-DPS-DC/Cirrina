@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.aspect.logging;
 
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
+import java.net.http.HttpResponse;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -35,9 +36,9 @@ public class Logging {
     logger.info("Service invocation: {} with ID {}", serviceName, id);
   }
 
-  public void logServiceResponseHandling(String serviceName, SimpleHttpResponse response){
+  public void logServiceResponseHandling(String serviceName, HttpResponse response){
     logger.info("Handling service response: {} with status code {} and body {}",
-        serviceName, response.getCode(), response.getBodyText());
+        serviceName, response.statusCode(), response.body().toString());
   }
 
   public void logEventReception(String stateMachne, Event event, String state){

@@ -9,8 +9,12 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ActionCreateCommand extends ActionCommand {
+
+  private static final Logger logger = LogManager.getLogger();
 
   private final CreateAction createAction;
 
@@ -27,58 +31,59 @@ public final class ActionCreateCommand extends ActionCommand {
     try(Scope scope = span.makeCurrent()) {
       final var start = Time.timeInMillisecondsSinceStart();
 
-      try {
-        final var variable = createAction.getVariable();
-        final var variableName = variable.name();
+    final var commands = new ArrayList<ActionCommand>();
 
-        final var commands = new ArrayList<ActionCommand>();
+    try {
+      final var variable = createAction.getVariable();
+      final var variableName = variable.name();
 
-        final var extent = executionContext.scope().getExtent();
+      final var extent = executionContext.scope().getExtent();
 
-        final var isPersistent = createAction.isPersistent();
+      final var isPersistent = createAction.isPersistent();
 
-        // If the variable should be created persistently, we assume that the lowest priority context in the extent is the persistent context,
-        // if the variable should not be created persistently, we assume that the highest priority context in the extent is the relevant local context
-        final var targetContext = isPersistent ?
-            extent.getLow() : // The lowest priority context in the extent is the persistent context
-            extent.getHigh(); // The highest priority context in the extent is the local context in scope
+      // If the variable should be created persistently, we assume that the lowest priority context in the extent is the persistent context,
+      // if the variable should not be created persistently, we assume that the highest priority context in the extent is the relevant local context
+      final var targetContext = isPersistent ?
+          extent.getLow() : // The lowest priority context in the extent is the persistent context
+          extent.getHigh(); // The highest priority context in the extent is the local context in scope
 
-        // Create the variable
-        // Acquire the value, in case the variable is lazy, we have to find the value through evaluating the value expression
-        Object value = null;
-        if (variable.isLazy()) {
-          final var expression = variable.value();
+      // Create the variable
+      // Acquire the value, in case the variable is lazy, we have to find the value through evaluating the value expression
+      Object value = null;
+      if (variable.isLazy()) {
+        final var expression = variable.value();
 
-          assert expression instanceof Expression;
-          value = ((Expression) expression).execute(extent);
-        } else {
-          value = variable.value();
-        }
-
-        // Attempt to create the variable
-        final var size = targetContext.create(variableName, value);
-
-        // Measure latency
-        final var now = Time.timeInMillisecondsSinceStart();
-        final var delta = now - start;
-
-        final var gauges = executionContext.gauges();
-
-        gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
-            gauges.attributesForData(
-                "create",
-                !isPersistent ? "local" : "persistent",
-                size
-            ));
-
-        return commands;
-      } catch (Exception e) {
-        logging.logExeption(e);
-        tracing.recordException(e, span);
-        throw new UnsupportedOperationException("Could not execute create action", e);
+        assert expression instanceof Expression;
+        value = ((Expression) expression).execute(extent);
+      } else {
+        value = variable.value();
       }
+
+      // Attempt to create the variable
+      final var size = targetContext.create(variableName, value);
+
+      // Measure latency
+      final var now = Time.timeInMillisecondsSinceStart();
+      final var delta = now - start;
+
+      final var gauges = executionContext.gauges();
+
+      gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
+          gauges.attributesForData(
+              "create",
+              !isPersistent ? "local" : "persistent",
+              size
+          ));
+
+    } catch (Exception e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
+      logger.error("Data creation failed: {}", e.getMessage());
     } finally {
       span.end();
     }
+
+    return commands;
   }
+}
 }

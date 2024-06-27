@@ -5,8 +5,12 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ActionMatchCommand extends ActionCommand {
+
+  private static final Logger logger = LogManager.getLogger();
 
   private final MatchAction matchAction;
 
@@ -20,9 +24,9 @@ public final class ActionMatchCommand extends ActionCommand {
   public List<ActionCommand> execute() throws UnsupportedOperationException {
     logging.logAction(this.matchAction.getName().isPresent() ? this.matchAction.getName().get() : "null");
     Span span = tracing.initianlizeSpan("Match Action", tracer, null);
-    try(Scope scope = span.makeCurrent()) {
-      final var commands = new ArrayList<ActionCommand>();
+    final var commands = new ArrayList<ActionCommand>();
 
+    try(Scope scope = span.makeCurrent()) {
       final var extent = executionContext.scope().getExtent();
       final var conditionValue = matchAction.getValue().execute(extent);
 
@@ -40,14 +44,14 @@ public final class ActionMatchCommand extends ActionCommand {
           commands.add(command);
         }
       }
-
-      return commands;
-    } catch (Exception e) {
+    } catch (UnsupportedOperationException e) {
       logging.logExeption(e);
       tracing.recordException(e, span);
-      throw new UnsupportedOperationException("Could not execute match action", e);
+      logger.error("Could not execute match action: {}", e.getMessage());
     } finally {
       span.end();
     }
+
+    return commands;
   }
 }

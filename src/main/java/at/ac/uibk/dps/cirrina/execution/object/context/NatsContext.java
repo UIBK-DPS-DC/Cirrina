@@ -126,10 +126,6 @@ public final class NatsContext extends Context implements AutoCloseable {
   @Override
   public int assign(String name, Object value) throws IOException {
     try {
-      if (keyValue.get(name) == null) {
-        throw new IOException("A variable with the name '%s' does not exist".formatted(name));
-      }
-
       final var data = toBytes(value);
 
       keyValue.put(name, data);

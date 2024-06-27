@@ -7,10 +7,15 @@ import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.utils.Time;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ActionAssignCommand extends ActionCommand {
+
+  private static final Logger logger = LogManager.getLogger();
 
   private final AssignAction assignAction;
 
@@ -27,48 +32,50 @@ public final class ActionAssignCommand extends ActionCommand {
     try(Scope scope = span.makeCurrent()) {
       final var start = Time.timeInMillisecondsSinceStart();
 
-      try {
-        final var variable = assignAction.getVariable();
-        final var variableName = variable.name();
-        final var commands = new ArrayList<ActionCommand>();
+    final var commands = new ArrayList<ActionCommand>();
 
-        final var extent = executionContext.scope().getExtent();
+    try {
+      final var variable = assignAction.getVariable();
+      final var variableName = variable.name();
 
-        // Acquire the value, in case the variable is lazy, we have to find the value through evaluating the value expression
-        Object value = null;
-        if (variable.isLazy()) {
-          final var expression = variable.value();
+      final var extent = executionContext.scope().getExtent();
 
-          assert expression instanceof Expression;
-          value = ((Expression) expression).execute(extent);
-        } else {
-          value = variable.value();
-        }
+      // Acquire the value, in case the variable is lazy, we have to find the value through evaluating the value expression
+      Object value = null;
+      if (variable.isLazy()) {
+        final var expression = variable.value();
 
-        // Attempt to set the variable
-        final var result = extent.trySet(variableName, value);
-
-        // Measure latency
-        final var now = Time.timeInMillisecondsSinceStart();
-        final var delta = now - start;
-
-        final var gauges = executionContext.gauges();
-
-        gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
-            gauges.attributesForData(
-                "assign",
-                result.context().isLocal() ? "local" : "persistent",
-                result.size()
-            ));
-
-        return commands;
-      } catch (Exception e) {
-        logging.logExeption(e);
-        tracing.recordException(e, span);
-        throw new UnsupportedOperationException("Could not execute assign action", e);
+        assert expression instanceof Expression;
+        value = ((Expression) expression).execute(extent);
+      } else {
+        value = variable.value();
       }
+
+      // Attempt to set the variable
+      final var result = extent.trySet(variableName, value);
+
+      // Measure latency
+      final var now = Time.timeInMillisecondsSinceStart();
+      final var delta = now - start;
+
+      final var gauges = executionContext.gauges();
+
+      gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
+          gauges.attributesForData(
+              "assign",
+              result.context().isLocal() ? "local" : "persistent",
+              result.size()
+          ));
+
+    } catch (IOException e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
+      logger.error("Data assignment failed: {}", e.getMessage());
     }finally {
       span.end();
     }
+
+    return commands;
   }
+}
 }
