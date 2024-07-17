@@ -1,5 +1,10 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -30,6 +35,10 @@ public final class TimeoutActionManager {
    */
   private final ConcurrentMap<String, ScheduledFuture<?>> timeoutTasks = new ConcurrentHashMap<>();
 
+  private final Logging logging = new Logging();
+  private final Tracing tracing = new Tracing();
+  private final Tracer tracer = tracing.initializeTracer("Action");
+
   /**
    * Starts the provided timeout action.
    * <p>
@@ -41,16 +50,30 @@ public final class TimeoutActionManager {
    * @throws IllegalArgumentException If two timeout actions with the same name have been started without being stopped.
    */
   public void start(String actionName, Number delayInMs, Runnable task) throws IllegalArgumentException {
-    // Ensure unique timeout action names
-    if (timeoutTasks.containsKey(actionName)) {
-      throw new IllegalArgumentException("Duplicate timeout action name '%s'".formatted(actionName));
-    }
+    logging.logTimeout("start", actionName);
+    Span span = tracing.initianlizeSpan("Start Timeout Actions", tracer, null);
+      try(Scope scope = span.makeCurrent()) {
 
-    // Schedule at an interval
-    final var future = timeoutTaskScheduler.scheduleWithFixedDelay(task, delayInMs.intValue(), delayInMs.intValue(), TimeUnit.MILLISECONDS);
+        try {
+          // Ensure unique timeout action names
+          if (timeoutTasks.containsKey(actionName)) {
+            throw new IllegalArgumentException("Duplicate timeout action name '%s'".formatted(actionName));
+          }
+        } catch (IllegalArgumentException e){
+          tracing.recordException(e, span);
+          logging.logExeption(e);
+          throw e;
+        }
 
-    // Keep the task
-    timeoutTasks.put(actionName, future);
+        // Schedule at an interval
+        final var future = timeoutTaskScheduler.scheduleWithFixedDelay(task, delayInMs.intValue(), delayInMs.intValue(),
+            TimeUnit.MILLISECONDS);
+
+        // Keep the task
+        timeoutTasks.put(actionName, future);
+      } finally {
+        span.end();
+      }
   }
 
   /**
@@ -62,34 +85,53 @@ public final class TimeoutActionManager {
    * @throws IllegalArgumentException If not exactly one timeout action was found with the provided name.
    */
   public void stop(String actionName) throws IllegalArgumentException {
-    // Retrieve the timeout task
-    final var timeoutTasksWithName = timeoutTasks.entrySet().stream()
-        .filter(entry -> entry.getKey().equals(actionName))
-        .map(Map.Entry::getValue)
-        .toList();
+    logging.logTimeout("stop", actionName);
+    Span span = tracing.initianlizeSpan("Stopping Timeout Action", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
+      tracing.addAttributes(Map.of("Action", actionName), span);
 
-    if (timeoutTasksWithName.size() != 1) {
-      throw new IllegalArgumentException("Expected exactly one timeout action with the name '%s'".formatted(actionName));
+      // Retrieve the timeout task
+      final var timeoutTasksWithName = timeoutTasks.entrySet().stream()
+          .filter(entry -> entry.getKey().equals(actionName))
+          .map(Map.Entry::getValue)
+          .toList();
+      try {
+        if (timeoutTasksWithName.size() != 1) {
+          throw new IllegalArgumentException("Expected exactly one timeout action with the name '%s'".formatted(actionName));
+        }
+      }catch (IllegalArgumentException e){
+        tracing.recordException(e, span);
+        logging.logExeption(e);
+        throw e;
+      }
+
+      final var timeoutTask = timeoutTasksWithName.getFirst();
+
+      // Cancel the task
+      timeoutTask.cancel(true);
+
+      // Remove the task
+      timeoutTasks.remove(actionName);
+    } finally {
+      span.end();
     }
-
-    final var timeoutTask = timeoutTasksWithName.getFirst();
-
-    // Cancel the task
-    timeoutTask.cancel(true);
-
-    // Remove the task
-    timeoutTasks.remove(actionName);
   }
 
   /**
    * Stops all timeout actions.
    */
   public void stopAll() {
-    // Cancel all tasks
-    timeoutTasks.values()
-        .forEach(future -> future.cancel(true));
+    logging.logTimeout("stopAll", null);
+    Span span = tracing.initianlizeSpan("Stopping All Timeout Actions", tracer, null);
+    try (Scope scope = span.makeCurrent()) {
+      // Cancel all tasks
+      timeoutTasks.values()
+          .forEach(future -> future.cancel(true));
 
-    // And clear
-    timeoutTasks.clear();
+      // And clear
+      timeoutTasks.clear();
+    } finally {
+      span.end();
+    }
   }
 }

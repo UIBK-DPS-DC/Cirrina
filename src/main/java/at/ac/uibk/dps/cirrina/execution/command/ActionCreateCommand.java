@@ -5,6 +5,8 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DAT
 import at.ac.uibk.dps.cirrina.execution.object.action.CreateAction;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.utils.Time;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +26,10 @@ public final class ActionCreateCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
-    final var start = Time.timeInMillisecondsSinceStart();
+    logging.logAction(this.createAction.getName().isPresent() ? this.createAction.getName().get(): "null");
+    Span span = tracing.initianlizeSpan("Create Action", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
+      final var start = Time.timeInMillisecondsSinceStart();
 
     final var commands = new ArrayList<ActionCommand>();
 
@@ -71,9 +76,14 @@ public final class ActionCreateCommand extends ActionCommand {
           ));
 
     } catch (Exception e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
       logger.error("Data creation failed: {}", e.getMessage());
+    } finally {
+      span.end();
     }
 
     return commands;
   }
+}
 }

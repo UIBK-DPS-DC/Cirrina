@@ -3,6 +3,8 @@ package at.ac.uibk.dps.cirrina.execution.command;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +28,11 @@ public final class ActionRaiseCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
+    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get(): "null");
+    Span span = tracing.initianlizeSpan("Assign Action", tracer, null);
     final var commands = new ArrayList<ActionCommand>();
 
-    try {
+    try(Scope scope = span.makeCurrent()) {
       final var event = raiseAction.getEvent();
 
       final var extent = executionContext.scope().getExtent();
@@ -45,7 +49,11 @@ public final class ActionRaiseCommand extends ActionCommand {
         eventHandler.sendEvent(evaluatedEvent);
       }
     } catch (IOException e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
       logger.error("Data creation failed: {}", e.getMessage());
+    } finally {
+      span.end();
     }
 
     return commands;

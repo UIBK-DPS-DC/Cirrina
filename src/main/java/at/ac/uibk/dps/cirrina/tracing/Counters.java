@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.tracing;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_TRANSITION_INTERNAL;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_ATTR_EVENT_CHANNEL;
 
 import io.opentelemetry.api.common.Attributes;
@@ -37,6 +38,13 @@ public class Counters {
 
   public Attributes attributesForInstances() {
     return Attributes.builder()
+        .build();
+  }
+
+  public Attributes attributesForTransition(Boolean isInternal){
+    return Attributes.builder()
+        .put(ATTR_TRANSITION_INTERNAL, isInternal)
+        .put(ATTR_STATE_MACHINE_ID, stateMachineId)
         .build();
   }
 

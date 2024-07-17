@@ -50,6 +50,13 @@ dependencies {
 
     implementation("com.google.protobuf:protobuf-java:3.25.3")
 
+    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("ch.qos.logback:logback-core:1.2.3")
+    implementation("org.slf4j:slf4j-api:1.7.30")
+
+    implementation("org.aspectj:aspectjrt:1.9.19")
+    implementation("org.aspectj:aspectjweaver:1.9.19")
+
     implementation("io.nats:jnats:2.17.3")
 
     implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"));

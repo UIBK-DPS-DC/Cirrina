@@ -5,6 +5,8 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DAT
 import at.ac.uibk.dps.cirrina.execution.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.utils.Time;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,10 @@ public final class ActionAssignCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute() throws UnsupportedOperationException {
-    final var start = Time.timeInMillisecondsSinceStart();
+    logging.logAction(this.assignAction.getName().isPresent() ? this.assignAction.getName().get(): "null");
+    Span span = tracing.initianlizeSpan("Assign Action", tracer, null);
+    try(Scope scope = span.makeCurrent()) {
+      final var start = Time.timeInMillisecondsSinceStart();
 
     final var commands = new ArrayList<ActionCommand>();
 
@@ -63,9 +68,14 @@ public final class ActionAssignCommand extends ActionCommand {
           ));
 
     } catch (IOException e) {
+      logging.logExeption(e);
+      tracing.recordException(e, span);
       logger.error("Data assignment failed: {}", e.getMessage());
+    }finally {
+      span.end();
     }
 
     return commands;
   }
+}
 }

@@ -23,6 +23,8 @@ services:
     configs:
       - source: telegraf_config
         target: /etc/telegraf/telegraf.conf
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
   nats:
     image: "nats:latest"
     command:
