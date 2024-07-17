@@ -23,8 +23,6 @@ build:
 
 docker-build:
   stage: build
-  tags:
-    - shell
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
