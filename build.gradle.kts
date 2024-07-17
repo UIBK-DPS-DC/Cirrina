@@ -66,7 +66,7 @@ dependencies {
 
     implementation("org.apache.curator:curator-framework:5.6.0")
     implementation("org.apache.curator:curator-recipes:5.6.0")
-    
+
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
@@ -78,6 +78,14 @@ dependencies {
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
     implementation("org.jgrapht:jgrapht-io:1.5.2")
+
+    implementation("io.kubernetes:client-java:21.0.0")
+
+    implementation("com.github.docker-java:docker-java:3.4.0")
+    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.4.0")
+
+    // [deprecated]
+    implementation("com.hashicorp.nomad:nomad-sdk:0.11.3.0")
 
     testImplementation("org.mockito:mockito-core:5.11.0")
 
