@@ -7,6 +7,8 @@ plugins {
     id("net.razvan.jacoco-to-cobertura") version "1.2.0"
 
     id("com.google.protobuf") version "0.9.4"
+
+    id("org.sonarqube") version "4.4.1.3373"
 }
 
 group = "ac.at.uibk.dps.cirrina"
@@ -66,7 +68,7 @@ dependencies {
 
     implementation("org.apache.curator:curator-framework:5.6.0")
     implementation("org.apache.curator:curator-recipes:5.6.0")
-    
+
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
@@ -88,6 +90,14 @@ dependencies {
 repositories {
     mavenCentral()
     maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "cirrina-project_cirrina") // TODO: Change projectKey
+        property("sonar.organization", "cirrina-project")       // TODO: Change organization
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 tasks.test {
