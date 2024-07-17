@@ -7,8 +7,12 @@ import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.utils.Time;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class ActionCreateCommand extends ActionCommand {
+
+  private static final Logger logger = LogManager.getLogger();
 
   private final CreateAction createAction;
 
@@ -22,11 +26,11 @@ public final class ActionCreateCommand extends ActionCommand {
   public List<ActionCommand> execute() throws UnsupportedOperationException {
     final var start = Time.timeInMillisecondsSinceStart();
 
+    final var commands = new ArrayList<ActionCommand>();
+
     try {
       final var variable = createAction.getVariable();
       final var variableName = variable.name();
-
-      final var commands = new ArrayList<ActionCommand>();
 
       final var extent = executionContext.scope().getExtent();
 
@@ -66,9 +70,10 @@ public final class ActionCreateCommand extends ActionCommand {
               size
           ));
 
-      return commands;
     } catch (Exception e) {
-      throw new UnsupportedOperationException("Could not execute create action", e);
+      logger.error("Data creation failed: {}", e.getMessage());
     }
+
+    return commands;
   }
 }
