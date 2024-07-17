@@ -52,6 +52,8 @@ test:
 
 sonarcloud-check:
   stage: check
+  before_script:
+    - apk add protoc
   cache:
     key: "${CI_JOB_NAME}"
     paths:
