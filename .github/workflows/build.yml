@@ -17,6 +17,7 @@ jobs:
           java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: wagoid/commitlint-github-action@v6
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
       - name: Build using Gradle
