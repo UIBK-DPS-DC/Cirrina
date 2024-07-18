@@ -112,7 +112,14 @@ public class JobMonitor implements CuratorCacheListener {
         // Call listener
         jobListener.newJob(job);
       } catch (UnsupportedOperationException | IllegalArgumentException e) {
-        logger.error("Failed to register job", e);
+        logger.error("Failed to parse job description for job '{}'. Skipping this job.", jobName, e);
+        try {
+          // Delete the invalid job
+          curatorFramework.delete().forPath(nodePath);
+          logger.info("Deleted invalid job '{}'", jobName);
+        } catch (Exception ex) {
+          logger.error("Failed to delete invalid job '{}'", jobName, ex);
+        }
       }
     });
   }
