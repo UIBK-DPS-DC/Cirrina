@@ -4,7 +4,6 @@ plugins {
     application
 
     jacoco
-    id("net.razvan.jacoco-to-cobertura") version "1.2.0"
 
     id("com.google.protobuf") version "0.9.4"
 }
@@ -66,7 +65,7 @@ dependencies {
 
     implementation("org.apache.curator:curator-framework:5.6.0")
     implementation("org.apache.curator:curator-recipes:5.6.0")
-    
+
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
@@ -101,7 +100,6 @@ tasks.jacocoTestReport {
         html.required = false
         csv.required = false
     }
-    finalizedBy(tasks.jacocoToCobertura)
 }
 
 tasks.withType<Jar> {
