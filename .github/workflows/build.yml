@@ -24,6 +24,6 @@ jobs:
         with:
           name: test-reports
           path: |
-            '**/build/test-results/test/TEST-*.xml'
-            '**/build/reports/jacoco/**/jacocoTestReport.xml'
+            'build/test-results/test/TEST-*.xml'
+            'build/reports/jacoco/**/jacocoTestReport.xml'
           retention-days: 1
