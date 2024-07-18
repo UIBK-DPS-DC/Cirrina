@@ -21,6 +21,10 @@ jobs:
         with:
           commit: ${{github.event.workflow_run.head_sha}}
           report_paths: 'test-results/test/TEST-*.xml'
+          fail_on_failure: true
+          require_tests: true
+          include_passed: true
+          detailed_summary: true
       #- name: JaCoCo Code Coverage Report
       #  uses: PavanMudigonda/jacoco-reporter@v5.0
       #  with:
