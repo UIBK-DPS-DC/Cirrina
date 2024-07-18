@@ -4,7 +4,7 @@
     <img src="cirrina.svg" alt="Logo" width="400"/>
 </div>
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.md) [![Build](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/ci.yml/badge.svg)](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.md) [![Build](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/build.yml/badge.svg)](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/build.yml) [![Test](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/report.yml/badge.svg)](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/report.yml)
 
 Cirrina, a distributed Collaborative State Machines (CSM) runtime for the Cloud-Edge-IoT continuum. Collaborative state machines is a state
 machine-based programming model for the Cloud-Edge-IoT continuum inspired by David
