@@ -1,16 +1,3 @@
-name: Commitlint
-on:
-  push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
-jobs:
-  commitlint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: wagoid/commitlint-github-action@v6
----
 name: Build
 on:
   push:
