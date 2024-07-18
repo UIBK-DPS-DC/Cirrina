@@ -47,7 +47,7 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java:4.27.2")
 
     implementation("io.nats:jnats:2.17.3")
 
@@ -77,6 +77,14 @@ dependencies {
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
     implementation("org.jgrapht:jgrapht-io:1.5.2")
+
+    implementation("com.github.docker-java:docker-java:3.4.0")
+    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.4.0")
+
+    implementation("io.kubernetes:client-java:21.0.0")
+    
+    // [deprecated]
+    implementation("com.hashicorp.nomad:nomad-sdk:0.11.3.0")
 
     testImplementation("org.mockito:mockito-core:5.11.0")
 
