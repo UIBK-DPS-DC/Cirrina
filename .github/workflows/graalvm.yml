@@ -6,6 +6,8 @@ on:
     branches: [ "develop" ]
 jobs:
   build:
+    permissions:
+      checks: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
