@@ -77,6 +77,9 @@ dependencies {
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+    implementation("org.apache.logging.log4j:log4j-api:2.23.1")
+    implementation("com.github.tkowalcz.tjahzi:core:tjahzi-0.9")
+    implementation("pl.tkowalcz.tjahzi:log4j2-appender-nodep:0.9.17")
 
     implementation("org.glassfish.expressly:expressly:5.0.0")
 
@@ -90,11 +93,6 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-}
-
-repositories {
-    mavenCentral()
-    maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
 }
 
 tasks.test {
