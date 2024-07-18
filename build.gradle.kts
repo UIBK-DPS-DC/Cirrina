@@ -6,6 +6,8 @@ plugins {
     jacoco
 
     id("com.google.protobuf") version "0.9.4"
+
+    id("org.sonarqube") version "4.4.1.3373"
 }
 
 group = "ac.at.uibk.dps.cirrina"
@@ -88,6 +90,14 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
     maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "cirrina-project_cirrina") // TODO: Change projectKey
+        property("sonar.organization", "cirrina-project")       // TODO: Change organization
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 tasks.test {
