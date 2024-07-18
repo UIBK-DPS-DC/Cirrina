@@ -8,6 +8,7 @@ jobs:
   build:
     permissions:
       checks: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,3 +26,12 @@ jobs:
         if: success() || failure()
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: |
+            ${{ github.workspace }}/**/build/reports/jacoco/**/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
