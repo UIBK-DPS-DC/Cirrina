@@ -1,5 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
@@ -8,6 +10,7 @@ import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,9 +30,10 @@ public final class ActionRaiseCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute() throws UnsupportedOperationException {
-    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get(): "null");
-    Span span = tracing.initianlizeSpan("Assign Action", tracer, null);
+  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
+    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get() + "(" + raiseAction.getEvent().getId() + ")" : "null", stateMachineId);
+    Span span = tracing.initianlizeSpan("Raise Action", tracer, null);
+    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
     final var commands = new ArrayList<ActionCommand>();
 
     try(Scope scope = span.makeCurrent()) {
@@ -49,7 +53,7 @@ public final class ActionRaiseCommand extends ActionCommand {
         eventHandler.sendEvent(evaluatedEvent);
       }
     } catch (IOException e) {
-      logging.logExeption(e);
+      logging.logExeption(stateMachineId, e);
       tracing.recordException(e, span);
       logger.error("Data creation failed: {}", e.getMessage());
     } finally {

@@ -31,13 +31,13 @@ public class GuardTest {
         var guard = GuardBuilder.from(guardClass).build();
 
         assertEquals("name", guard.getName().get());
-        assertTrue(guard.evaluate(extent));
+        assertTrue(guard.evaluate(extent, "null"));
 
         guardClass.expression = new ExpressionDescription("v==6");
 
         guard = GuardBuilder.from(guardClass).build();
 
-        assertFalse(guard.evaluate(extent));
+        assertFalse(guard.evaluate(extent, "null"));
       });
 
       assertThrows(IllegalArgumentException.class, () -> {
@@ -48,7 +48,7 @@ public class GuardTest {
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        guard.evaluate(extent);
+        guard.evaluate(extent, "null");
       });
     }
   }

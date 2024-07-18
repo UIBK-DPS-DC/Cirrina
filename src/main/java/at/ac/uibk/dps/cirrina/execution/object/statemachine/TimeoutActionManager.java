@@ -1,5 +1,8 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
 import io.opentelemetry.api.trace.Span;
@@ -37,7 +40,7 @@ public final class TimeoutActionManager {
 
   private final Logging logging = new Logging();
   private final Tracing tracing = new Tracing();
-  private final Tracer tracer = tracing.initializeTracer("Action");
+  private final Tracer tracer = tracing.initializeTracer("Timeout Manager");
 
   /**
    * Starts the provided timeout action.
@@ -49,9 +52,15 @@ public final class TimeoutActionManager {
    * @param task       The task to execute.
    * @throws IllegalArgumentException If two timeout actions with the same name have been started without being stopped.
    */
-  public void start(String actionName, Number delayInMs, Runnable task) throws IllegalArgumentException {
-    logging.logTimeout("start", actionName);
+  public void start(String actionName, Number delayInMs, Runnable task, String stateMachineId) throws IllegalArgumentException {
+    logging.logTimeout("start", actionName, stateMachineId);
+
     Span span = tracing.initianlizeSpan("Start Timeout Actions", tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_ACTION_NAME, actionName),span);
+
+
       try(Scope scope = span.makeCurrent()) {
 
         try {
@@ -61,7 +70,7 @@ public final class TimeoutActionManager {
           }
         } catch (IllegalArgumentException e){
           tracing.recordException(e, span);
-          logging.logExeption(e);
+          logging.logExeption(stateMachineId, e);
           throw e;
         }
 
@@ -84,11 +93,16 @@ public final class TimeoutActionManager {
    * @param actionName Name of action to stop.
    * @throws IllegalArgumentException If not exactly one timeout action was found with the provided name.
    */
-  public void stop(String actionName) throws IllegalArgumentException {
-    logging.logTimeout("stop", actionName);
+  public void stop(String actionName, String stateMachineId) throws IllegalArgumentException {
+    logging.logTimeout("stop", actionName, stateMachineId);
+
     Span span = tracing.initianlizeSpan("Stopping Timeout Action", tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_ACTION_NAME, actionName,
+        ATTR_STATE_MACHINE_ID, stateMachineId), span);
+
+
     try(Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("Action", actionName), span);
 
       // Retrieve the timeout task
       final var timeoutTasksWithName = timeoutTasks.entrySet().stream()
@@ -101,7 +115,7 @@ public final class TimeoutActionManager {
         }
       }catch (IllegalArgumentException e){
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId, e);
         throw e;
       }
 
@@ -120,9 +134,14 @@ public final class TimeoutActionManager {
   /**
    * Stops all timeout actions.
    */
-  public void stopAll() {
-    logging.logTimeout("stopAll", null);
+  public void stopAll(String stateMachineId) {
+    logging.logTimeout("stopAll", null, stateMachineId);
+
     Span span = tracing.initianlizeSpan("Stopping All Timeout Actions", tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId), span);
+
+
     try (Scope scope = span.makeCurrent()) {
       // Cancel all tasks
       timeoutTasks.values()

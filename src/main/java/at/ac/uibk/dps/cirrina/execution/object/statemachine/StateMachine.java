@@ -1,15 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_EVENTS_HANDLED;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_EVENTS_RECEIVED;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_STATE_MACHINE_INSTANCES;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_TRANSITIONS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_RAISE_LATENCY;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
@@ -176,7 +167,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     final var meter = openTelemetry.getMeter("stateMachine-%s".formatted(stateMachineId.toString()));
 
     // Create gauges
-    gauges = new Gauges(meter, getId());
+    gauges = new Gauges(meter, getId(), parentStateMachine != null ? parentStateMachine.getId() : "null");
 
     gauges.addGauge(GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE);
     gauges.addGauge(GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE);
@@ -185,7 +176,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
     gauges.addGauge(GAUGE_ACTION_RAISE_LATENCY);
 
     // Create counters
-    counters = new Counters(meter, getId());
+    counters = new Counters(meter, getId(), parentStateMachine != null ? parentStateMachine.getId() : "null");
 
     counters.addCounter(COUNTER_EVENTS_RECEIVED);
     counters.addCounter(COUNTER_EVENTS_HANDLED);
@@ -203,12 +194,20 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   @Override
   public boolean onReceiveEvent(Event event) {
-    logging.logEventReception(stateMachineId.toString(), event, activeState!= null ? activeState.getStateObject().getName() : "null" );
-    Span span = tracing.initianlizeSpan("Recieved Event: " + event.getName(),tracer, null);
-    try(io.opentelemetry.context.Scope scope = span.makeCurrent()){
-      tracing.addAttributes(Map.of("Event", event.getName(),
-          "State Machine", stateMachineClass.getId().toString()), span);
+    logging.logEventReception(
+        stateMachineId.toString(),
+        event,
+        activeState!= null ? activeState.getStateObject().getName() : "null" );
 
+    Span span = tracing.initianlizeSpan("Recieved Event: " + event.getName(),tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_EVENT_NAME, event.getName(),
+        ATTR_EVENT_ID, event.getId()), span);
+
+
+    try(io.opentelemetry.context.Scope scope = span.makeCurrent()){
       // Nothing to do if the state machine is terminated
       if (isTerminated()) {
         return false;
@@ -218,7 +217,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       // Increment events received counter
       counters.getCounter(COUNTER_EVENTS_RECEIVED).add(1,
           counters.attributesForEvent(
-              event.getChannel().toString()));
+              event.getChannel().toString(), activeState!= null ? activeState.getStateObject().getName() : "null"));
 
       // Add to the internal event queue
       eventQueue.add(event);
@@ -237,7 +236,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
             nestedStateMachineInstance.onReceiveEvent(event);
           }
         } catch (IllegalStateException e) {
-          logging.logExeption(e);
+          logging.logExeption(stateMachineId.toString(), e);
           tracing.recordException(e, span);
           throw e;
         }
@@ -336,11 +335,15 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private Optional<Transition> trySelectOnTransition(Event event, Extent extent) throws IllegalStateException {
     Span span = tracing.initianlizeSpan("Selecting On Transition",tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_EVENT_NAME, event.getName(),
+        ATTR_EVENT_ID, event.getId(),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("Event", event.getName(), "State Machine", stateMachineId.toString(),
-          "Active State", activeState.getStateObject().getName()), span);
-
-
 
       // Find the transitions from the active state for the given event
       final var transitionObjects = stateMachineClass
@@ -364,10 +367,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private Optional<Transition> trySelectAlwaysTransition(Extent extent) throws IllegalStateException {
     Span span = tracing.initianlizeSpan("Selecting Always Transition",tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
+
+
     // Find the transitions from the active state for the given event
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("State Machine: ", stateMachineId.toString(),
-          "Active State", activeState.getStateObject().getName()), span);
 
       final var transitionObjects = stateMachineClass
           .findAlwaysTransitionsFromState(activeState.getStateObject());
@@ -396,17 +403,21 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       List<? extends TransitionClass> transitionObjects,
       Extent extent
   ) throws IllegalStateException {
-
     Span span = tracing.initianlizeSpan("Selecting Transition",tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
+
+
     try (io.opentelemetry.context.Scope scope = span.makeCurrent()){
-      tracing.addAttributes(Map.of("State Machine: ", stateMachineId.toString()), span);
 
       // A transition is taken when its guard conditions evaluate to true, or they do not evaluate to true, but an else target state is provided
       final var selectedTransitions = new ArrayList<Transition>();
 
       for (final var transitionObject : transitionObjects) {
         final var isElse = transitionObject.getElse().isPresent();
-        final var result = transitionObject.evaluate(extent);
+        final var result = transitionObject.evaluate(extent, stateMachineId.toString());
 
         if (isElse || result) {
           selectedTransitions.add(new Transition(transitionObject, isElse && !result));
@@ -420,7 +431,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       };
     } catch (UnsupportedOperationException e) {
       tracing.recordException(e, span);
-      logging.logExeption(e);
+      logging.logExeption(stateMachineId.toString(), e);
       throw new IllegalStateException("No transition could be selected", e);
     } finally {
       span.end();
@@ -438,18 +449,22 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private void execute(List<ActionCommand> actionCommands) throws UnsupportedOperationException {
     Span span = tracing.initianlizeSpan("Executing actions",tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("State Machine: ", stateMachineId.toString()), span);
 
       for (final var actionCommand : actionCommands) {
         // Execute and acquire new commands
-        final var newCommands = actionCommand.execute();
+        final var newCommands = actionCommand.execute(stateMachineId.toString());
 
         // Execute any subsequent command
         execute(newCommands);
       }
     } catch (UnsupportedOperationException e) {
-      logging.logExeption(e);
+      logging.logExeption(stateMachineId.toString(), e);
       tracing.recordException(e, span);
       throw new UnsupportedOperationException("Could not execute action commands", e);
     } finally {
@@ -471,8 +486,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       List<TimeoutAction> timeoutActionObjects
   ) throws UnsupportedOperationException, IllegalArgumentException {
     Span span = tracing.initianlizeSpan("Starting all timeout actions",tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("State Machine: ", stateMachineId.toString()), span);
 
       for (final var timeoutActionObject : timeoutActionObjects) {
         // The evaluated delay value is required to be numeric
@@ -484,7 +504,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
                 "The delay expression '%s' did not evaluate to a numeric value".formatted(timeoutActionObject.getDelay()));
           }
         } catch (UnsupportedOperationException e) {
-          logging.logExeption(e);
+          logging.logExeption(stateMachineId.toString(), e);
           tracing.recordException(e, span);
           throw e;
         }
@@ -498,7 +518,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
             throw new IllegalArgumentException("A timeout action must be a raise action");
           }
         } catch (UnsupportedOperationException e) {
-          logging.logExeption(e);
+          logging.logExeption(stateMachineId.toString(), e);
           tracing.recordException(e, span);
           throw e;
         }
@@ -510,9 +530,9 @@ public final class StateMachine implements Runnable, EventListener, Scope {
           // Start the timeout task
           timeoutActionManager.start(actionName, (Number) delay, () -> {
             execute(List.of(actionTimeoutCommand));
-          });
+          }, stateMachineId.toString());
         } catch (IllegalArgumentException e) {
-          logging.logExeption(e);
+          logging.logExeption(stateMachineId.toString(), e);
           tracing.recordException(e, span);
           throw e;
         }
@@ -530,9 +550,15 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private void stopTimeoutAction(String actionName) throws IllegalArgumentException {
     Span span = tracing.initianlizeSpan("Stopping timeout action",tracer, null);
-    tracing.addAttributes(Map.of("Action", actionName, "State Machine", stateMachineId.toString()), span);
+    tracing.addAttributes(Map.of(
+        ATTR_ACTION_NAME, actionName,
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      timeoutActionManager.stop(actionName);
+      timeoutActionManager.stop(actionName, stateMachineId.toString());
     } finally {
       span.end();
     }
@@ -544,9 +570,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   private void stopAllTimeoutActions() {
     Span span = tracing.initianlizeSpan("Stopping all timeout actions",tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("State Machine: ", stateMachineId.toString()), span);
-      timeoutActionManager.stopAll();
+      timeoutActionManager.stopAll(stateMachineId.toString());
     } finally {
       span.end();
     }
@@ -559,29 +590,38 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    * @throws IllegalArgumentException If the state is not known.
    */
   private void switchActiveState(State state) throws IllegalArgumentException {
-    logging.logActiveStateSwitch(stateMachineId.toString(), activeState!= null ? activeState.getStateObject().getName() : "null",
-        state!= null ? state.getStateObject().getName() : "null");
-    Span span = tracing.initianlizeSpan("Switching active state",tracer, null);
+    logging.logActiveStateSwitch(
+        stateMachineId.toString(),
+        activeState != null ? activeState.getStateObject().getName() : "null",
+        state != null ? state.getStateObject().getName() : "null");
+
+    Span span = tracing.initianlizeSpan("Switching active State", tracer, null);
     tracing.addAttributes(Map.of(
-        "Active State", (activeState!= null ? activeState.getStateObject().getName() : "null"),
-        "New State", (state.getStateObject().getName()),
-        "State Machine", stateMachineId.toString()
-    ), span);
+        ATTR_NEW_STATE, state.getStateObject().getName(),
+        ATTR_OLD_STATE, activeState != null ? activeState.getStateObject().getName() : "null",
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
 
-    final var stateName = state.getStateObject().getName();
 
-    try {
-      if (!stateInstances.containsValue(state)) {
-        throw new IllegalArgumentException("A state '%s' does not exist".formatted(stateName));
+    try (io.opentelemetry.context.Scope scope = span.makeCurrent()) {
+      final var stateName = state.getStateObject().getName();
+
+      try {
+        if (!stateInstances.containsValue(state)) {
+          throw new IllegalArgumentException("A state '%s' does not exist".formatted(stateName));
+        }
+      } catch (UnsupportedOperationException e) {
+        logging.logExeption(stateMachineId.toString(), e);
+        tracing.recordException(e, span);
+        throw e;
       }
-    } catch (UnsupportedOperationException e) {
-      logging.logExeption(e);
-      tracing.recordException(e, span);
-      throw e;
-    }
 
-    // Update the active state
-    activeState = state;
+      // Update the active state
+      activeState = state;
+    } finally {
+      span.end();
+    }
   }
 
   /**
@@ -597,12 +637,16 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   private void doExit(State exitingState, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     logging.logStateExit(stateMachineId.toString(), exitingState.getStateObject().getName(), raisingEvent);
     Span span = tracing.initianlizeSpan("Exiting state " + exitingState.getStateObject().getName(),tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_EVENT_NAME, raisingEvent != null ? raisingEvent.getName() : "null",
+        ATTR_EVENT_ID, raisingEvent != null ? raisingEvent.getId() : "null",
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_OLD_STATE, exitingState.getStateObject().getName(),
+        ATTR_ACTIVE_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of(
-          "State to exit", exitingState.getStateObject().getName(),
-          "Event", (raisingEvent != null ? raisingEvent.getName() : "null"),
-          "State Machine", stateMachineId.toString()
-      ), span);
 
       // Gather action commands
       final var exitActionCommands = exitingState.getExitActionCommands(
@@ -617,7 +661,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       try {
         execute(exitActionCommands);
       } catch (UnsupportedOperationException e) {
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         tracing.recordException(e, span);
         throw new UnsupportedOperationException("Could not execute exit actions", e);
       }
@@ -637,13 +681,23 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
 
   private void doTransition(Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
-    logging.logTransition(stateMachineId.toString(), activeState!= null ? activeState.getStateObject().getName() : "null",
-        transition.getTransitionObject().getTarget().getName(), raisingEvent);
+    logging.logTransition(
+        stateMachineId.toString(),
+        transition.getTransitionObject().getSource().getName(),
+        transition.getTransitionObject().getTarget().getName(),
+        raisingEvent);
     Span span = tracing.initianlizeSpan("Transition to " + transition.getTransitionObject().getTarget().getName(), tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_SOURCE_STATE, transition.getTransitionObject().getSource().getName(),
+        ATTR_TARGET_STATE, transition.getTransitionObject().getTarget().getName(),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_EVENT_NAME, (raisingEvent != null ? raisingEvent.getName() : "null"),
+        ATTR_EVENT_ID, (raisingEvent != null ? raisingEvent.getName(): "null")), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("Active State", activeState.getStateObject().getName(),
-          "Target State", transition.getTransitionObject().getTarget().getName(), "State Machine", stateMachineId.toString(),
-          "Event", (raisingEvent != null ? raisingEvent.getName() : "null")), span);
+
       // Do not execute actions for else target transitions
       if (transition.isElse()) {
         return;
@@ -661,7 +715,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         execute(transitionActionCommands);
       } catch (UnsupportedOperationException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         throw new UnsupportedOperationException("Could not execute transition actions", e);
       }
     } finally {
@@ -692,10 +746,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
     Span span = tracing.initianlizeSpan("Entering state" + enteringState.getStateObject().getName(),tracer, null);
     tracing.addAttributes(Map.of(
-        "State to enter", enteringState.getStateObject().getName(),
-        "Event", (raisingEvent != null ? raisingEvent.getName() : "null"),
-        "State Machine", stateMachineId.toString()
-    ), span);
+        ATTR_NEW_STATE, enteringState.getStateObject().getName(),
+        ATTR_EVENT_NAME, (raisingEvent != null ? raisingEvent.getName() : "null"),
+        ATTR_EVENT_ID, (raisingEvent != null ? raisingEvent.getId() : "null"),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_OLD_STATE, activeState != null ? activeState.getStateObject().getName() : "null"), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
       // Gather action commands
       final var entryActionCommands = enteringState.getEntryActionCommands(
@@ -712,7 +769,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         execute(whileActionCommands);
       } catch (UnsupportedOperationException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         throw new UnsupportedOperationException("Could not execute entry/while actions", e);
       }
 
@@ -721,7 +778,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         startAllTimeoutActions(timeoutActionObjects);
       } catch (UnsupportedOperationException | IllegalArgumentException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         throw new UnsupportedOperationException("Could not start timeout actions", e);
       }
 
@@ -730,7 +787,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         switchActiveState(enteringState);
       } catch (IllegalArgumentException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         throw new UnsupportedOperationException("Could not switch states");
       }
 
@@ -738,7 +795,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         return trySelectAlwaysTransition(getExtent());
       } catch (IllegalStateException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         throw new UnsupportedOperationException("Could not select always transition");
       }
     } finally {
@@ -755,6 +812,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   private void handleInternalTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     Span span = tracing.initianlizeSpan("Internal Transition", tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_EVENT_NAME, raisingEvent.getName(),
+        ATTR_EVENT_ID, raisingEvent.getId(),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
+
+
     // Only perform the transition
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
       doTransition(transition, raisingEvent);
@@ -773,6 +838,14 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   private void handleExternalTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     Span span = tracing.initianlizeSpan("External Transition", tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_EVENT_NAME, raisingEvent.getName(),
+        ATTR_EVENT_ID, raisingEvent.getId(),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
+
+
     try(io.opentelemetry.context.Scope scope = span.makeCurrent()) {
       final var targetStateName = transition.getTargetStateName().get();
 
@@ -794,7 +867,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         nextTransitionInstance.ifPresent(t -> handleTransition(t, raisingEvent));
       } catch (IllegalArgumentException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId.toString(), e);
         throw e;
       }
     } finally {
@@ -812,7 +885,13 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   private void handleTransition(@NotNull Transition transition, @Nullable Event raisingEvent) throws UnsupportedOperationException {
     Span span = tracing.initianlizeSpan("Handling Transition", tracer, null);
-    try {
+    tracing.addAttributes(Map.of(
+        ATTR_EVENT_NAME, raisingEvent.getName(),
+        ATTR_EVENT_ID, raisingEvent.getId(),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
+    try(io.opentelemetry.context.Scope scope = span.makeCurrent()){
 
       if (transition.isInternalTransition()) {
         handleInternalTransition(transition, raisingEvent);
@@ -835,14 +914,19 @@ public final class StateMachine implements Runnable, EventListener, Scope {
 
   private Optional<Transition> handleEvent(Event event) throws InterruptedException, UnsupportedOperationException {
     logging.logEventHandling(stateMachineId.toString(), event);
+
     Span span = tracing.initianlizeSpan("Handling Event " + event.getName(), tracer, null);
-    tracing.addAttributes(Map.of("Event", event.getName(), "Active State", activeState.getStateObject().getName(),
-        "State Machine", stateMachineId.toString()),span);
+    tracing.addAttributes(Map.of(
+        ATTR_EVENT_NAME, event.getName(),
+        ATTR_EVENT_ID, event.getId(),
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_PARENT_STATE_MACHINE_ID, parentStateMachine != null ? parentStateMachine.getId() : "null",
+        ATTR_ACTIVE_STATE, activeState.getStateObject().getName()), span);
 
     // Increment events received counter
     counters.getCounter(COUNTER_EVENTS_HANDLED).add(1,
         counters.attributesForEvent(
-            event.getChannel().toString()));
+            event.getChannel().toString(), activeState!= null ? activeState.getStateObject().getName() : "null"));
 
     // Find a matching transition
     try {
@@ -872,7 +956,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
       return onTransition;
     } catch (IOException | IllegalStateException e) {
       tracing.recordException(e, span);
-      logging.logExeption(e);
+      logging.logExeption(stateMachineId.toString(), e);
       throw new UnsupportedOperationException("Could not select on transition", e);
     }
   }
@@ -884,70 +968,86 @@ public final class StateMachine implements Runnable, EventListener, Scope {
    */
   @Override
   public void run() {
+    logging.logStateMachineStart(stateMachineId.toString());
 
-    logger.info("Test log");
-    // Increment state machine instances counter
-    counters.getCounter(COUNTER_STATE_MACHINE_INSTANCES).add(1,
-        counters.attributesForInstances());
+    Span span = tracing.initianlizeSpan("Running State Machine" + stateMachineId.toString(), tracer, null);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId.toString(),
+        ATTR_STATES, stateMachineClass.getStateNames().toString()), span);
 
-    try {
-      // Acquire the initial state instance
-      final var initialStateInstance = stateInstances.get(stateMachineClass.getInitialState().getName());
 
-      // TransitionClass into the initial state
-      var nextTransition = doEnter(initialStateInstance, null);
+    try (io.opentelemetry.context.Scope scope = span.makeCurrent()) {
 
-      while (!isTerminated()) {
-        Event event = null;
+      // Increment state machine instances counter
+      counters.getCounter(COUNTER_STATE_MACHINE_INSTANCES).add(1,
+          counters.attributesForInstances());
 
-        // Wait for a next event, if no transition is selected. No transition is selected initially if the initial state has no selectable
-        // always transition or thereafter if we've handled the selected transition
-        if (nextTransition.isEmpty()) {
-          synchronized (this) {
-            while (eventQueue.isEmpty()) {
-              wait();
+      try {
+        // Acquire the initial state instance
+        final var initialStateInstance = stateInstances.get(stateMachineClass.getInitialState().getName());
+
+        // TransitionClass into the initial state
+        var nextTransition = doEnter(initialStateInstance, null);
+
+        while (!isTerminated()) {
+          Event event = null;
+
+          // Wait for a next event, if no transition is selected. No transition is selected initially if the initial state has no selectable
+          // always transition or thereafter if we've handled the selected transition
+          if (nextTransition.isEmpty()) {
+            synchronized (this) {
+              while (eventQueue.isEmpty()) {
+                wait();
+              }
+              event = eventQueue.poll();
             }
-            event = eventQueue.poll();
+
+            nextTransition = handleEvent(event);
           }
 
-          nextTransition = handleEvent(event);
+          // If a transition is selected, handle it. The transition will be handled recursively; any transition selected due to entering a
+          // next state is handled recursively. Therefore, if we're done handling this transition, we indicate that we need to wait for a new
+          // event again
+          if (nextTransition.isPresent()) {
+            handleTransition(nextTransition.get(), event);
+
+            nextTransition = Optional.empty();
+          }
+
+          // Record event handling time
+          if (event != null) {
+            final var delta = Time.timeInMillisecondsSinceEpoch() - event.getCreatedTime();
+
+            gauges.getGauge(GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE).set(delta,
+                gauges.attributesForEvent(
+                    event.getChannel().toString()
+                ));
+          }
         }
+      } catch (InterruptedException e) {
+        logging.logExeption(stateMachineId.toString(), e);
+        tracing.recordException(e, span);
+        logger.info("{} is interrupted", stateMachineId.toString());
 
-        // If a transition is selected, handle it. The transition will be handled recursively; any transition selected due to entering a
-        // next state is handled recursively. Therefore, if we're done handling this transition, we indicate that we need to wait for a new
-        // event again
-        if (nextTransition.isPresent()) {
-          handleTransition(nextTransition.get(), event);
-
-          nextTransition = Optional.empty();
-        }
-
-        // Record event handling time
-        if (event != null) {
-          final var delta = Time.timeInMillisecondsSinceEpoch() - event.getCreatedTime();
-
-          gauges.getGauge(GAUGE_EVENT_RESPONSE_TIME_EXCLUSIVE).set(delta,
-              gauges.attributesForEvent(
-                  event.getChannel().toString()
-              ));
-        }
+        Thread.currentThread().interrupt();
+      } catch (Exception e) {
+        tracing.recordException(e, span);
+        logger.error("%s received a fatal error".formatted(stateMachineId.toString()), e);
       }
-    } catch (InterruptedException e) {
-      logger.info("{} is interrupted", stateMachineId.toString());
 
-      Thread.currentThread().interrupt();
-    } catch (Exception e) {
-      logger.error("%s received a fatal error".formatted(stateMachineId.toString()), e);
+      logger.info("{} has stopped", stateMachineId.toString());
+
+      // Decrement state machine instances counter
+      counters.getCounter(COUNTER_STATE_MACHINE_INSTANCES).add(-1,
+          counters.attributesForInstances());
+
+      // Remove the state machine instance from the runtime
+      parentRuntime.remove(this);
     }
 
-    logger.info("{} has stopped", stateMachineId.toString());
-
-    // Decrement state machine instances counter
-    counters.getCounter(COUNTER_STATE_MACHINE_INSTANCES).add(-1,
-        counters.attributesForInstances());
-
-    // Remove the state machine instance from the runtime
-    parentRuntime.remove(this);
+    finally {
+      span.end();
+    }
   }
 
   /**

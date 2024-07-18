@@ -106,10 +106,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
-  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response) {
-    logging.logServiceResponseHandling("HTTP Sercice", response);
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, String stateMachineId) {
+    logging.logServiceResponseHandling("HTTP Service", response, stateMachineId);
     Span span = tracing.initianlizeSpan("Handle Response", tracer, null);
-    tracing.addAttributes(Map.of("Response", response.body().toString()), span);
+    tracing.addAttributes(Map.of("Response", response.body().toString(), "State Machine", stateMachineId), span);
     try(Scope scope = span.makeCurrent()) {
     // Require HTTP OK
     final var errorCode = response.statusCode();
@@ -139,7 +139,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
             .toList();
       } catch (InvalidProtocolBufferException e) {
         tracing.recordException(e, span);
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId, e);
         throw new CompletionException(
             new IOException("Unexpected HTTP service invocation value type"));
       }
@@ -164,8 +164,9 @@ public class HttpServiceImplementation extends ServiceImplementation {
   public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws UnsupportedOperationException {
     logging.logServiceInvocation("HTTPS", id);
     Span span = tracing.initianlizeSpan("Invoke Service", tracer, null);
+    tracing.addAttributes(Map.of("Invoked by", id, "State Machine", id),span);
     try(Scope scope = span.makeCurrent()) {
-      tracing.addAttributes(Map.of("Invoked by", id),span);
+
 
 
       try {
@@ -197,11 +198,13 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-          .thenApplyAsync(HttpServiceImplementation::handleResponse, handleExecutor);
+          .thenApplyAsync(response -> handleResponse(response, id), handleExecutor);
     } catch (URISyntaxException | UnsupportedOperationException e) {
       tracing.recordException(e, span);
-      logging.logExeption(e);
+      logging.logExeption(id, e);
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
+    } finally {
+      span.end();
     }
   }
 

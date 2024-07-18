@@ -21,5 +21,5 @@ public abstract class ActionCommand {
     this.executionContext = executionContext;
   }
 
-  public abstract List<ActionCommand> execute() throws UnsupportedOperationException;
+  public abstract List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException;
 }

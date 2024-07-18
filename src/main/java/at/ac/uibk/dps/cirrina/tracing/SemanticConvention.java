@@ -33,5 +33,18 @@ public class SemanticConvention {
 
   // General attributes
   public static final String ATTR_STATE_MACHINE_ID = "cirrina.state_machine.id";
+  public static final String ATTR_ACTIVE_STATE = "cirrina.active_state";
+  public static final String ATTR_PARENT_STATE_MACHINE_ID = "cirrina.parent_state_machine.id";
   public static final String ATTR_TRANSITION_INTERNAL = "cirrina.transition.internal";
+
+  //Tracing Attributes
+  public static final String ATTR_GUARD_EXPRESSION = "cirrina.guard.expression";
+  public static final String ATTR_EVENT_NAME = "cirrina.event.name";
+  public static final String ATTR_EVENT_ID = "cirrina.event.id";
+  public static final String ATTR_ACTION_NAME = "cirrina.action.action_name";
+  public static final String ATTR_TARGET_STATE = "cirrina.target.state";
+  public static final String ATTR_SOURCE_STATE = "cirrina.source.state";
+  public static final String ATTR_NEW_STATE = "cirrina.new.state";
+  public static final String ATTR_OLD_STATE = "cirrina.old.state";
+  public static final String ATTR_STATES = "cirrina.states";
 }

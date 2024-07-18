@@ -2,47 +2,50 @@ package at.ac.uibk.dps.cirrina.execution.aspect.logging;
 
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import java.net.http.HttpResponse;
-import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 public class Logging {
 
-  public final Logger logger = LogManager.getLogger(LoggingActions.class);
+  public final Logger logger = LogManager.getLogger(Logging.class);
 
-  public void logExeption(Throwable ex) {
-    logger.error(ex.getMessage(), ex);
+  public void logStateMachineStart(String stateMachineName) {
+    logger.info("State Machine {} starting", stateMachineName);
   }
 
-  public void logAction(String actionName) {
-    logger.info("Executing action {}", actionName);
+  public void logExeption(String stateMachineId, Throwable ex) {
+    logger.error("State Machine {} {}",stateMachineId, ex.getMessage(), ex);
   }
 
-  public void logTimeout(String type, String actionName) {
+  public void logAction(String actionName, String stateMachineId) {
+    logger.info("State Machine {} executing action {}", stateMachineId, actionName);
+  }
+
+  public void logTimeout(String type, String actionName, String stateMachineId) {
     switch (type) {
       case "Start":
-        logger.info("TIMEOUT: Starting {}", actionName);
+        logger.info("State Machine {} starting timeout {}", stateMachineId, actionName);
 
       case "Stop":
-        logger.info("TIMEOUT: Stopping {}", actionName);
+        logger.info("State Machine {} stopping {}", stateMachineId, actionName);
 
       case "Stop alL":
-        logger.info("TIMEOUT: Stopping all");
+        logger.info("State Machine {} stopping all timeout actions", stateMachineId);
 
     }
   }
 
   public void logServiceInvocation(String serviceName, String id) {
-    logger.info("Service invocation: {} with ID {}", serviceName, id);
+    logger.info("State Machine {}: Service invocation: {}", id, serviceName);
   }
 
-  public void logServiceResponseHandling(String serviceName, HttpResponse response){
-    logger.info("Handling service response: {} with status code {} and body {}",
-        serviceName, response.statusCode(), response.body().toString());
+  public void logServiceResponseHandling(String serviceName, HttpResponse response, String stateMachineId){
+    logger.info("State Machine {}: Handling service response: {} with status code {} and body {}",
+        stateMachineId, serviceName, response.statusCode(), response.body().toString());
   }
 
   public void logEventReception(String stateMachne, Event event, String state){
-    logger.info("State Machine: {}, received event {} ({}) in State {}", stateMachne, event.getName(), event.getId(), state);
+    logger.info("State Machine {} received event {} ({}) in State {}", stateMachne, event.getName(), event.getId(), state);
   }
 
   public void logActiveStateSwitch(String stateMachine, String currentState, String newState){
@@ -83,12 +86,12 @@ public class Logging {
         stateMachine, event.getName(), event.getId());
   }
 
-  public void logGuardEvaluation(){
-    logger.info("Guard evaluation");
+  public void logGuardEvaluation(String expression, String stateMachineId){
+    logger.info("State Machine {} evaluating guard with expression: {}", stateMachineId, expression);
   }
 
-  public void logEventSending(Event event){
-    logger.info("Sending event {} ({})", event.getName(), event.getId());
+  public void logEventSending(Event event, String stateMachine){
+    logger.info("State Machine {} sending event {} ({})", stateMachine, event.getName(), event.getId());
   }
 
 

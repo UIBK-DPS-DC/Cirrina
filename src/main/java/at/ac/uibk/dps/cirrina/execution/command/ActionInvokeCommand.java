@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE;
@@ -11,6 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,9 +43,10 @@ public final class ActionInvokeCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute() throws UnsupportedOperationException {
-    logging.logAction(this.invokeAction.getName().isPresent() ? this.invokeAction.getName().get(): "null");
+  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
+    logging.logAction(this.invokeAction.getName().isPresent() ? this.invokeAction.getName().get(): "null", stateMachineId);
     Span span = tracing.initianlizeSpan("Invoke Action", tracer, null);
+    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
     try(Scope scope = span.makeCurrent()) {
       // Increment events received counter
       final var counters = executionContext.counters();
@@ -140,7 +143,7 @@ public final class ActionInvokeCommand extends ActionCommand {
 
         return commands;
       } catch (Exception e) {
-        logging.logExeption(e);
+        logging.logExeption(stateMachineId, e);
         tracing.recordException(e, span);
         throw new UnsupportedOperationException("Could not execute invoke action", e);
       }
