@@ -113,6 +113,7 @@ public class JobMonitor implements CuratorCacheListener {
         jobListener.newJob(job);
       } catch (UnsupportedOperationException | IllegalArgumentException e) {
         logger.error("Failed to parse job description for job '{}'. Skipping this job.", jobName, e);
+
         try {
           // Delete the invalid job
           curatorFramework.delete().forPath(nodePath);
