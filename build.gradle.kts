@@ -86,6 +86,7 @@ dependencies {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
     maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
 }
 
