@@ -116,7 +116,7 @@ public class JobMonitor implements CuratorCacheListener {
 
         try {
           // Delete the invalid job
-          curatorFramework.delete().forPath(nodePath);
+          new Job(jobName, nodePath, null, curatorFramework).delete();
           logger.info("Deleted invalid job '{}'", jobName);
         } catch (Exception ex) {
           logger.error("Failed to delete invalid job '{}'", jobName, ex);
