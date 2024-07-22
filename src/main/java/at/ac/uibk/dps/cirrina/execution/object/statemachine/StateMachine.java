@@ -86,7 +86,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
   private final StateMachineClass stateMachineClass;
 
   /**
-   * Selector of serivice implementations, based on service types.
+   * Selector of service implementations, based on service types.
    */
   private final ServiceImplementationSelector serviceImplementationSelector;
 

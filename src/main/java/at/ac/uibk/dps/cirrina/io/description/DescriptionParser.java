@@ -92,8 +92,8 @@ public class DescriptionParser<T> {
     public JsonDeserializer<?> modifyDeserializer(DeserializationConfig configuration, BeanDescription description,
         JsonDeserializer<?> deserializer) {
       // Provide the deserializer with validation
-      if (deserializer instanceof BeanDeserializer) {
-        return new BeanDeserializerWithValidation((BeanDeserializer) deserializer);
+      if (deserializer instanceof BeanDeserializer beanDeserializer) {
+        return new BeanDeserializerWithValidation(beanDeserializer);
       }
 
       return deserializer;
