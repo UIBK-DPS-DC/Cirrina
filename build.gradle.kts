@@ -96,7 +96,6 @@ dependencies {
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
-    implementation("org.jgrapht:jgrapht-io:1.5.2")
 
     testImplementation("org.mockito:mockito-core:5.11.0")
 

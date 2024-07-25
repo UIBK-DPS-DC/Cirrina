@@ -13,11 +13,11 @@ class DescriptionParserTest {
 
   @Test
   void testDescriptionPositive() {
-    var json = DefaultDescriptions.complete;
+    var pkl = DefaultDescriptions.complete;
 
     var parser = new DescriptionParser<>(CollaborativeStateMachineDescription.class);
     assertDoesNotThrow(() -> {
-      var csm = parser.parse(json);
+      var csm = parser.parse(pkl);
     });
   }
 
