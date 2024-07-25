@@ -1,0 +1,24 @@
+amends "JobDescription.pkl"
+
+import "surveillance-system.pkl" as surveillance
+import "HttpServiceImplementationDescription.pkl"
+
+serviceImplementations = new HttpServiceImplementationDescription {
+    name = "A"
+    type = "HTTP"
+    cost = 1.0
+    `local` = false
+    scheme = "http"
+    host = "localhost"
+    port = 8080
+    endPoint = ""
+    method = "GET"
+}
+collaborativeStateMachine = surveillance.csm
+stateMachineName = "detectorSM"
+localData = new Mapping {
+    ["foo"] = "bar"
+}
+bindEventInstanceIds = new Listing {}
+runtimeName = "runtime"
+

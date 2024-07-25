@@ -1,5 +1,9 @@
 package at.ac.uibk.dps.cirrina.csml.description;
 
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.StringBuilder;
 import java.util.List;
 import java.util.Objects;
 import org.pkl.config.java.mapper.Named;
@@ -7,7 +11,7 @@ import org.pkl.config.java.mapper.NonNull;
 
 /**
  * Collaborative state machine construct. Represents the highest level entity in a description.
- * <p>
+ *
  * Keywords:
  * <table border="1">
  *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
@@ -17,7 +21,7 @@ import org.pkl.config.java.mapper.NonNull;
  *  <tr><td>localContext</td><td>Lexical description of the local context</td><td>No</td></tr>
  *  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
  * </table>
- * <p>
+ *
  * Example:
  * <pre>
  * {
@@ -30,7 +34,6 @@ import org.pkl.config.java.mapper.NonNull;
  * @since CSML 0.1.
  */
 public final class CollaborativeStateMachineDescription {
-
   private final @NonNull String name;
 
   private final @NonNull Version version;
@@ -53,15 +56,6 @@ public final class CollaborativeStateMachineDescription {
     this.persistentContext = persistentContext;
   }
 
-  private static void appendProperty(StringBuilder builder, String name, Object value) {
-    builder.append("\n  ").append(name).append(" = ");
-    String[] lines = Objects.toString(value).split("\n");
-    builder.append(lines[0]);
-    for (int i = 1; i < lines.length; i++) {
-      builder.append("\n  ").append(lines[i]);
-    }
-  }
-
   /**
    * The name.
    */
@@ -75,7 +69,7 @@ public final class CollaborativeStateMachineDescription {
 
   /**
    * The CSML version.
-   * <p>
+   *
    * The following CSML versions are valid:
    * <table border="1">
    *   <tr><th>Version</th><th>Value</th></tr>
@@ -92,7 +86,7 @@ public final class CollaborativeStateMachineDescription {
 
   /**
    * The state machines.
-   * <p>
+   *
    * At least one state machine must be provided.
    */
   public @NonNull List<@NonNull StateMachineDescription> getStateMachines() {
@@ -129,31 +123,15 @@ public final class CollaborativeStateMachineDescription {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (this.getClass() != obj.getClass()) {
-      return false;
-    }
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (this.getClass() != obj.getClass()) return false;
     CollaborativeStateMachineDescription other = (CollaborativeStateMachineDescription) obj;
-    if (!Objects.equals(this.name, other.name)) {
-      return false;
-    }
-    if (!Objects.equals(this.version, other.version)) {
-      return false;
-    }
-    if (!Objects.equals(this.stateMachines, other.stateMachines)) {
-      return false;
-    }
-    if (!Objects.equals(this.localContext, other.localContext)) {
-      return false;
-    }
-    if (!Objects.equals(this.persistentContext, other.persistentContext)) {
-      return false;
-    }
+    if (!Objects.equals(this.name, other.name)) return false;
+    if (!Objects.equals(this.version, other.version)) return false;
+    if (!Objects.equals(this.stateMachines, other.stateMachines)) return false;
+    if (!Objects.equals(this.localContext, other.localContext)) return false;
+    if (!Objects.equals(this.persistentContext, other.persistentContext)) return false;
     return true;
   }
 
@@ -181,78 +159,18 @@ public final class CollaborativeStateMachineDescription {
     return builder.toString();
   }
 
-  public enum Version {
-    _0_1("0.1"),
-
-    _0_2("0.2");
-
-    private String value;
-
-    private Version(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-  }
-
-  public enum Type {
-    INVOKE("invoke"),
-
-    CREATE("create"),
-
-    ASSIGN("assign"),
-
-    LOCK("lock"),
-
-    UNLOCK("unlock"),
-
-    RAISE("raise"),
-
-    TIMEOUT("timeout"),
-
-    TIMEOUT_RESET("timeoutReset"),
-
-    MATCH("match");
-
-    private String value;
-
-    private Type(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-  }
-
-  public enum EventChannel {
-    INTERNAL("internal"),
-
-    EXTERNAL("external"),
-
-    GLOBAL("global"),
-
-    PERIPHERAL("peripheral");
-
-    private String value;
-
-    private EventChannel(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
+  private static void appendProperty(StringBuilder builder, String name, Object value) {
+    builder.append("\n  ").append(name).append(" = ");
+    String[] lines = Objects.toString(value).split("\n");
+    builder.append(lines[0]);
+    for (int i = 1; i < lines.length; i++) {
+      builder.append("\n  ").append(lines[i]);
     }
   }
 
   /**
    * State machine construct. Represents a state machine within a collaborative state machine.
-   * <p>
+   *
    * Keywords:
    * <table border="1">
    *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
@@ -262,7 +180,7 @@ public final class CollaborativeStateMachineDescription {
    *  <tr><td>guards</td><td>Named guards</td><td>No</td></tr>
    *  <tr><td>actions</td><td>Named actions</td><td>No</td></tr>
    * </table>
-   * <p>
+   *
    * Example:
    * <pre>
    * {
@@ -278,7 +196,6 @@ public final class CollaborativeStateMachineDescription {
    * @since CSML 0.1.
    */
   public static final class StateMachineDescription extends StateOrStateMachineDescription {
-
     private final @NonNull String name;
 
     private final @NonNull List<? extends @NonNull StateOrStateMachineDescription> states;
@@ -384,34 +301,16 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       StateMachineDescription other = (StateMachineDescription) obj;
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.states, other.states)) {
-        return false;
-      }
-      if (!Objects.equals(this.localContext, other.localContext)) {
-        return false;
-      }
-      if (!Objects.equals(this.persistentContext, other.persistentContext)) {
-        return false;
-      }
-      if (!Objects.equals(this.guards, other.guards)) {
-        return false;
-      }
-      if (!Objects.equals(this.actions, other.actions)) {
-        return false;
-      }
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.states, other.states)) return false;
+      if (!Objects.equals(this.localContext, other.localContext)) return false;
+      if (!Objects.equals(this.persistentContext, other.persistentContext)) return false;
+      if (!Objects.equals(this.guards, other.guards)) return false;
+      if (!Objects.equals(this.actions, other.actions)) return false;
       return true;
     }
 
@@ -443,14 +342,13 @@ public final class CollaborativeStateMachineDescription {
   }
 
   public abstract static class StateOrStateMachineDescription {
-
     protected StateOrStateMachineDescription() {
     }
   }
 
   /**
    * State construct, represents an atomic state of a state machine.
-   * <p>
+   *
    * Keywords:
    * <table border="1">
    *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
@@ -469,7 +367,7 @@ public final class CollaborativeStateMachineDescription {
    *  <tr><td>virtual</td><td>Virtual state flag</td><td>No</td></tr>
    *  <tr><td>abstract</td><td>Abstract state flag</td><td>No</td></tr>
    * </table>
-   * <p>
+   *
    * Example:
    * <pre>
    * {
@@ -490,7 +388,6 @@ public final class CollaborativeStateMachineDescription {
    * @since CSML 0.1.
    */
   public static final class StateDescription extends StateOrStateMachineDescription {
-
     private final @NonNull String name;
 
     private final boolean initial;
@@ -548,8 +445,7 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withName(@NonNull String name) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -561,8 +457,7 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withInitial(boolean initial) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -573,8 +468,7 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withTerminal(boolean terminal) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -586,8 +480,7 @@ public final class CollaborativeStateMachineDescription {
 
     public StateDescription withEntry(
         @NonNull List<? extends @NonNull ActionOrActionReferenceDescription> entry) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -599,8 +492,7 @@ public final class CollaborativeStateMachineDescription {
 
     public StateDescription withExit(
         @NonNull List<? extends @NonNull ActionOrActionReferenceDescription> exit) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -612,8 +504,7 @@ public final class CollaborativeStateMachineDescription {
 
     public StateDescription withWhile(
         @NonNull List<? extends @NonNull ActionOrActionReferenceDescription> _while) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -626,8 +517,7 @@ public final class CollaborativeStateMachineDescription {
 
     public StateDescription withAfter(
         @NonNull List<? extends @NonNull ActionOrActionReferenceDescription> after) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -639,8 +529,7 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withOn(@NonNull List<@NonNull OnTransitionDescription> on) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -652,8 +541,7 @@ public final class CollaborativeStateMachineDescription {
 
     public StateDescription withAlways(
         @NonNull List<? extends @NonNull TransitionDescription> always) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -664,8 +552,7 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withLocalContext(@NonNull ContextDescription localContext) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -676,8 +563,7 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withPersistentContext(@NonNull ContextDescription persistentContext) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     /**
@@ -688,58 +574,27 @@ public final class CollaborativeStateMachineDescription {
     }
 
     public StateDescription withStaticContext(@NonNull ContextDescription staticContext) {
-      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext,
-          staticContext);
+      return new StateDescription(name, initial, terminal, entry, exit, _while, after, on, always, localContext, persistentContext, staticContext);
     }
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       StateDescription other = (StateDescription) obj;
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.initial, other.initial)) {
-        return false;
-      }
-      if (!Objects.equals(this.terminal, other.terminal)) {
-        return false;
-      }
-      if (!Objects.equals(this.entry, other.entry)) {
-        return false;
-      }
-      if (!Objects.equals(this.exit, other.exit)) {
-        return false;
-      }
-      if (!Objects.equals(this._while, other._while)) {
-        return false;
-      }
-      if (!Objects.equals(this.after, other.after)) {
-        return false;
-      }
-      if (!Objects.equals(this.on, other.on)) {
-        return false;
-      }
-      if (!Objects.equals(this.always, other.always)) {
-        return false;
-      }
-      if (!Objects.equals(this.localContext, other.localContext)) {
-        return false;
-      }
-      if (!Objects.equals(this.persistentContext, other.persistentContext)) {
-        return false;
-      }
-      if (!Objects.equals(this.staticContext, other.staticContext)) {
-        return false;
-      }
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.initial, other.initial)) return false;
+      if (!Objects.equals(this.terminal, other.terminal)) return false;
+      if (!Objects.equals(this.entry, other.entry)) return false;
+      if (!Objects.equals(this.exit, other.exit)) return false;
+      if (!Objects.equals(this._while, other._while)) return false;
+      if (!Objects.equals(this.after, other.after)) return false;
+      if (!Objects.equals(this.on, other.on)) return false;
+      if (!Objects.equals(this.always, other.always)) return false;
+      if (!Objects.equals(this.localContext, other.localContext)) return false;
+      if (!Objects.equals(this.persistentContext, other.persistentContext)) return false;
+      if (!Objects.equals(this.staticContext, other.staticContext)) return false;
       return true;
     }
 
@@ -784,7 +639,7 @@ public final class CollaborativeStateMachineDescription {
 
   /**
    * Transition construct. Represents a transition that is to be taken regardless of an event.
-   * <p>
+   *
    * Keywords:
    * <table border="1">
    *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
@@ -793,7 +648,7 @@ public final class CollaborativeStateMachineDescription {
    *  <tr><td>actions</td><td>Actions</td><td>Yes</td></tr>
    *  <tr><td>else</td><td>Else target</td><td>No</td></tr>
    * </table>
-   * <p>
+   *
    * Example:
    * <pre>
    * {
@@ -806,7 +661,6 @@ public final class CollaborativeStateMachineDescription {
    * @since CSML 0.1.
    */
   public static class TransitionDescription {
-
     protected final String target;
 
     protected final @NonNull List<? extends @NonNull GuardOrGuardReferenceDescription> guards;
@@ -875,28 +729,14 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       TransitionDescription other = (TransitionDescription) obj;
-      if (!Objects.equals(this.target, other.target)) {
-        return false;
-      }
-      if (!Objects.equals(this.guards, other.guards)) {
-        return false;
-      }
-      if (!Objects.equals(this.actions, other.actions)) {
-        return false;
-      }
-      if (!Objects.equals(this._else, other._else)) {
-        return false;
-      }
+      if (!Objects.equals(this.target, other.target)) return false;
+      if (!Objects.equals(this.guards, other.guards)) return false;
+      if (!Objects.equals(this.actions, other.actions)) return false;
+      if (!Objects.equals(this._else, other._else)) return false;
       return true;
     }
 
@@ -927,7 +767,6 @@ public final class CollaborativeStateMachineDescription {
    * [deprecated]
    */
   public abstract static class GuardOrGuardReferenceDescription {
-
     protected GuardOrGuardReferenceDescription() {
     }
   }
@@ -935,14 +774,14 @@ public final class CollaborativeStateMachineDescription {
   /**
    * Guard construct. Represents a conditional (if) that determines if a transition can be taken. Guards can be declared and referenced as
    * part of a state machine, or be declared inline.
-   * <p>
+   *
    * Keywords:
    * <table border="1">
    *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
    *  <tr><td>name</td><td>Unique name</td><td>Yes</td></tr>
    *  <tr><td>expression</td><td>Expression</td><td>Yes</td></tr>
    * </table>
-   * <p>
+   *
    * Example:
    * <pre>
    * {
@@ -954,7 +793,6 @@ public final class CollaborativeStateMachineDescription {
    * @since CSML 0.1.
    */
   public static final class GuardDescription extends GuardOrGuardReferenceDescription {
-
     private final String name;
 
     private final @NonNull String expression;
@@ -994,22 +832,12 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       GuardDescription other = (GuardDescription) obj;
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.expression, other.expression)) {
-        return false;
-      }
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.expression, other.expression)) return false;
       return true;
     }
 
@@ -1036,7 +864,6 @@ public final class CollaborativeStateMachineDescription {
    * [deprecated]
    */
   public static final class GuardReferenceDescription extends GuardOrGuardReferenceDescription {
-
     private final @NonNull String reference;
 
     public GuardReferenceDescription(@Named("reference") @NonNull String reference) {
@@ -1053,19 +880,11 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       GuardReferenceDescription other = (GuardReferenceDescription) obj;
-      if (!Objects.equals(this.reference, other.reference)) {
-        return false;
-      }
+      if (!Objects.equals(this.reference, other.reference)) return false;
       return true;
     }
 
@@ -1088,13 +907,13 @@ public final class CollaborativeStateMachineDescription {
 
   /**
    * On transition construct. Represents a transition that is to be taken based on a received event.
-   * <p>
+   *
    * Keywords:
    * <table border="1">
    *  <tr><th>Keyword</th><th>Description</th><th>Required</th></tr>
    *  <tr><td>event</td><td>Event</td><td>Yes</td></tr>
    * </table>
-   * <p>
+   *
    * Example:
    * <pre>
    * {
@@ -1108,7 +927,6 @@ public final class CollaborativeStateMachineDescription {
    * @since CSML 0.1.
    */
   public static final class OnTransitionDescription extends TransitionDescription {
-
     private final @NonNull String event;
 
     public OnTransitionDescription(@Named("target") String target,
@@ -1147,31 +965,15 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       OnTransitionDescription other = (OnTransitionDescription) obj;
-      if (!Objects.equals(this.target, other.target)) {
-        return false;
-      }
-      if (!Objects.equals(this.guards, other.guards)) {
-        return false;
-      }
-      if (!Objects.equals(this.actions, other.actions)) {
-        return false;
-      }
-      if (!Objects.equals(this._else, other._else)) {
-        return false;
-      }
-      if (!Objects.equals(this.event, other.event)) {
-        return false;
-      }
+      if (!Objects.equals(this.target, other.target)) return false;
+      if (!Objects.equals(this.guards, other.guards)) return false;
+      if (!Objects.equals(this.actions, other.actions)) return false;
+      if (!Objects.equals(this._else, other._else)) return false;
+      if (!Objects.equals(this.event, other.event)) return false;
       return true;
     }
 
@@ -1204,7 +1006,6 @@ public final class CollaborativeStateMachineDescription {
    * [deprecated]
    */
   public abstract static class ActionOrActionReferenceDescription {
-
     protected ActionOrActionReferenceDescription() {
     }
   }
@@ -1213,7 +1014,6 @@ public final class CollaborativeStateMachineDescription {
    * An abstract action construct. Represents an action that can be taken in a state machine.
    */
   public abstract static class ActionDescription extends ActionOrActionReferenceDescription {
-
     protected final @NonNull Type type;
 
     protected final String name;
@@ -1233,22 +1033,12 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       ActionDescription other = (ActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
       return true;
     }
 
@@ -1275,7 +1065,6 @@ public final class CollaborativeStateMachineDescription {
    * [deprecated]
    */
   public static final class ActionReferenceDescription extends ActionOrActionReferenceDescription {
-
     private final @NonNull String reference;
 
     public ActionReferenceDescription(@Named("reference") @NonNull String reference) {
@@ -1292,19 +1081,11 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       ActionReferenceDescription other = (ActionReferenceDescription) obj;
-      if (!Objects.equals(this.reference, other.reference)) {
-        return false;
-      }
+      if (!Objects.equals(this.reference, other.reference)) return false;
       return true;
     }
 
@@ -1329,7 +1110,6 @@ public final class CollaborativeStateMachineDescription {
    * Assign action construct. Represents an assignment of a value to a context variable.
    */
   public static final class AssignActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull ContextVariableDescription variable;
@@ -1364,25 +1144,13 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       AssignActionDescription other = (AssignActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.variable, other.variable)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.variable, other.variable)) return false;
       return true;
     }
 
@@ -1411,7 +1179,6 @@ public final class CollaborativeStateMachineDescription {
    * Create action construct. Represents the creation of a context variable.
    */
   public static final class CreateActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull ContextVariableDescription variable;
@@ -1464,28 +1231,14 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       CreateActionDescription other = (CreateActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.variable, other.variable)) {
-        return false;
-      }
-      if (!Objects.equals(this.isPersistent, other.isPersistent)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.variable, other.variable)) return false;
+      if (!Objects.equals(this.isPersistent, other.isPersistent)) return false;
       return true;
     }
 
@@ -1516,7 +1269,6 @@ public final class CollaborativeStateMachineDescription {
    * Invoke action construct. Represents the invocation of a service.
    */
   public static final class InvokeActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull String serviceType;
@@ -1615,37 +1367,17 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       InvokeActionDescription other = (InvokeActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.serviceType, other.serviceType)) {
-        return false;
-      }
-      if (!Objects.equals(this.isLocal, other.isLocal)) {
-        return false;
-      }
-      if (!Objects.equals(this.input, other.input)) {
-        return false;
-      }
-      if (!Objects.equals(this.done, other.done)) {
-        return false;
-      }
-      if (!Objects.equals(this.output, other.output)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.serviceType, other.serviceType)) return false;
+      if (!Objects.equals(this.isLocal, other.isLocal)) return false;
+      if (!Objects.equals(this.input, other.input)) return false;
+      if (!Objects.equals(this.done, other.done)) return false;
+      if (!Objects.equals(this.output, other.output)) return false;
       return true;
     }
 
@@ -1682,7 +1414,6 @@ public final class CollaborativeStateMachineDescription {
    * Match action construct. Represents a match action.
    */
   public static final class MatchActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull String value;
@@ -1735,28 +1466,14 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       MatchActionDescription other = (MatchActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.value, other.value)) {
-        return false;
-      }
-      if (!Objects.equals(this.cases, other.cases)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.value, other.value)) return false;
+      if (!Objects.equals(this.cases, other.cases)) return false;
       return true;
     }
 
@@ -1787,7 +1504,6 @@ public final class CollaborativeStateMachineDescription {
    * Match case construct.
    */
   public static final class MatchCaseDescription {
-
     private final @NonNull String _case;
 
     private final @NonNull ActionOrActionReferenceDescription action;
@@ -1822,22 +1538,12 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       MatchCaseDescription other = (MatchCaseDescription) obj;
-      if (!Objects.equals(this._case, other._case)) {
-        return false;
-      }
-      if (!Objects.equals(this.action, other.action)) {
-        return false;
-      }
+      if (!Objects.equals(this._case, other._case)) return false;
+      if (!Objects.equals(this.action, other.action)) return false;
       return true;
     }
 
@@ -1864,7 +1570,6 @@ public final class CollaborativeStateMachineDescription {
    * Raise action construct. Represents the raising of an event.
    */
   public static final class RaiseActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull EventDescription event;
@@ -1902,25 +1607,13 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       RaiseActionDescription other = (RaiseActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.event, other.event)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.event, other.event)) return false;
       return true;
     }
 
@@ -1949,7 +1642,6 @@ public final class CollaborativeStateMachineDescription {
    * Timeout action construct. Represents a timeout action.
    */
   public static final class TimeoutActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull String delay;
@@ -2002,28 +1694,14 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       TimeoutActionDescription other = (TimeoutActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.delay, other.delay)) {
-        return false;
-      }
-      if (!Objects.equals(this.action, other.action)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.delay, other.delay)) return false;
+      if (!Objects.equals(this.action, other.action)) return false;
       return true;
     }
 
@@ -2054,7 +1732,6 @@ public final class CollaborativeStateMachineDescription {
    * Timeout reset action construct. Represents a timeout reset action.
    */
   public static final class TimeoutResetActionDescription extends ActionDescription {
-
     private final @NonNull Type type;
 
     private final @NonNull String action;
@@ -2092,25 +1769,13 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       TimeoutResetActionDescription other = (TimeoutResetActionDescription) obj;
-      if (!Objects.equals(this.type, other.type)) {
-        return false;
-      }
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.action, other.action)) {
-        return false;
-      }
+      if (!Objects.equals(this.type, other.type)) return false;
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.action, other.action)) return false;
       return true;
     }
 
@@ -2139,7 +1804,6 @@ public final class CollaborativeStateMachineDescription {
    * Event construct. Represents an event that can be raised.
    */
   public static final class EventDescription {
-
     private final @NonNull String name;
 
     private final @NonNull EventChannel channel;
@@ -2189,25 +1853,13 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       EventDescription other = (EventDescription) obj;
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.channel, other.channel)) {
-        return false;
-      }
-      if (!Objects.equals(this.data, other.data)) {
-        return false;
-      }
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.channel, other.channel)) return false;
+      if (!Objects.equals(this.data, other.data)) return false;
       return true;
     }
 
@@ -2236,7 +1888,6 @@ public final class CollaborativeStateMachineDescription {
    * Context variable reference construct. Represents a reference to a context variable.
    */
   public static final class ContextVariableReferenceDescription {
-
     private final @NonNull String reference;
 
     public ContextVariableReferenceDescription(@Named("reference") @NonNull String reference) {
@@ -2253,19 +1904,11 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       ContextVariableReferenceDescription other = (ContextVariableReferenceDescription) obj;
-      if (!Objects.equals(this.reference, other.reference)) {
-        return false;
-      }
+      if (!Objects.equals(this.reference, other.reference)) return false;
       return true;
     }
 
@@ -2290,7 +1933,6 @@ public final class CollaborativeStateMachineDescription {
    * Context description construct. Represents a context.
    */
   public static final class ContextDescription {
-
     private final @NonNull List<@NonNull ContextVariableDescription> variables;
 
     public ContextDescription(
@@ -2309,19 +1951,11 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       ContextDescription other = (ContextDescription) obj;
-      if (!Objects.equals(this.variables, other.variables)) {
-        return false;
-      }
+      if (!Objects.equals(this.variables, other.variables)) return false;
       return true;
     }
 
@@ -2346,7 +1980,6 @@ public final class CollaborativeStateMachineDescription {
    * Context variable description construct. Represents a context variable.
    */
   public static final class ContextVariableDescription {
-
     private final @NonNull String name;
 
     private final @NonNull String value;
@@ -2375,22 +2008,12 @@ public final class CollaborativeStateMachineDescription {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (this.getClass() != obj.getClass()) {
-        return false;
-      }
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (this.getClass() != obj.getClass()) return false;
       ContextVariableDescription other = (ContextVariableDescription) obj;
-      if (!Objects.equals(this.name, other.name)) {
-        return false;
-      }
-      if (!Objects.equals(this.value, other.value)) {
-        return false;
-      }
+      if (!Objects.equals(this.name, other.name)) return false;
+      if (!Objects.equals(this.value, other.value)) return false;
       return true;
     }
 
@@ -2410,6 +2033,75 @@ public final class CollaborativeStateMachineDescription {
       appendProperty(builder, "value", this.value);
       builder.append("\n}");
       return builder.toString();
+    }
+  }
+
+  public enum Version {
+    _0_1("0.1"),
+
+    _0_2("0.2");
+
+    private String value;
+
+    private Version(String value) {
+      this.value = value;
+    }
+
+    @Override
+    public String toString() {
+      return this.value;
+    }
+  }
+
+  public enum Type {
+    INVOKE("invoke"),
+
+    CREATE("create"),
+
+    ASSIGN("assign"),
+
+    LOCK("lock"),
+
+    UNLOCK("unlock"),
+
+    RAISE("raise"),
+
+    TIMEOUT("timeout"),
+
+    TIMEOUT_RESET("timeoutReset"),
+
+    MATCH("match");
+
+    private String value;
+
+    private Type(String value) {
+      this.value = value;
+    }
+
+    @Override
+    public String toString() {
+      return this.value;
+    }
+  }
+
+  public enum EventChannel {
+    INTERNAL("internal"),
+
+    EXTERNAL("external"),
+
+    GLOBAL("global"),
+
+    PERIPHERAL("peripheral");
+
+    private String value;
+
+    private EventChannel(String value) {
+      this.value = value;
+    }
+
+    @Override
+    public String toString() {
+      return this.value;
     }
   }
 }

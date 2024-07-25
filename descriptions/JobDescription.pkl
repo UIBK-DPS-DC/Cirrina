@@ -1,0 +1,12 @@
+@ModuleInfo { minPklVersion = "0.26.2" }
+module at.ac.uibk.dps.cirrina.csml.description.JobDescription
+
+import "CollaborativeStateMachineDescription.pkl"
+import "ServiceImplementationDescription.pkl"
+
+serviceImplementations: ServiceImplementationDescription
+collaborativeStateMachine: CollaborativeStateMachineDescription
+stateMachineName: String
+localData: Mapping<String, String>
+bindEventInstanceIds: Listing<String>
+runtimeName: String

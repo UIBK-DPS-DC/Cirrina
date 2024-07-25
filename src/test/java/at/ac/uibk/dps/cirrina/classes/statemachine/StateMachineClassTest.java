@@ -24,7 +24,7 @@ public class StateMachineClassTest {
   public static void setUp() {
     var json = DefaultDescriptions.complete;
 
-    var parser = new DescriptionParser<CollaborativeStateMachineDescription>(CollaborativeStateMachineDescription.class);
+    var parser = new DescriptionParser<>(CollaborativeStateMachineDescription.class);
     assertDoesNotThrow(() -> {
       var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(parser.parse(json)).build();
 
