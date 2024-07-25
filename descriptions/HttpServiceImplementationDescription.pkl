@@ -1,7 +1,7 @@
 @ModuleInfo { minPklVersion = "0.26.2" }
 module at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription
 
-extends "ServiceImplementationDescription.pkl"
+extends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/ServiceImplementationDescription.pkl"
 
 scheme: String
 host: String

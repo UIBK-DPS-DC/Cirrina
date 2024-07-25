@@ -19,7 +19,7 @@
 ## Example Use Case
 
 We created an example use case namely the `Video Surveillance` use case. The use case is described in
-the [descriptions](descriptions/surveillance-system.pkl)
+the [example](example/surveillance-system-csm.pkl)
 folder.
 
 To render the pkl file into other file formats, you can use the following command:

@@ -1,7 +1,7 @@
-amends "JobDescription.pkl"
+amends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/JobDescription.pkl"
 
+import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/HttpServiceImplementationDescription.pkl"
 import "surveillance-system-csm.pkl" as surveillanceCSM
-import "HttpServiceImplementationDescription.pkl"
 
 serviceImplementations = new HttpServiceImplementationDescription {
     name = "A"
