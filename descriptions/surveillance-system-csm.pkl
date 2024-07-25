@@ -1,49 +1,42 @@
+amends "CollaborativeStateMachineDescription.pkl"
 import "CollaborativeStateMachineDescription.pkl" as CSM
 
-// Only render the CSM Object
-output {
-    value = csm
-}
-
-
 // ------------------------ CSM -------------------------------
-csm: CSM = new {
-    name = "Surveillance System"
-    version = "0.1"
-    stateMachines {
-        detectorSM
-        surveillanceSM
-    }
+name = "Surveillance System"
+version = "0.1"
+stateMachines {
+    detectorSM
+    surveillanceSM
 }
 
 // ------------------------ Service Types -------------------------------
-hidden stCameraCapture = "cameraCapture"
-hidden stDetectPersons = "detectPersons"
-hidden stAlarmOn = "alarmOn"
-hidden stAlarmOff = "alarmOff"
-hidden stAnalyze = "analyze"
+local stCameraCapture = "cameraCapture"
+local stDetectPersons = "detectPersons"
+local stAlarmOn = "alarmOn"
+local stAlarmOff = "alarmOff"
+local stAnalyze = "analyze"
 
 // ------------------------ Events -------------------------------
-hidden eCaptured = "captured"
-hidden eDetectedPersons = "detectedPersons"
-hidden eHasDetectedPersons = "hasDetectedPersons"
-hidden eFoundPersons = "foundPersons"
-hidden eTimeout = "timeout"
-hidden eDisarm = "disarm"
-hidden eAnalyzed = "analyzed"
-hidden eAlarm = "alarm"
+local eCaptured = "captured"
+local eDetectedPersons = "detectedPersons"
+local eHasDetectedPersons = "hasDetectedPersons"
+local eFoundPersons = "foundPersons"
+local eTimeout = "timeout"
+local eDisarm = "disarm"
+local eAnalyzed = "analyzed"
+local eAlarm = "alarm"
 
 // ------------------------ Variables -------------------------------
-hidden vHasThreat = "hasThreat"
+local vHasThreat = "hasThreat"
 
 // ------------------------ ContextVariableDescriptions -------------------------------
-hidden imageContextVariableDescription: CSM.ContextVariableDescription = new {
+local imageContextVariableDescription: CSM.ContextVariableDescription = new {
     name = "image"
     value = "image"
 }
 
 // ------------------------ Detector SM -------------------------------
-hidden detectorSM: CSM.StateMachineDescription = new {
+local detectorSM: CSM.StateMachineDescription = new {
     name = "detector"
     localContext {
         variables {
@@ -64,7 +57,7 @@ hidden detectorSM: CSM.StateMachineDescription = new {
     }
 }
 
-hidden sCapturing: CSM.StateDescription = new {
+local sCapturing: CSM.StateDescription = new {
     name = "capturing"
     initial = true
     entry {
@@ -97,7 +90,7 @@ hidden sCapturing: CSM.StateDescription = new {
     }
 }
 
-hidden sCapturingProcessing: CSM.StateDescription = new {
+local sCapturingProcessing: CSM.StateDescription = new {
     name = "processing"
     entry {
         new CSM.InvokeActionDescription {
@@ -158,7 +151,7 @@ hidden sCapturingProcessing: CSM.StateDescription = new {
     }
 }
 
-hidden sAlarm: CSM.StateDescription = new {
+local sAlarm: CSM.StateDescription = new {
     name = "alarm"
     entry {
         new CSM.InvokeActionDescription {
@@ -179,7 +172,7 @@ hidden sAlarm: CSM.StateDescription = new {
 }
 
 // ------------------------ Surveillance SM -------------------------------
-hidden surveillanceSM: CSM.StateMachineDescription = new {
+local surveillanceSM: CSM.StateMachineDescription = new {
     name = "surveillance"
     localContext {
         variables {
@@ -195,7 +188,7 @@ hidden surveillanceSM: CSM.StateMachineDescription = new {
     }
 }
 
-hidden sSurveillanceProcessing: CSM.StateDescription = new {
+local sSurveillanceProcessing: CSM.StateDescription = new {
     name = "processing"
     initial = true
     on {
@@ -243,7 +236,7 @@ hidden sSurveillanceProcessing: CSM.StateDescription = new {
     }
 }
 
-hidden sAlarmDisarm: CSM.StateDescription = new {
+local sAlarmDisarm: CSM.StateDescription = new {
     name = "alarm"
     on {
         new {

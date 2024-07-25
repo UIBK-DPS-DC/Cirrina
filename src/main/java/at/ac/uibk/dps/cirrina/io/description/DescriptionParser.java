@@ -33,7 +33,7 @@ public class DescriptionParser<T> {
    */
   public T parse(String pkl) throws IllegalArgumentException {
     try (var evaluator = ConfigEvaluator.preconfigured()) {
-      return evaluator.evaluate(ModuleSource.text(pkl)).get("csm").as(valueType);
+      return evaluator.evaluate(ModuleSource.text(pkl)).as(valueType);
     } catch (Exception e) {
       throw new IllegalArgumentException("Parsing error", e);
     }

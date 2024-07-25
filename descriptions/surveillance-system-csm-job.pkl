@@ -1,6 +1,6 @@
 amends "JobDescription.pkl"
 
-import "surveillance-system.pkl" as surveillance
+import "surveillance-system-csm.pkl" as surveillanceCSM
 import "HttpServiceImplementationDescription.pkl"
 
 serviceImplementations = new HttpServiceImplementationDescription {
@@ -14,7 +14,7 @@ serviceImplementations = new HttpServiceImplementationDescription {
     endPoint = ""
     method = "GET"
 }
-collaborativeStateMachine = surveillance.csm
+collaborativeStateMachine = surveillanceCSM
 stateMachineName = "detectorSM"
 localData = new Mapping {
     ["foo"] = "bar"
