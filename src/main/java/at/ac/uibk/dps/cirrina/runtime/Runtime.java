@@ -159,11 +159,6 @@ public abstract class Runtime implements EventListener {
     var instanceIds = new ArrayList<Id>();
 
     for (var stateMachine : stateMachineClasses) {
-      // Abstract state machines are skipped
-      if (stateMachine.isAbstract()) {
-        continue;
-      }
-
       // Instantiate the state machine instance hierarchy
       try {
         // Parent

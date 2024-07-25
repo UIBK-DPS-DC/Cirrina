@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.guard;
 
-import at.ac.uibk.dps.cirrina.csml.description.guard.GuardDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardDescription;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
 
 /**
@@ -39,6 +39,6 @@ public final class GuardBuilder {
    * @throws IllegalArgumentException In case the guard could not be built.
    */
   public Guard build() throws IllegalArgumentException {
-    return new Guard(guardClass.name.orElse(null), ExpressionBuilder.from(guardClass.expression).build());
+    return new Guard(guardClass.getName(), ExpressionBuilder.from(guardClass.getExpression()).build());
   }
 }

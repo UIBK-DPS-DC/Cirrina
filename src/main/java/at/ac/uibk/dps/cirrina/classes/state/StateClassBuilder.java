@@ -1,12 +1,11 @@
 package at.ac.uibk.dps.cirrina.classes.state;
 
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.csml.description.StateDescription;
-import at.ac.uibk.dps.cirrina.csml.description.helper.ActionOrActionReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionOrActionReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
 import jakarta.annotation.Nullable;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -148,7 +147,7 @@ public abstract class StateClassBuilder {
     @Override
     public StateClass build() throws IllegalArgumentException {
       // Resolve actions
-      final Function<List<ActionOrActionReferenceDescription>, List<Action>> resolveActions = (List<ActionOrActionReferenceDescription> actions) ->
+      final Function<List<? extends ActionOrActionReferenceDescription>, List<Action>> resolveActions = (List<? extends ActionOrActionReferenceDescription> actions) ->
           actions.stream()
               .map(actionOrActionClass -> {
                 var resolvedAction = actionResolver.tryResolve(actionOrActionClass);
@@ -160,12 +159,12 @@ public abstract class StateClassBuilder {
               })
               .toList();
 
-      final var entryActions = resolveActions.apply(stateDescription.entry);
-      final var exitActions = resolveActions.apply(stateDescription.exit);
-      final var whileActions = resolveActions.apply(stateDescription.whilee);
-      final var afterActions = resolveActions.apply(stateDescription.after);
+      final var entryActions = resolveActions.apply(stateDescription.getEntry());
+      final var exitActions = resolveActions.apply(stateDescription.getExit());
+      final var whileActions = resolveActions.apply(stateDescription.getWhile());
+      final var afterActions = resolveActions.apply(stateDescription.getAfter());
 
-      if (!afterActions.stream().allMatch(action -> action instanceof TimeoutAction)) {
+      if (!afterActions.stream().allMatch(TimeoutAction.class::isInstance)) {
         throw new IllegalArgumentException("After action is not a timeout action");
       }
 
@@ -173,12 +172,10 @@ public abstract class StateClassBuilder {
       if (baseStateClass == null) {
         return new StateClass(new StateClass.BaseParameters(
             parentStateMachineId,
-            stateDescription.name,
-            stateDescription.localContext.orElse(null),
-            stateDescription.initial,
-            stateDescription.terminal,
-            stateDescription.abstractt,
-            stateDescription.virtual,
+            stateDescription.getName(),
+            stateDescription.getLocalContext(),
+            stateDescription.isInitial(),
+            stateDescription.isTerminal(),
             entryActions,
             exitActions,
             whileActions,
@@ -187,9 +184,8 @@ public abstract class StateClassBuilder {
       } else {
         return new StateClass(new StateClass.ChildParameters(
             parentStateMachineId,
-            stateDescription.initial,
-            stateDescription.terminal,
-            stateDescription.abstractt,
+            stateDescription.isInitial(),
+            stateDescription.isTerminal(),
             entryActions,
             exitActions,
             whileActions,
@@ -255,8 +251,6 @@ public abstract class StateClassBuilder {
           stateClass.getLocalContextDescription().orElse(null),
           stateClass.isInitial(),
           stateClass.isTerminal(),
-          stateClass.isAbstract(),
-          stateClass.isVirtual(),
           replaceNamedActions(stateClass.getEntryActionGraph().getActions()),
           replaceNamedActions(stateClass.getExitActionGraph().getActions()),
           replaceNamedActions(stateClass.getWhileActionGraph().getActions()),

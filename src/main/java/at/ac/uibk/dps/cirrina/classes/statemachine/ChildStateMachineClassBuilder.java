@@ -5,9 +5,9 @@ import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.state.StateClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.StateDescription;
-import at.ac.uibk.dps.cirrina.csml.description.StateMachineDescription;
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateMachineDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
 import jakarta.annotation.Nullable;
@@ -89,23 +89,21 @@ public final class ChildStateMachineClassBuilder {
     }
 
     // Create a new list of variables, containing all variables of the first context description
-    final var variables = new ArrayList<>(contextDescription.variables);
+    final var variables = new ArrayList<>(contextDescription.getVariables());
 
     // Add all variables of the second context description which are not part of the first context description
     final var variableNames = variables.stream()
-        .map(variable -> variable.name)
+        .map(variable -> variable.getName())
         .toList();
 
     variables.addAll(
-        baseContextDescription.variables.stream()
-            .filter(variable -> !variableNames.contains(variable.name))
+        baseContextDescription.getVariables().stream()
+            .filter(variable -> !variableNames.contains(variable.getName()))
             .toList()
     );
 
     // Build a new context description
-    var mergedContextDescription = new ContextDescription();
-
-    mergedContextDescription.variables = variables;
+    var mergedContextDescription = new ContextDescription(variables);
 
     return Optional.of(mergedContextDescription);
   }
@@ -117,26 +115,21 @@ public final class ChildStateMachineClassBuilder {
    * @throws IllegalArgumentException In case the state machine could not be built.
    */
   public StateMachineClass build() throws IllegalArgumentException {
-    // Validity checks
-    checkAbstractStates();
-    checkOverriddenStates();
-
     // Re-add named actions and guards of the base state machine
     addBaseActions();
     addBaseGuards();
 
     // Merge local context variables of the base and child state machine's local contexts
     final var localContext = mergeContext(
-        stateMachineDescription.localContext.orElse(null),
+        stateMachineDescription.getLocalContext(),
         baseStateMachineClass.getLocalContextClass().orElse(null)
     );
 
     final var parameters = new StateMachineClass.Parameters(
-        stateMachineDescription.name,
+        stateMachineDescription.getName(),
         localContext.orElse(null),
         namedGuards,
         namedActions,
-        stateMachineDescription.abstractt,
         nestedStateMachineClasses
     );
 
@@ -190,55 +183,6 @@ public final class ChildStateMachineClassBuilder {
   }
 
   /**
-   * Ensures that the overridden state can in fact be overridden.
-   *
-   * @throws IllegalArgumentException If an attempt is made to override states that are not abstract or virtual.
-   */
-  private void checkOverriddenStates() throws IllegalArgumentException {
-    final var stateClasses = getStateDescriptions();
-
-    // If a state is neither virtual nor abstract but overridden, throw an error
-    final boolean cannotOverrideState = stateClasses.stream()
-        .anyMatch(stateClass -> baseStateMachineClass.vertexSet().stream()
-            .anyMatch(state -> !state.isVirtual() && !state.isAbstract() && state.getName().equals(stateClass.name))
-        );
-
-    if (cannotOverrideState) {
-      throw new IllegalArgumentException("States of '%s' attempt to override states that are neither abstract nor virtual".formatted(
-          stateMachineDescription.name));
-    }
-  }
-
-  /**
-   * Ensures that everything that is abstract is overridden.
-   *
-   * @throws IllegalArgumentException If not all abstract states are overridden.
-   */
-  private void checkAbstractStates() throws IllegalArgumentException {
-
-    // If the base state machine is not abstract we do not need to check for abstract states
-    // If this state machine is abstract there can be abstract states which are not overridden
-    if (!baseStateMachineClass.isAbstract() || stateMachineDescription.abstractt) {
-      return;
-    }
-
-    final var stateDescriptions = getStateDescriptions();
-    final var abstractStates = baseStateMachineClass.vertexSet().stream()
-        .filter(StateClass::isAbstract)
-        .toList();
-
-    // If there are any abstract states in the base state machine which are not overridden, throw an error
-    final var isIncomplete = abstractStates.stream()
-        .anyMatch(state -> stateDescriptions.stream()
-            .noneMatch(stateClass -> state.getName().equals(stateClass.name))
-        );
-
-    if (isIncomplete) {
-      throw new IllegalArgumentException("Not all abstract states of '%s' are overridden".formatted(stateMachineDescription.name));
-    }
-  }
-
-  /**
    * Adds states to the child state machine.
    *
    * @param stateMachineClass The state machine class.
@@ -252,7 +196,7 @@ public final class ChildStateMachineClassBuilder {
     stateDescriptions.forEach(stateDescription -> {
 
       // Get the overridden state from the base state machine or null if the state is new and not overridden
-      final var baseStateClass = baseStateMachineClass.findStateClassByName(stateDescription.name)
+      final var baseStateClass = baseStateMachineClass.findStateClassByName(stateDescription.getName())
           .orElse(null);
 
       // Add the overridden or new state
@@ -263,7 +207,7 @@ public final class ChildStateMachineClassBuilder {
     // Add missing states of the base state machine which were not overridden
     baseStateMachineClass.vertexSet().stream()
         .filter(state -> stateDescriptions.stream()
-            .noneMatch(stateClass -> state.getName().equals(stateClass.name))
+            .noneMatch(stateClass -> state.getName().equals(stateClass.getName()))
         )
         .forEach(state -> stateMachineClass.addVertex(
             StateClassBuilder.from(stateMachineClass.getId(), state, namedActions).build())
@@ -293,10 +237,10 @@ public final class ChildStateMachineClassBuilder {
 
             // If overridden, skip recreating this edge
             final boolean isOverriddenTransition = stateDescriptions.stream()
-                .filter(stateDescription -> stateDescription.name.equals(sourceName))
+                .filter(stateDescription -> stateDescription.getName().equals(sourceName))
                 .findFirst()
-                .map(stateDescription -> stateDescription.on.stream()
-                    .anyMatch(onTransitionDescription -> onTransitionDescription.event.equals(onTransition.getEventName()))
+                .map(stateDescription -> stateDescription.getOn().stream()
+                    .anyMatch(onTransitionDescription -> onTransitionDescription.getEvent().equals(onTransition.getEventName()))
                 )
                 .orElse(false);
 
@@ -322,7 +266,7 @@ public final class ChildStateMachineClassBuilder {
    * Return states as StateDescription helper method
    */
   private List<StateDescription> getStateDescriptions() {
-    return stateMachineDescription.states.stream()
+    return stateMachineDescription.getStates().stream()
         .filter(StateDescription.class::isInstance)
         .map(StateDescription.class::cast)
         .toList();

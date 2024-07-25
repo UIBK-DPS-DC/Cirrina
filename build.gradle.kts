@@ -21,6 +21,24 @@ java {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir("src/main/java")
+            srcDir("generated/java") // Add the generated sources
+        }
+        resources {
+            srcDir("src/main/resources")
+            srcDir("generated/resources")  // Add the generated resources
+        }
+    }
+    test {
+        java {
+            srcDir("src/test/java")
+        }
+    }
+}
+
 jacoco {
     toolVersion = "0.8.11"
 }
@@ -37,6 +55,8 @@ protobuf {
 }
 
 dependencies {
+    implementation("org.pkl-lang:pkl-config-java:0.26.2")
+
     implementation("com.beust:jcommander:1.82")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")

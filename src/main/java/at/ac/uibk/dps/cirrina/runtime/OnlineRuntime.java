@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
@@ -136,12 +135,6 @@ public class OnlineRuntime extends Runtime implements JobListener {
         .orElseThrow(() -> new UnsupportedOperationException(
             "A state machine with the name '%s' does not exist in the collaborative state machine".formatted(stateMachineName)));
 
-    // Throw an error if the state machine is abstract (should not be instantiated)
-    if (stateMachine.isAbstract()) {
-      throw new UnsupportedOperationException(
-          "State machine '%s' is abstract and can not be instantiated".formatted(stateMachineName));
-    }
-
     // Create persistent variables
     final var persistentContextVariables = collaborativeStateMachine.getPersistentContextVariables();
 
@@ -168,7 +161,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
         for (final var localData : jobDescription.localData.entrySet()) {
           try {
             // Assign local data entry, evaluate the value as an expression
-            final var valueExpression = ExpressionBuilder.from(new ExpressionDescription(localData.getValue())).build();
+            final var valueExpression = ExpressionBuilder.from(localData.getValue()).build();
 
             stateMachineInstance.getExtent().setOrCreate(localData.getKey(), valueExpression.execute(stateMachineInstance.getExtent()));
           } catch (IOException | IllegalArgumentException e) {

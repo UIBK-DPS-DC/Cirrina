@@ -1,9 +1,9 @@
 package at.ac.uibk.dps.cirrina.classes.helper;
 
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
-import at.ac.uibk.dps.cirrina.csml.description.action.ActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.ActionReferenceDescription;
-import at.ac.uibk.dps.cirrina.csml.description.helper.ActionOrActionReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionOrActionReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionReferenceDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.ActionBuilder;
 import java.util.Optional;
@@ -43,7 +43,7 @@ public final class ActionResolver {
       }
       // An action reference is a reference to a named action contained within the state machine, we provide this action
       case ActionReferenceDescription actionReferenceClass -> {
-        return stateMachineClass.findActionByName(actionReferenceClass.reference);
+        return stateMachineClass.findActionByName(actionReferenceClass.getReference());
       }
       default -> {
         return Optional.empty();

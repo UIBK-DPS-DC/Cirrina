@@ -1,0 +1,266 @@
+import "CollaborativeStateMachineDescription_v2.pkl" as CSM
+
+// Only render the CSM Object
+output {
+    value = csm
+}
+
+
+// ------------------------ CSM -------------------------------
+csm: CSM = new {
+    name = "Surveillance System"
+    version = "0.1"
+    stateMachines {
+        detectorSM
+        surveillanceSM
+    }
+}
+
+// ------------------------ Service Types -------------------------------
+hidden stCameraCapture = "cameraCapture"
+hidden stDetectPersons = "detectPersons"
+hidden stAlarmOn = "alarmOn"
+hidden stAlarmOff = "alarmOff"
+hidden stAnalyze = "analyze"
+
+// ------------------------ Events -------------------------------
+hidden eCaptured = "captured"
+hidden eDetectedPersons = "detectedPersons"
+hidden eHasDetectedPersons = "hasDetectedPersons"
+hidden eFoundPersons = "foundPersons"
+hidden eTimeout = "timeout"
+hidden eDisarm = "disarm"
+hidden eAnalyzed = "analyzed"
+hidden eAlarm = "alarm"
+
+// ------------------------ Variables -------------------------------
+hidden vHasThreat = "hasThreat"
+
+// ------------------------ ContextVariableDescriptions -------------------------------
+hidden imageContextVariableDescription: CSM.ContextVariableDescription = new {
+    name = "image"
+    value = "image"
+}
+
+// ------------------------ Detector SM -------------------------------
+hidden detectorSM: CSM.StateMachineDescription = new {
+    name = "detector"
+    localContext {
+        variables {
+            new {
+                name = "image"
+                value = "''"
+            }
+            new {
+                name = "hasDetectedPersons"
+                value = "false"
+            }
+        }
+    }
+    states {
+        sCapturing
+        sCapturingProcessing
+        sAlarm
+    }
+}
+
+hidden sCapturing: CSM.StateDescription = new {
+    name = "capturing"
+    initial = true
+    entry {
+        new CSM.InvokeActionDescription {
+            serviceType = stCameraCapture
+            input {
+                new {
+                    name = "cameraId"
+                    value = "0"
+                }
+            }
+            output {
+                new {
+                    reference = "image"
+                }
+            }
+            done {
+                new {
+                    name = eCaptured
+                    channel = "internal"
+                }
+            }
+        }
+    }
+    on {
+        new {
+            event = eCaptured
+            target = "processing"
+        }
+    }
+}
+
+hidden sCapturingProcessing: CSM.StateDescription = new {
+    name = "processing"
+    entry {
+        new CSM.InvokeActionDescription {
+            serviceType = stDetectPersons
+            isLocal = true
+            input {
+                imageContextVariableDescription
+            }
+            output {
+                new {
+                    reference = "hasDetectedPersons"
+                }
+            }
+            done {
+                new {
+                    name = eDetectedPersons
+                    channel = "internal"
+                }
+            }
+        }
+    }
+    on {
+        new {
+            event = eDetectedPersons
+            guards {
+                new CSM.GuardDescription {
+                    expression = "\(eHasDetectedPersons) == true"
+                }
+            }
+            actions {
+                new CSM.RaiseActionDescription {
+                    event {
+                        name = eFoundPersons
+                        channel = "global"
+                        data {
+                            imageContextVariableDescription
+                        }
+                    }
+                }
+            }
+        }
+        new {
+            event = eTimeout
+            target = "alarm"
+        }
+    }
+    after {
+        new CSM.TimeoutActionDescription {
+            name = "captureTimeout"
+            delay = "500" // Note: in the future use Duration type e.g. 500.ms
+            action = new CSM.RaiseActionDescription {
+                event {
+                    name = eTimeout
+                    channel = "internal"
+                }
+            }
+        }
+    }
+}
+
+hidden sAlarm: CSM.StateDescription = new {
+    name = "alarm"
+    entry {
+        new CSM.InvokeActionDescription {
+            serviceType = stAlarmOn
+        }
+    }
+    exit {
+        new CSM.InvokeActionDescription {
+            serviceType = stAlarmOff
+        }
+    }
+    on {
+        new {
+            event = eDisarm
+            target = "capturing"
+        }
+    }
+}
+
+// ------------------------ Surveillance SM -------------------------------
+hidden surveillanceSM: CSM.StateMachineDescription = new {
+    name = "surveillance"
+    localContext {
+        variables {
+            new {
+                name = vHasThreat
+                value = "false"
+            }
+        }
+    }
+    states {
+        sSurveillanceProcessing
+        sAlarmDisarm
+    }
+}
+
+hidden sSurveillanceProcessing: CSM.StateDescription = new {
+    name = "processing"
+    initial = true
+    on {
+        new {
+            event = eFoundPersons
+            actions {
+                new CSM.InvokeActionDescription {
+                    serviceType = stAnalyze
+                    input {
+                        new {
+                            name = "image"
+                            value = "$image"
+                        }
+                    }
+                    output {
+                        new {
+                            reference = vHasThreat
+                        }
+                    }
+                    done {
+                        new {
+                            name = eAnalyzed
+                            channel = "internal"
+                        }
+                    }
+                }
+            }
+        }
+        new {
+            event = eAnalyzed
+            guards {
+                new CSM.GuardDescription {
+                    expression = "\(vHasThreat) == true"
+                }
+            }
+            actions {
+                new CSM.RaiseActionDescription {
+                    event {
+                        name = eAlarm
+                        channel = "global"
+                    }
+                }
+            }
+        }
+    }
+}
+
+hidden sAlarmDisarm: CSM.StateDescription = new {
+    name = "alarm"
+    on {
+        new {
+            event = eDisarm
+            target = "processing"
+        }
+    }
+    after {
+        new CSM.TimeoutActionDescription {
+            name = "disarmTimeout"
+            delay = "10000" // Note: replace with Duration: 10.s
+            action = new CSM.RaiseActionDescription {
+                event {
+                    name = eDisarm
+                    channel = "global"
+                }
+            }
+        }
+    }
+}

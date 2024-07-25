@@ -4,10 +4,10 @@ import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.classes.helper.GuardResolver;
 import at.ac.uibk.dps.cirrina.classes.statemachine.ChildStateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.helper.ActionOrActionReferenceDescription;
-import at.ac.uibk.dps.cirrina.csml.description.helper.GuardOrGuardReferenceDescription;
-import at.ac.uibk.dps.cirrina.csml.description.transition.OnTransitionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.transition.TransitionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionOrActionReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardOrGuardReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.OnTransitionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TransitionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
 import java.util.List;
@@ -103,7 +103,7 @@ public abstract class TransitionClassBuilder {
     @Override
     public TransitionClass build() throws IllegalArgumentException {
       // Resolve guards
-      Function<List<GuardOrGuardReferenceDescription>, List<Guard>> resolveGuards = (List<GuardOrGuardReferenceDescription> guards) ->
+      Function<List<? extends GuardOrGuardReferenceDescription>, List<Guard>> resolveGuards = (List<? extends GuardOrGuardReferenceDescription> guards) ->
           guards.stream()
               .map(guardOrReferenceClass -> {
                 var resolvedGuard = guardResolver.resolve(guardOrReferenceClass);
@@ -116,7 +116,7 @@ public abstract class TransitionClassBuilder {
               .toList();
 
       // Resolve actions
-      Function<List<ActionOrActionReferenceDescription>, List<Action>> resolveActions = (List<ActionOrActionReferenceDescription> actions) ->
+      Function<List<? extends ActionOrActionReferenceDescription>, List<Action>> resolveActions = (List<? extends ActionOrActionReferenceDescription> actions) ->
           actions.stream()
               .map(actionOrActionClass -> {
                 var resolvedAction = actionResolver.tryResolve(actionOrActionClass);
@@ -132,19 +132,19 @@ public abstract class TransitionClassBuilder {
       switch (transitionDescription) {
         case OnTransitionDescription onTransitionClass -> {
           return new OnTransitionClass(
-              onTransitionClass.target.orElse(null),
-              transitionDescription.elsee.orElse(null),
-              resolveGuards.apply(onTransitionClass.guards),
-              resolveActions.apply(onTransitionClass.actions),
-              onTransitionClass.event
+              onTransitionClass.getTarget(),
+              transitionDescription.getElse(),
+              resolveGuards.apply(onTransitionClass.getGuards()),
+              resolveActions.apply(onTransitionClass.getActions()),
+              onTransitionClass.getEvent()
           );
         }
         default -> {
           return new TransitionClass(
-              transitionDescription.target.orElse(null),
-              transitionDescription.elsee.orElse(null),
-              resolveGuards.apply(transitionDescription.guards),
-              resolveActions.apply(transitionDescription.actions)
+              transitionDescription.getTarget(),
+              transitionDescription.getElse(),
+              resolveGuards.apply(transitionDescription.getGuards()),
+              resolveActions.apply(transitionDescription.getActions())
           );
         }
       }
@@ -178,7 +178,8 @@ public abstract class TransitionClassBuilder {
       this.transitionClass = transitionClass;
       this.namedGuards = namedGuards.stream()
           .filter(named -> named.getName().isPresent())
-          .collect(Collectors.toMap(named -> named.getName().get(), Function.identity()));;
+          .collect(Collectors.toMap(named -> named.getName().get(), Function.identity()));
+      ;
     }
 
     /**

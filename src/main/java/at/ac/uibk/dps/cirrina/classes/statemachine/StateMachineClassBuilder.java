@@ -2,18 +2,18 @@ package at.ac.uibk.dps.cirrina.classes.statemachine;
 
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.classes.helper.GuardResolver;
-import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.state.StateClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.StateDescription;
-import at.ac.uibk.dps.cirrina.csml.description.StateMachineDescription;
-import at.ac.uibk.dps.cirrina.csml.description.transition.TransitionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateMachineDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TransitionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
 import at.ac.uibk.dps.cirrina.execution.object.guard.GuardBuilder;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -85,7 +85,7 @@ public final class StateMachineClassBuilder {
    * @throws IllegalArgumentException If guard names are not unique.
    */
   private List<Guard> buildGuards() throws IllegalArgumentException {
-    var guards = stateMachineDescription.guards.stream()
+    var guards = stateMachineDescription.getGuards().stream()
         .map(guardClass -> GuardBuilder.from(guardClass).build())
         .toList();
 
@@ -111,7 +111,7 @@ public final class StateMachineClassBuilder {
    */
   private List<Action> buildActions() throws IllegalArgumentException {
     // Construct the list of named actions of this state machine, or leave empty if no named actions are declared
-    var actions = stateMachineDescription.actions.stream()
+    var actions = stateMachineDescription.getActions().stream()
         .map(actionClass -> ActionBuilder.from(actionClass, null /* TODO: Provide me */).build())
         .toList();
 
@@ -134,7 +134,7 @@ public final class StateMachineClassBuilder {
    */
   private List<StateMachineClass> buildNestedStateMachines() throws IllegalArgumentException {
     // Gather the nested state machines
-    List<StateMachineDescription> nestedStateMachinesClasses = stateMachineDescription.states.stream()
+    List<StateMachineDescription> nestedStateMachinesClasses = stateMachineDescription.getStates().stream()
         .filter(StateMachineDescription.class::isInstance)
         .map(StateMachineDescription.class::cast)
         .toList();
@@ -157,11 +157,10 @@ public final class StateMachineClassBuilder {
     var nestedStateMachines = buildNestedStateMachines();
 
     var parameters = new StateMachineClass.Parameters(
-        stateMachineDescription.name,
-        stateMachineDescription.localContext.orElse(null),
+        stateMachineDescription.getName(),
+        stateMachineDescription.getLocalContext(),
         namedGuards,
         namedActions,
-        stateMachineDescription.abstractt,
         nestedStateMachines
     );
 
@@ -170,7 +169,7 @@ public final class StateMachineClassBuilder {
     var actionResolver = new ActionResolver(stateMachine);
 
     // Attempt to add vertices
-    stateMachineDescription.states.stream()
+    stateMachineDescription.getStates().stream()
         .filter(StateDescription.class::isInstance)
         .map(stateClass -> StateClassBuilder.from(stateMachine.getId(), (StateDescription) stateClass, actionResolver).build())
         .forEach(stateMachine::addVertex);
@@ -211,31 +210,23 @@ public final class StateMachineClassBuilder {
    * @throws IllegalArgumentException If the state machine has declared a state with a non-deterministic outward transition.
    */
   public StateMachineClass build() throws IllegalArgumentException {
-    var stateMachine = stateMachineDescription.extendss
-        .map(this::buildExtended)
-        .orElseGet(this::buildBase);
-
-    // If the state machine is not abstract but has abstract states, throw an error
-    if (!stateMachine.isAbstract() && stateMachine.vertexSet().stream().anyMatch(StateClass::isAbstract)) {
-      throw new IllegalArgumentException(
-          "States of '%s' are abstract but state machine is not abstract".formatted(stateMachineDescription.name));
-    }
+    var stateMachine = this.buildBase();
 
     var guardResolver = new GuardResolver(stateMachine);
     var actionResolver = new ActionResolver(stateMachine);
 
     // Attempt to add edges
-    stateMachineDescription.states.stream()
+    stateMachineDescription.getStates().stream()
         .filter(StateDescription.class::isInstance)
         .map(StateDescription.class::cast)
         .forEach(stateClass -> {
           // Acquire source node, this is expected to always succeed as we use the previously created state
-          var sourceStateClass = stateMachine.findStateClassByName(stateClass.name).get();
+          var sourceStateClass = stateMachine.findStateClassByName(stateClass.getName()).get();
 
           Consumer<List<? extends TransitionDescription>> processTransitions = (on) -> {
             for (var transitionClass : on) {
               // Acquire the target node, if the target is not provided, this is a self-transition
-              var targetStateClass = transitionClass.target
+              var targetStateClass = Optional.ofNullable(transitionClass.getTarget())
                   .map(targetName -> stateMachine.findStateClassByName(targetName).get())
                   .orElse(sourceStateClass);
 
@@ -244,14 +235,14 @@ public final class StateMachineClassBuilder {
                   TransitionClassBuilder.from(transitionClass, guardResolver, actionResolver).build())) {
                 throw new IllegalArgumentException(
                     "The edge between states '%s' and '%s' is illegal in '%s'".formatted(sourceStateClass.getName(),
-                        targetStateClass.getName(), stateMachineDescription.name));
+                        targetStateClass.getName(), stateMachineDescription.getName()));
               }
             }
           };
 
           // Ensure that "on" transitions have distinct events
-          var hasDuplicateEdges = stateClass.on.stream()
-              .collect(Collectors.groupingBy(transitionClass -> transitionClass.event, Collectors.counting())).entrySet().stream()
+          var hasDuplicateEdges = stateClass.getOn().stream()
+              .collect(Collectors.groupingBy(transitionClass -> transitionClass.getEvent(), Collectors.counting())).entrySet().stream()
               .anyMatch(entry -> entry.getValue() > 1);
 
           // TODO: This is actually allowed, depending on the guard conditions
@@ -260,10 +251,10 @@ public final class StateMachineClassBuilder {
                 "Multiple outwards transitions with the same event in '%s'".formatted(stateMachineDescription.name));
           }*/
 
-          processTransitions.accept(stateClass.on);
+          processTransitions.accept(stateClass.getOn());
 
           // Attempt to add edges corresponding to the "always" transitions, these transitions are optional
-          processTransitions.accept(stateClass.always);
+          processTransitions.accept(stateClass.getAlways());
         });
 
     // Add the created state machine as a known state machine in this builder

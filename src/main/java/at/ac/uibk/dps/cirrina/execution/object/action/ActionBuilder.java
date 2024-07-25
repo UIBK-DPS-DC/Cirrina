@@ -1,17 +1,17 @@
 package at.ac.uibk.dps.cirrina.execution.object.action;
 
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.csml.description.action.ActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.AssignActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.CreateActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.InvokeActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.MatchActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.MatchCaseDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.RaiseActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.TimeoutActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.action.TimeoutResetActionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
-import at.ac.uibk.dps.cirrina.csml.description.event.EventDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.AssignActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.CreateActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.InvokeActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.MatchActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.MatchCaseDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.RaiseActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TimeoutActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TimeoutResetActionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
@@ -21,6 +21,7 @@ import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Action builder, used to build action objects.
@@ -92,8 +93,8 @@ public final class ActionBuilder {
     final Map<Expression, Action> ret = new HashMap<>();
 
     for (final var casee : cases) {
-      ret.put(ExpressionBuilder.from(casee.casee).build(), actionResolver.tryResolve(casee.action)
-          .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(casee.action))));
+      ret.put(ExpressionBuilder.from(casee.getCase()).build(), actionResolver.tryResolve(casee.getAction())
+          .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(casee.getAction()))));
     }
 
     return ret;
@@ -110,11 +111,11 @@ public final class ActionBuilder {
     switch (actionDescription) {
       case AssignActionDescription assign -> {
         // Acquire the context variable
-        final var contextVariable = ContextVariableBuilder.from(assign.variable).build();
+        final var contextVariable = ContextVariableBuilder.from(assign.getVariable()).build();
 
         // Construct parameters
         final var parameters = new AssignAction.Parameters(
-            assign.name,
+            Optional.ofNullable(assign.getName()),
             contextVariable
         );
 
@@ -122,13 +123,13 @@ public final class ActionBuilder {
         return new AssignAction(parameters);
       }
       case CreateActionDescription create -> {
-        final var contextVariable = ContextVariableBuilder.from(create.variable).build();
+        final var contextVariable = ContextVariableBuilder.from(create.getVariable()).build();
 
         // Construct parameters
         final var parameters = new CreateAction.Parameters(
-            create.name,
+            Optional.ofNullable(create.getName()),
             contextVariable,
-            create.isPersistent
+            create.isIsPersistent()
         );
 
         // Construct the create action
@@ -136,19 +137,19 @@ public final class ActionBuilder {
       }
       case InvokeActionDescription invoke -> {
         // Acquire the input variables
-        final var input = buildVariableList(invoke.input);
+        final var input = buildVariableList(invoke.getInput());
 
         // Acquire the done events
-        final var done = buildEvents(invoke.done);
+        final var done = buildEvents(invoke.getDone());
 
         // Construct parameters
         final var parameters = new InvokeAction.Parameters(
-            invoke.name,
-            invoke.serviceType,
-            invoke.isLocal,
+            Optional.ofNullable(invoke.getName()),
+            invoke.getServiceType(),
+            invoke.isIsLocal(),
             input,
             done,
-            invoke.output
+            invoke.getOutput()
         );
 
         // Construct the invoke action
@@ -156,14 +157,14 @@ public final class ActionBuilder {
       }
       case MatchActionDescription match -> {
         // Acquire the value expression
-        final var valueExpression = ExpressionBuilder.from(match.value).build();
+        final var valueExpression = ExpressionBuilder.from(match.getValue()).build();
 
         // Acquire the cases
-        final var cases = buildCases(match.cases);
+        final var cases = buildCases(match.getCases());
 
         // Construct parameters
         final var parameters = new MatchAction.Parameters(
-            match.name,
+            Optional.ofNullable(match.getName()),
             valueExpression,
             cases
         );
@@ -173,11 +174,11 @@ public final class ActionBuilder {
       }
       case RaiseActionDescription raise -> {
         // Acquire the event
-        final var event = EventBuilder.from(raise.event).build();
+        final var event = EventBuilder.from(raise.getEvent()).build();
 
         // Construct parameters
         final var parameters = new RaiseAction.Parameters(
-            raise.name,
+            Optional.ofNullable(raise.getName()),
             event
         );
 
@@ -186,15 +187,15 @@ public final class ActionBuilder {
       }
       case TimeoutActionDescription timeout -> {
         // Acquire the action name, for timeout actions, the name is always required
-        final var name = timeout.name.orElseThrow(
+        final var name = Optional.ofNullable(timeout.getName()).orElseThrow(
             () -> new IllegalArgumentException("Timeout action name is not provided"));
 
         // Acquire the delay expression
-        final var delayExpression = ExpressionBuilder.from(timeout.delay).build();
+        final var delayExpression = ExpressionBuilder.from(timeout.getDelay()).build();
 
         // Acquire the timeout action
-        final var timeoutAction = actionResolver.tryResolve(timeout.action)
-            .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(timeout.action)));
+        final var timeoutAction = actionResolver.tryResolve(timeout.getAction())
+            .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(timeout.getAction())));
 
         // Construct parameters
         final var parameters = new TimeoutAction.Parameters(
@@ -209,14 +210,14 @@ public final class ActionBuilder {
       case TimeoutResetActionDescription timeoutReset -> {
         // Construct parameters
         final var parameters = new TimeoutResetAction.Parameters(
-            timeoutReset.name,
-            timeoutReset.action
+            Optional.ofNullable(timeoutReset.getName()),
+            timeoutReset.getAction()
         );
 
         // Construct the timeout reset action
         return new TimeoutResetAction(parameters);
       }
-      default -> throw new UnsupportedOperationException("Action type '%s' is not known".formatted(actionDescription.type));
+      default -> throw new UnsupportedOperationException("Action type '%s' is not known".formatted(actionDescription.getType()));
     }
   }
 }

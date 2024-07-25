@@ -1,9 +1,9 @@
 package at.ac.uibk.dps.cirrina.classes.helper;
 
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
-import at.ac.uibk.dps.cirrina.csml.description.guard.GuardDescription;
-import at.ac.uibk.dps.cirrina.csml.description.guard.GuardReferenceDescription;
-import at.ac.uibk.dps.cirrina.csml.description.helper.GuardOrGuardReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardOrGuardReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardReferenceDescription;
 import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
 import at.ac.uibk.dps.cirrina.execution.object.guard.GuardBuilder;
 import java.util.Optional;
@@ -43,7 +43,7 @@ public final class GuardResolver {
       }
       // A guard reference is a reference to a named guard contained within the state machine, we provide this guard
       case GuardReferenceDescription guardReferenceClass -> {
-        return stateMachineClass.findGuardByName(guardReferenceClass.reference);
+        return stateMachineClass.findGuardByName(guardReferenceClass.getReference());
       }
       default -> {
         return Optional.empty();
