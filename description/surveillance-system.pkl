@@ -1,4 +1,4 @@
-import "CollaborativeStateMachineDescription_v2.pkl" as CSM
+import "CollaborativeStateMachineDescription.pkl" as CSM
 
 // Only render the CSM Object
 output {

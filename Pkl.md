@@ -15,3 +15,16 @@ java -cp pkl-tools-0.26.2.jar org.pkl.codegen.java.Main -o generated/ descriptio
 ```
 
 **NOTE:** The code could also be generated with the Gradle plugin, however, there are some issues that need to be fixed first.
+
+## Example Use Case
+
+We created an example use case namely the `Video Surveillance` use case. The use case is described in
+the [description](description/surveillance-system.pkl)
+folder.
+
+To render the pkl file into other file formats, you can use the following command:
+
+```bash
+pkl eval description/surveillance-system.pkl -f json
+```
+
