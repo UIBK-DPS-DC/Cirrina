@@ -1,16 +1,16 @@
 package at.ac.uibk.dps.cirrina.runtime.job;
 
-import static at.ac.uibk.dps.cirrina.data.DefaultDescriptions.jobDescription;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import org.junit.jupiter.api.Test;
 
 public class JobDescriptionParserTest {
 
   @Test
   public void testJobDescription() {
-    final var jobDescriptionJson = jobDescription;
+    final var jobDescriptionJson = DefaultDescriptions.jobDescription;
 
     assertDoesNotThrow(() -> {
       final var jobDescription = new JobDescriptionParser().parse(jobDescriptionJson);

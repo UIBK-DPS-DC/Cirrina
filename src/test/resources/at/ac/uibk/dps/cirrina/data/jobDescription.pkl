@@ -1,0 +1,24 @@
+amends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/JobDescription.pkl"
+
+import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/HttpServiceImplementationDescription.pkl"
+import "pingPong.pkl" as pingPongCSM
+
+serviceImplementations = new HttpServiceImplementationDescription {
+    name = "A"
+    type = "HTTP"
+    cost = 1.0
+    `local` = false
+    scheme = "http"
+    host = "localhost"
+    port = 12345
+    endPoint = ""
+    method = "GET"
+}
+collaborativeStateMachine = pingPongCSM
+stateMachineName = "stateMachine1"
+localData = new Mapping {
+    ["foo"] = "bar"
+}
+bindEventInstanceIds = new Listing {}
+runtimeName = "runtime"
+
