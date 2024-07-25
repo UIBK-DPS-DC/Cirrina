@@ -128,7 +128,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
         ServiceImplementationBuilder.from(jobDescription.getServiceImplementations()).build());
 
     // Acquire the state machine name
-    final var stateMachineName = jobDescription.stateMachineName;
+    final var stateMachineName = jobDescription.getStateMachineName();
 
     // Find the state machine by name
     final var stateMachine = collaborativeStateMachine.findStateMachineClassByName(stateMachineName)
@@ -149,16 +149,16 @@ public class OnlineRuntime extends Runtime implements JobListener {
     });
 
     // Create instances, newInstances will also instantiate nested state machines
-    final var instanceIds = newInstances(List.of(stateMachine), serviceImplementationSelector, null, jobDescription.endTime);
+    final var instanceIds = newInstances(List.of(stateMachine), serviceImplementationSelector, null, jobDescription.getEndTime());
 
     // Assign local data from the job description if the job description contains any local data. Assign to the parent and nested state machines
-    if (!jobDescription.localData.isEmpty()) {
+    if (!jobDescription.getLocalData().isEmpty()) {
       for (final var instanceId : instanceIds) {
         final var stateMachineInstance = findInstance(instanceId)
             .orElseThrow(() -> new UnsupportedOperationException(
                 "State machine '%s' with id '%s' was not instantiated.".formatted(stateMachine.getName(), instanceId)));
 
-        for (final var localData : jobDescription.localData.entrySet()) {
+        for (final var localData : jobDescription.getLocalData().entrySet()) {
           try {
             // Assign local data entry, evaluate the value as an expression
             final var valueExpression = ExpressionBuilder.from(localData.getValue()).build();

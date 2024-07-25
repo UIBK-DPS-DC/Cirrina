@@ -11,7 +11,7 @@ import org.pkl.config.java.mapper.Named;
 import org.pkl.config.java.mapper.NonNull;
 
 public final class JobDescription {
-  private final @NonNull ServiceImplementationDescription serviceImplementations;
+  private final @NonNull List<? extends @NonNull ServiceImplementationDescription> serviceImplementations;
 
   private final @NonNull CollaborativeStateMachineDescription collaborativeStateMachine;
 
@@ -28,7 +28,7 @@ public final class JobDescription {
   private final double endTime;
 
   public JobDescription(
-      @Named("serviceImplementations") @NonNull ServiceImplementationDescription serviceImplementations,
+      @Named("serviceImplementations") @NonNull List<? extends @NonNull ServiceImplementationDescription> serviceImplementations,
       @Named("collaborativeStateMachine") @NonNull CollaborativeStateMachineDescription collaborativeStateMachine,
       @Named("stateMachineName") @NonNull String stateMachineName,
       @Named("localData") @NonNull Map<@NonNull String, @NonNull String> localData,
@@ -45,12 +45,13 @@ public final class JobDescription {
     this.endTime = endTime;
   }
 
-  public @NonNull ServiceImplementationDescription getServiceImplementations() {
+  public @NonNull List<? extends @NonNull ServiceImplementationDescription> getServiceImplementations(
+      ) {
     return serviceImplementations;
   }
 
   public JobDescription withServiceImplementations(
-      @NonNull ServiceImplementationDescription serviceImplementations) {
+      @NonNull List<? extends @NonNull ServiceImplementationDescription> serviceImplementations) {
     return new JobDescription(serviceImplementations, collaborativeStateMachine, stateMachineName, localData, bindEventInstanceIds, runtimeName, startTime, endTime);
   }
 

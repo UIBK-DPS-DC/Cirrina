@@ -1,19 +1,21 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.execution.service.HttpServiceImplementation.Parameters;
-import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service implementation builder, builds service implementation objects.
  */
 public class ServiceImplementationBuilder {
 
-  private final ServiceImplementationDescription[] serviceImplementationDescriptions;
+  private final List<? extends ServiceImplementationDescription> serviceImplementationDescriptions;
 
-  private ServiceImplementationBuilder(ServiceImplementationDescription[] serviceImplementationDescriptions) {
+  private ServiceImplementationBuilder(List<? extends ServiceImplementationDescription> serviceImplementationDescriptions) {
     this.serviceImplementationDescriptions = serviceImplementationDescriptions;
   }
 
@@ -24,7 +26,9 @@ public class ServiceImplementationBuilder {
    * @return Builder.
    */
   public static ServiceImplementationBuilder from(ServiceImplementationDescription serviceImplementationDescription) {
-    return new ServiceImplementationBuilder(new ServiceImplementationDescription[]{serviceImplementationDescription});
+    var list = new ArrayList<ServiceImplementationDescription>();
+    list.add(serviceImplementationDescription);
+    return new ServiceImplementationBuilder(list);
   }
 
   /**
@@ -33,7 +37,7 @@ public class ServiceImplementationBuilder {
    * @param serviceImplementationDescriptions Service implementation descriptions.
    * @return Builder.
    */
-  public static ServiceImplementationBuilder from(ServiceImplementationDescription[] serviceImplementationDescriptions) {
+  public static ServiceImplementationBuilder from(List<? extends ServiceImplementationDescription> serviceImplementationDescriptions) {
     return new ServiceImplementationBuilder(serviceImplementationDescriptions);
   }
 
@@ -45,9 +49,10 @@ public class ServiceImplementationBuilder {
   private static ServiceImplementation buildOne(ServiceImplementationDescription serviceImplementationDescription) {
     switch (serviceImplementationDescription) {
       case HttpServiceImplementationDescription s -> {
-        return new HttpServiceImplementation(new Parameters(s.name, s.cost, s.local, s.scheme, s.host, s.port, s.endPoint, s.method));
+        return new HttpServiceImplementation(
+            new Parameters(s.getName(), s.getCost(), s.isLocal(), s.getScheme(), s.getHost(), s.getPort(), s.getEndPoint(), s.getMethod()));
       }
-      default -> throw new IllegalStateException(String.format("Unexpected value: %s", serviceImplementationDescription.type));
+      default -> throw new IllegalStateException(String.format("Unexpected value: %s", serviceImplementationDescription.getType()));
     }
   }
 

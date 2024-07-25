@@ -3,9 +3,9 @@ package at.ac.uibk.dps.cirrina.execution.service;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription.ServiceImplementationType;
 import org.junit.jupiter.api.Test;
 
 public class ServiceImplementationSelectorTest {
