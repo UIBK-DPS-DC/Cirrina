@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import java.nio.ByteBuffer;
@@ -35,15 +34,15 @@ public class ExpressionTest {
         context.create("varBad1dBytes", bytes);
         context.create("varVariousList", list);
 
-        assertEquals(2, ExpressionBuilder.from(new ExpressionDescription("varPlusOneInt+1")).build().execute(extent));
-        assertEquals(-2, ExpressionBuilder.from(new ExpressionDescription("varNegativeOneInt-1")).build().execute(extent));
-        assertEquals(2.0, ExpressionBuilder.from(new ExpressionDescription("varPlusOneDouble+1.0")).build().execute(extent));
-        assertEquals(-2.0, ExpressionBuilder.from(new ExpressionDescription("varNegativeOneDouble-1.0")).build().execute(extent));
-        assertEquals(false, ExpressionBuilder.from(new ExpressionDescription("!varTrueBool")).build().execute(extent));
-        assertEquals(true, ExpressionBuilder.from(new ExpressionDescription("!varFalseBool")).build().execute(extent));
-        assertEquals("foobar", ExpressionBuilder.from(new ExpressionDescription("varFoobarString")).build().execute(extent));
-        assertEquals(bytes, ExpressionBuilder.from(new ExpressionDescription("varBad1dBytes")).build().execute(extent));
-        assertEquals(list, ExpressionBuilder.from(new ExpressionDescription("varVariousList")).build().execute(extent));
+        assertEquals(2, ExpressionBuilder.from("varPlusOneInt+1").build().execute(extent));
+        assertEquals(-2, ExpressionBuilder.from("varNegativeOneInt-1").build().execute(extent));
+        assertEquals(2.0, ExpressionBuilder.from("varPlusOneDouble+1.0").build().execute(extent));
+        assertEquals(-2.0, ExpressionBuilder.from("varNegativeOneDouble-1.0").build().execute(extent));
+        assertEquals(false, ExpressionBuilder.from("!varTrueBool").build().execute(extent));
+        assertEquals(true, ExpressionBuilder.from("!varFalseBool").build().execute(extent));
+        assertEquals("foobar", ExpressionBuilder.from("varFoobarString").build().execute(extent));
+        assertEquals(bytes, ExpressionBuilder.from("varBad1dBytes").build().execute(extent));
+        assertEquals(list, ExpressionBuilder.from("varVariousList").build().execute(extent));
       });
     }
   }
@@ -56,7 +55,7 @@ public class ExpressionTest {
 
         for (int i = 0; i < 100; ++i) {
           final var bytes = ExpressionBuilder.from(
-                  new ExpressionDescription("utility:genRandPayload([1024, 1024 * 10, 1024 * 100, 1024 * 1000])")).build()
+                  "utility:genRandPayload([1024, 1024 * 10, 1024 * 100, 1024 * 1000])").build()
               .execute(extent);
 
           final var expectedOneOf = List.of(1024, 1024 * 10, 1024 * 100, 1024 * 1000);
@@ -76,8 +75,7 @@ public class ExpressionTest {
 
         context.create("varOneInt", 1);
 
-        var multiLineExpression =
-            new ExpressionDescription("let varExpressionLocal = 1; varExpressionLocal += varOneInt; varExpressionLocal");
+        var multiLineExpression = "let varExpressionLocal = 1; varExpressionLocal += varOneInt; varExpressionLocal";
         assertEquals(2, ExpressionBuilder.from(multiLineExpression).build().execute(extent));
       });
     }
@@ -86,7 +84,7 @@ public class ExpressionTest {
   @Test
   public void testExpressionUsingNamespace() throws Exception {
     try (var context = new InMemoryContext(true)) {
-      assertEquals(1, ExpressionBuilder.from(new ExpressionDescription("math:abs(-1)")).build().execute(new Extent(context)));
+      assertEquals(1, ExpressionBuilder.from("math:abs(-1)").build().execute(new Extent(context)));
     }
   }
 
@@ -99,21 +97,21 @@ public class ExpressionTest {
 
       // Throws while parsing
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("1 + ")).build().execute(extent));
+          () -> ExpressionBuilder.from("1 + ").build().execute(extent));
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("varOneInt = 2")).build().execute(extent));
+          () -> ExpressionBuilder.from("varOneInt = 2").build().execute(extent));
 
       // Throws at runtime
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("varInvalid")).build().execute(extent));
+          () -> ExpressionBuilder.from("varInvalid").build().execute(extent));
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("!varInvalid")).build().execute(extent));
+          () -> ExpressionBuilder.from("!varInvalid").build().execute(extent));
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("varInvalid.varInvalidSub")).build().execute(extent));
+          () -> ExpressionBuilder.from("varInvalid.varInvalidSub").build().execute(extent));
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("varInvalid + 1")).build().execute(extent));
+          () -> ExpressionBuilder.from("varInvalid + 1").build().execute(extent));
       assertThrows(UnsupportedOperationException.class,
-          () -> ExpressionBuilder.from(new ExpressionDescription("let varTemp = varInvalid; varTemp")).build().execute(extent));
+          () -> ExpressionBuilder.from("let varTemp = varInvalid; varTemp").build().execute(extent));
     }
   }
 }

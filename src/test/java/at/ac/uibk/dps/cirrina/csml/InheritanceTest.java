@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.csml;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,17 +49,6 @@ public class InheritanceTest {
   }
 
   @Test
-  public void testDoesNotOverrideAbstractFlag() {
-    var csm = getCollaborativeStateMachine();
-
-    var stateMachine1 = getStateMachine1(csm);
-    assertTrue(stateMachine1.isAbstract());
-
-    var stateMachine2 = getStateMachine2(csm);
-    assertFalse(stateMachine2.isAbstract());
-  }
-
-  @Test
   public void testMergeAndOverrideStates() {
     var csm = getCollaborativeStateMachine();
     assertEquals(2, csm.vertexSet().size());
@@ -101,56 +89,28 @@ public class InheritanceTest {
   }
 
   @Test
-  public void testVirtualAndAbstractStates() {
-    var csm = getCollaborativeStateMachine();
-    assertEquals(2, csm.vertexSet().size());
-
-    var stateMachine1 = getStateMachine1(csm);
-    assertDoesNotThrow(() -> {
-      var state1 = stateMachine1.findStateClassByName("state1").get();
-      assertTrue(state1.isVirtual());
-      assertFalse(state1.isAbstract());
-
-      var state2 = stateMachine1.findStateClassByName("state2").get();
-      assertFalse(state2.isVirtual());
-      assertTrue(state2.isAbstract());
-    });
-
-    var stateMachine2 = getStateMachine2(csm);
-    assertDoesNotThrow(() -> {
-      var state1 = stateMachine2.findStateClassByName("state1").get();
-      assertTrue(state1.isVirtual());
-      assertFalse(state1.isAbstract());
-
-      var state2 = stateMachine2.findStateClassByName("state2").get();
-      assertTrue(state2.isVirtual());
-      assertFalse(state2.isAbstract());
-    });
-  }
-
-  @Test
   public void testMergeAndOverrideContext() {
     var csm = getCollaborativeStateMachine();
 
     var stateMachine1Context = getStateMachine1(csm).getLocalContextClass();
     assertTrue(stateMachine1Context.isPresent());
-    var stateMachine1Variables = stateMachine1Context.get().variables.stream()
+    var stateMachine1Variables = stateMachine1Context.get().getVariables().stream()
         .toList();
     assertEquals(2, stateMachine1Variables.size());
     assertLinesMatch(Stream.of("v1", "v2"), stateMachine1Variables.stream()
-        .map(variable -> variable.name));
+        .map(variable -> variable.getName()));
     assertLinesMatch(Stream.of("0", "0"), stateMachine1Variables.stream()
-        .map(variable -> variable.value.expression));
+        .map(variable -> variable.getValue()));
 
     var stateMachine2Context = getStateMachine2(csm).getLocalContextClass();
     assertTrue(stateMachine2Context.isPresent());
-    var stateMachine2Variables = stateMachine2Context.get().variables.stream()
+    var stateMachine2Variables = stateMachine2Context.get().getVariables().stream()
         .toList();
     assertEquals(3, stateMachine2Variables.size());
     assertLinesMatch(Stream.of("v1", "v3", "v2"), stateMachine2Variables.stream()
-        .map(variable -> variable.name));
+        .map(variable -> variable.getName()));
     assertLinesMatch(Stream.of("1", "1", "0"), stateMachine2Variables.stream()
-        .map(variable -> variable.value.expression));
+        .map(variable -> variable.getValue()));
   }
 
   @Test

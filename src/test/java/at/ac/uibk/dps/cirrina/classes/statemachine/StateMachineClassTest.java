@@ -38,11 +38,6 @@ public class StateMachineClassTest {
   }
 
   @Test
-  public void testIsAbstract() {
-    assertEquals(stateMachineClass.isAbstract(), false);
-  }
-
-  @Test
   public void testGetActions() {
     assertEquals(stateMachineClass.getNamedActions().size(), 1);
 

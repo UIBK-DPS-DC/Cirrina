@@ -4,8 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
@@ -121,14 +120,10 @@ public class HttpServiceImplementationTest {
     List.of(Method.POST, Method.GET).stream()
         .forEach(method -> {
           // First variable
-          final var varOne = new ContextVariableDescription();
-          varOne.name = "varOne";
-          varOne.value = new ExpressionDescription("5");
+          final var varOne = new ContextVariableDescription("varOne", "5");
 
           // Second variable
-          final var varTwo = new ContextVariableDescription();
-          varTwo.name = "varTwo";
-          varTwo.value = new ExpressionDescription("6");
+          final var varTwo = new ContextVariableDescription("varTwo", "6");
 
           // Success
           assertDoesNotThrow(() -> {

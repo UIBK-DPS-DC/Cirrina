@@ -4,10 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
-import at.ac.uibk.dps.cirrina.csml.description.event.EventDescription;
-import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import java.util.ArrayList;
@@ -44,16 +43,11 @@ public class NatsEventHandlerTest {
 
     var natsEventHandler = new NatsEventHandler(natsServerURL);
 
-    var expressionClass = new ExpressionDescription("5");
+    var expressionClass = "5";
 
-    var contextVariableClass = new ContextVariableDescription();
-    contextVariableClass.name = "varName";
-    contextVariableClass.value = expressionClass;
+    var contextVariableClass = new ContextVariableDescription("varName", expressionClass);
 
-    var eventClass = new EventDescription();
-    eventClass.channel = EventChannel.GLOBAL;
-    eventClass.name = "e1";
-    eventClass.data = List.of(contextVariableClass);
+    var eventClass = new EventDescription("e1", EventChannel.GLOBAL, List.of(contextVariableClass));
 
     var e1 = EventBuilder.from(eventClass).build();
 
@@ -125,16 +119,11 @@ public class NatsEventHandlerTest {
 
     var natsEventHandler = new NatsEventHandler(natsServerURL);
 
-    var expressionClass = new ExpressionDescription("5");
+    var expressionClass = "5";
 
-    var contextVariableClass = new ContextVariableDescription();
-    contextVariableClass.name = "varName";
-    contextVariableClass.value = expressionClass;
+    var contextVariableClass = new ContextVariableDescription("varName", expressionClass);
 
-    var eventClass = new EventDescription();
-    eventClass.channel = EventChannel.EXTERNAL;
-    eventClass.name = "e1";
-    eventClass.data = List.of(contextVariableClass);
+    var eventClass = new EventDescription("e1", EventChannel.EXTERNAL, List.of(contextVariableClass));
 
     var e1 = EventBuilder.from(eventClass).build();
 
