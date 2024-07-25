@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import org.junit.jupiter.api.Test;
 
-public class JobDescriptionParserTest {
+class JobDescriptionParserTest {
 
   @Test
-  public void testJobDescription() {
-    final var jobDescriptionJson = DefaultDescriptions.jobDescription;
+  void testJobDescription() {
+    final var jobDescriptionPkl = DefaultDescriptions.jobDescription;
 
     assertDoesNotThrow(() -> {
-      final var jobDescription = new JobDescriptionParser().parse(jobDescriptionJson);
+      final var jobDescription = new JobDescriptionParser().parse(jobDescriptionPkl);
 
       assertEquals("stateMachine1", jobDescription.stateMachineName);
       assertEquals(1, jobDescription.localData.size());

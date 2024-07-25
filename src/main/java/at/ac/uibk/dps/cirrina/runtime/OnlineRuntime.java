@@ -1,13 +1,13 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
+import at.ac.uibk.dps.cirrina.csml.description.JobDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.RandomServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
 import at.ac.uibk.dps.cirrina.runtime.job.Job;
-import at.ac.uibk.dps.cirrina.runtime.job.JobDescription;
 import at.ac.uibk.dps.cirrina.runtime.job.JobListener;
 import at.ac.uibk.dps.cirrina.runtime.job.JobMonitor;
 import at.ac.uibk.dps.cirrina.utils.Time;
@@ -82,7 +82,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
   public void newJob(Job job) throws UnsupportedOperationException {
     // TODO: Add additional conditions/rules
 
-    final var jobDescriptionRuntimeName = job.getJobDescription().runtimeName;
+    final var jobDescriptionRuntimeName = job.getJobDescription().getRuntimeName();
 
     if (!name.equals(jobDescriptionRuntimeName)) {
       logger.info(
@@ -102,9 +102,9 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
         // Schedule job
         synchronized (futureJobs) {
-          logger.info("Found a job for {} it is {} now", jobDescription.startTime, Time.timeInMillisecondsSinceStart());
+          logger.info("Found a job for {} it is {} now", jobDescription.getStartTime(), Time.timeInMillisecondsSinceStart());
 
-          futureJobs.put(jobDescription.startTime, jobDescription);
+          futureJobs.put(jobDescription.getStartTime(), jobDescription);
         }
 
         // Delete the job (it has been consumed)
@@ -120,12 +120,12 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
   private void startJob(JobDescription jobDescription) {
     // Create the collaborative state machine from the description
-    final var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(jobDescription.collaborativeStateMachine)
+    final var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(jobDescription.getCollaborativeStateMachine())
         .build();
 
     // Acquire the service implementation selector
     final var serviceImplementationSelector = new RandomServiceImplementationSelector(
-        ServiceImplementationBuilder.from(jobDescription.serviceImplementations).build());
+        ServiceImplementationBuilder.from(jobDescription.getServiceImplementations()).build());
 
     // Acquire the state machine name
     final var stateMachineName = jobDescription.stateMachineName;

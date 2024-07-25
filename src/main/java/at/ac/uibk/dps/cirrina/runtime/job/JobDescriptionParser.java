@@ -1,5 +1,6 @@
 package at.ac.uibk.dps.cirrina.runtime.job;
 
+import at.ac.uibk.dps.cirrina.csml.description.JobDescription;
 import at.ac.uibk.dps.cirrina.io.description.DescriptionParser;
 
 /**

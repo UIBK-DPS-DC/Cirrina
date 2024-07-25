@@ -3,16 +3,18 @@ amends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/
 import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/HttpServiceImplementationDescription.pkl"
 import "surveillance-system-csm.pkl" as surveillanceCSM
 
-serviceImplementations = new HttpServiceImplementationDescription {
-    name = "A"
-    type = "HTTP"
-    cost = 1.0
-    `local` = false
-    scheme = "http"
-    host = "localhost"
-    port = 8080
-    endPoint = ""
-    method = "GET"
+serviceImplementations {
+    new HttpServiceImplementationDescription {
+        name = "A"
+        type = "HTTP"
+        cost = 1.0
+        `local` = false
+        scheme = "http"
+        host = "localhost"
+        port = 8080
+        endPoint = ""
+        method = "GET"
+    }
 }
 collaborativeStateMachine = surveillanceCSM
 stateMachineName = "detectorSM"
