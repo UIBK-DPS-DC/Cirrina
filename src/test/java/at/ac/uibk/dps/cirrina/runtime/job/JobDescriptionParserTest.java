@@ -15,11 +15,11 @@ class JobDescriptionParserTest {
     assertDoesNotThrow(() -> {
       final var jobDescription = new JobDescriptionParser().parse(jobDescriptionPkl);
 
-      assertEquals("stateMachine1", jobDescription.stateMachineName);
-      assertEquals(1, jobDescription.localData.size());
-      assertEquals(0, jobDescription.bindEventInstanceIds.size());
-      assertEquals(1, jobDescription.serviceImplementations.length);
-      assertEquals("runtime", jobDescription.runtimeName);
+      assertEquals("stateMachine1", jobDescription.getStateMachineName());
+      assertEquals(1, jobDescription.getLocalData().size());
+      assertEquals(0, jobDescription.getBindEventInstanceIds().size());
+      assertEquals(1, jobDescription.getServiceImplementations().size());
+      assertEquals("runtime", jobDescription.getRuntimeName());
     });
   }
 }

@@ -34,7 +34,7 @@ public class DefaultDescriptions {
 
 
   @Test
-  public void testLoadResource() {
+  void testLoadResource() {
     assert !empty.isEmpty();
     assert !complete.isEmpty();
     assert !completeNested.isEmpty();

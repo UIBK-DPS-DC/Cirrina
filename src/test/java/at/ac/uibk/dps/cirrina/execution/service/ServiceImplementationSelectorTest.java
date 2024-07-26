@@ -4,92 +4,59 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription.Method;
 import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription;
 import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription.ServiceImplementationType;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class ServiceImplementationSelectorTest {
+class ServiceImplementationSelectorTest {
 
   @Test
-  public void testSelectMatchingServices() {
+  void testSelectMatchingServices() {
     final var serviceDescriptions = new ServiceImplementationDescription[5];
 
     // Service one
     {
-      final var service = new HttpServiceImplementationDescription();
-      service.name = "A";
-      service.type = ServiceImplementationType.HTTP;
-      service.cost = 1.0f;
-      service.local = true;
-      service.scheme = "http";
-      service.host = "localhost";
-      service.port = 12345;
-      service.endPoint = "";
+      final var service = new HttpServiceImplementationDescription("A", ServiceImplementationType.HTTP, 1.0, true, "http", "localhost",
+          12345, "", Method.GET);
 
       serviceDescriptions[0] = service;
     }
 
     // Service two
     {
-      final var service = new HttpServiceImplementationDescription();
-      service.name = "A";
-      service.type = ServiceImplementationType.HTTP;
-      service.cost = 0.5f;
-      service.local = false;
-      service.scheme = "http";
-      service.host = "localhost";
-      service.port = 12345;
-      service.endPoint = "";
+      final var service = new HttpServiceImplementationDescription("A", ServiceImplementationType.HTTP, 0.5, false, "http", "localhost",
+          12345, "", Method.GET);
 
       serviceDescriptions[1] = service;
     }
 
     // Service three
     {
-      final var service = new HttpServiceImplementationDescription();
-      service.name = "B";
-      service.type = ServiceImplementationType.HTTP;
-      service.cost = 0.4f;
-      service.local = false;
-      service.scheme = "http";
-      service.host = "localhost";
-      service.port = 12345;
-      service.endPoint = "";
+      final var service = new HttpServiceImplementationDescription("B", ServiceImplementationType.HTTP, 0.4, false, "http", "localhost",
+          12345, "", Method.GET);
 
       serviceDescriptions[2] = service;
     }
 
     // Service four
     {
-      final var service = new HttpServiceImplementationDescription();
-      service.name = "B";
-      service.type = ServiceImplementationType.HTTP;
-      service.cost = 0.2f;
-      service.local = false;
-      service.scheme = "http";
-      service.host = "localhost";
-      service.port = 12345;
-      service.endPoint = "";
+      final var service = new HttpServiceImplementationDescription("B", ServiceImplementationType.HTTP, 0.2, false, "http", "localhost",
+          12345, "", Method.GET);
 
       serviceDescriptions[3] = service;
     }
 
     // Service five
     {
-      final var service = new HttpServiceImplementationDescription();
-      service.name = "C";
-      service.type = ServiceImplementationType.HTTP;
-      service.cost = 1.0f;
-      service.local = true;
-      service.scheme = "http";
-      service.host = "localhost";
-      service.port = 12345;
-      service.endPoint = "";
+      final var service = new HttpServiceImplementationDescription("C", ServiceImplementationType.HTTP, 1.0, true, "http", "localhost",
+          12345, "", Method.GET);
 
       serviceDescriptions[4] = service;
     }
 
-    final var services = ServiceImplementationBuilder.from(serviceDescriptions).build();
+    final var services = ServiceImplementationBuilder.from(List.of(serviceDescriptions)).build();
 
     final var serviceSelector = new OptimalServiceImplementationSelector(services);
 

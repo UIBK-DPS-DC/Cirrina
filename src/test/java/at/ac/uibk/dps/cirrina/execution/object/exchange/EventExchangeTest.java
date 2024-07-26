@@ -10,10 +10,10 @@ import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class EventExchangeTest {
+class EventExchangeTest {
 
   @Test
-  public void testToFromBytes() {
+  void testToFromBytes() {
     var contextVariable = new ContextVariable("varName", "some string");
 
     assertDoesNotThrow(() -> {

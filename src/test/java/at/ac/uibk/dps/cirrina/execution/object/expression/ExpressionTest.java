@@ -12,10 +12,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class ExpressionTest {
+class ExpressionTest {
 
   @Test
-  public void testExpression() throws Exception {
+  void testExpression() throws Exception {
     try (var context = new InMemoryContext(true)) {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);
@@ -48,7 +48,7 @@ public class ExpressionTest {
   }
 
   @Test
-  public void testUtility() throws Exception {
+  void testUtility() throws Exception {
     try (var context = new InMemoryContext(true)) {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);
@@ -68,7 +68,7 @@ public class ExpressionTest {
   }
 
   @Test
-  public void testMultiLineExpression() throws Exception {
+  void testMultiLineExpression() throws Exception {
     try (var context = new InMemoryContext(true)) {
       assertDoesNotThrow(() -> {
         var extent = new Extent(context);
@@ -82,14 +82,14 @@ public class ExpressionTest {
   }
 
   @Test
-  public void testExpressionUsingNamespace() throws Exception {
+  void testExpressionUsingNamespace() throws Exception {
     try (var context = new InMemoryContext(true)) {
       assertEquals(1, ExpressionBuilder.from("math:abs(-1)").build().execute(new Extent(context)));
     }
   }
 
   @Test
-  public void testExpressionNegative() throws Exception {
+  void testExpressionNegative() throws Exception {
     try (var context = new InMemoryContext(true)) {
       var extent = new Extent(context);
 

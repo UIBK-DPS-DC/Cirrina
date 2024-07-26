@@ -15,10 +15,10 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
-public class NatsEventHandlerTest {
+class NatsEventHandlerTest {
 
   @Test
-  public void testNatsEventHandlerSendReceiveGlobal() throws Exception {
+  void testNatsEventHandlerSendReceiveGlobal() throws Exception {
     String natsServerURL = System.getenv("NATS_SERVER_URL");
 
     Assumptions.assumeFalse(natsServerURL == null, "Skipping NATS event handler test");
@@ -27,7 +27,7 @@ public class NatsEventHandlerTest {
 
     var eventListener = new EventListener() {
 
-      public List<Event> events = new ArrayList<>();
+      public final List<Event> events = new ArrayList<>();
 
       @Override
       public boolean onReceiveEvent(Event event) {
@@ -94,7 +94,7 @@ public class NatsEventHandlerTest {
   }
 
   @Test
-  public void testNatsEventHandlerSendReceiveExternal() throws Exception {
+  void testNatsEventHandlerSendReceiveExternal() throws Exception {
     String natsServerURL = System.getenv("NATS_SERVER_URL");
 
     Assumptions.assumeFalse(natsServerURL == null, "Skipping NATS event handler test");
@@ -103,7 +103,7 @@ public class NatsEventHandlerTest {
 
     var eventListener = new EventListener() {
 
-      public List<Event> events = new ArrayList<>();
+      public final List<Event> events = new ArrayList<>();
 
       @Override
       public boolean onReceiveEvent(Event event) {

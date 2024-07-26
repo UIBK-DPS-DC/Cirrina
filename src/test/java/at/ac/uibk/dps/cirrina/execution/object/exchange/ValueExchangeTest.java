@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class ValueExchangeTest {
+class ValueExchangeTest {
 
   @Test
-  public void testToFromBytes() {
+  void testToFromBytes() {
     final var i = 1;
     final var f = 1.0f;
     final var l = 1L;

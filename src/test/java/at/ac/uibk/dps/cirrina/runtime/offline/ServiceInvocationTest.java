@@ -7,6 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription.Method;
+import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription;
+import at.ac.uibk.dps.cirrina.csml.description.ServiceImplementationDescription.ServiceImplementationType;
 import at.ac.uibk.dps.cirrina.data.DefaultDescriptions;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
@@ -16,10 +20,6 @@ import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.OptimalServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
-import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription;
-import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationDescription;
-import at.ac.uibk.dps.cirrina.execution.service.description.ServiceImplementationType;
 import at.ac.uibk.dps.cirrina.io.description.DescriptionParser;
 import at.ac.uibk.dps.cirrina.runtime.OfflineRuntime;
 import com.sun.net.httpserver.HttpExchange;
@@ -27,6 +27,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -77,7 +78,7 @@ public class ServiceInvocationTest {
 
     final var json = DefaultDescriptions.invoke;
 
-    final var parser = new DescriptionParser<CollaborativeStateMachineDescription>(CollaborativeStateMachineDescription.class);
+    final var parser = new DescriptionParser<>(CollaborativeStateMachineDescription.class);
     Assertions.assertDoesNotThrow(() -> {
       collaborativeStateMachineClass = CollaborativeStateMachineClassBuilder.from(parser.parse(json)).build();
     });
@@ -89,7 +90,7 @@ public class ServiceInvocationTest {
   }
 
   @Test
-  public void testServiceInvocationExecute() {
+  void testServiceInvocationExecute() {
     Assertions.assertDoesNotThrow(() -> {
       final var mockEventHandler = new EventHandler() {
 
@@ -147,21 +148,13 @@ public class ServiceInvocationTest {
       var serviceDescriptions = new ServiceImplementationDescription[1];
 
       {
-        var service = new HttpServiceImplementationDescription();
-        service.name = "increment";
-        service.type = ServiceImplementationType.HTTP;
-        service.cost = 1.0f;
-        service.local = true;
-        service.scheme = "http";
-        service.host = "localhost";
-        service.port = 8000;
-        service.endPoint = "/increment";
-        service.method = Method.GET;
+        var service = new HttpServiceImplementationDescription("increment", ServiceImplementationType.HTTP, 1.0, true, "http", "localhost",
+            8000, "/increment", Method.GET);
 
         serviceDescriptions[0] = service;
       }
 
-      final var services = ServiceImplementationBuilder.from(serviceDescriptions).build();
+      final var services = ServiceImplementationBuilder.from(List.of(serviceDescriptions)).build();
       final var serviceImplementationSelector = new OptimalServiceImplementationSelector(services);
 
       final var instances = runtime.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);

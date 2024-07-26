@@ -11,10 +11,10 @@ import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import org.junit.jupiter.api.Test;
 
-public class GuardTest {
+class GuardTest {
 
   @Test
-  public void testGuard() throws Exception {
+  void testGuard() throws Exception {
     try (var context = new InMemoryContext(true)) {
       context.create("v", 5);
 
