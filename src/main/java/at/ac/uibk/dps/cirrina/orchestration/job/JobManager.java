@@ -1,8 +1,6 @@
 package at.ac.uibk.dps.cirrina.orchestration.job;
 
 import at.ac.uibk.dps.cirrina.orchestration.exceptions.OrchestratorException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -16,7 +14,6 @@ public class JobManager implements AutoCloseable {
   private static final String JOBS_PATH = "/jobs";
 
   private final CuratorFramework client;
-  private final ObjectMapper objectMapper;
 
   public JobManager(String zookeeperConnectionString) {
     this.client = CuratorFrameworkFactory.newClient(
@@ -24,15 +21,14 @@ public class JobManager implements AutoCloseable {
         new ExponentialBackoffRetry(1000, 3)
     );
     this.client.start();
-    this.objectMapper = new ObjectMapper();
   }
 
-  public void submitJob(String jobId, JsonNode jobDescription) throws OrchestratorException {
+  public void submitJob(String jobId, String jobDescription) throws OrchestratorException {
     try {
       String jobPath = "%s/%s".formatted(JOBS_PATH, jobId);
-      byte[] jobData = objectMapper.writeValueAsString(jobDescription).getBytes(StandardCharsets.UTF_8);
+      byte[] jobData = jobDescription.getBytes(StandardCharsets.UTF_8);
       client.create().creatingParentsIfNeeded().forPath(jobPath, jobData);
-      logger.info("Job submitted: {} for runtime: {}", jobPath, jobDescription.get("runtimeName"));
+      logger.info("Job submitted: {}", jobPath);
     } catch (Exception e) {
       throw new OrchestratorException("Failed to submit job", e);
     }
