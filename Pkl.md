@@ -19,18 +19,6 @@
 
 **NOTE:** The code could also be generated with the Gradle plugin, however, there are some issues that need to be fixed first.
 
-## Example Use Case
-
-We created an example use case namely the `Video Surveillance` use case. The use case is described in
-the [example](example/surveillance-system-csm.pkl)
-folder.
-
-To render the pkl file into other file formats, you can use the following command:
-
-```bash
-pkl eval descriptions/surveillance-system.pkl -f json
-```
-
 ## Recommended Editors
 
 For editing Pkl files, we recommend the following editors:
