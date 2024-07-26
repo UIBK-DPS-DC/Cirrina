@@ -4,7 +4,6 @@ plugins {
     application
 
     jacoco
-    id("net.razvan.jacoco-to-cobertura") version "1.2.0"
 
     id("com.google.protobuf") version "0.9.4"
 }
@@ -95,6 +94,7 @@ dependencies {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
     maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
 }
 
@@ -109,7 +109,6 @@ tasks.jacocoTestReport {
         html.required = false
         csv.required = false
     }
-    finalizedBy(tasks.jacocoToCobertura)
 }
 
 tasks.withType<Jar> {

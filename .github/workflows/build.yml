@@ -1,0 +1,33 @@
+name: Build
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: wagoid/commitlint-github-action@v6
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+      - name: Build using Gradle
+        run: ./gradlew build
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            build/test-results/test/TEST-*.xml
+            build/reports/jacoco/**/jacocoTestReport.xml
+          retention-days: 1

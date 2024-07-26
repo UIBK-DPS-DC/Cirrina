@@ -1,6 +1,8 @@
 # Stage 1: Build Stage
 FROM gradle:8.7.0-jdk21-alpine AS build
 
+ARG GRADLE_OPTS
+
 # Install protoc
 RUN apk add protoc
 
