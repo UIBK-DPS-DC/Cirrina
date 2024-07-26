@@ -1,8 +1,11 @@
 @ModuleInfo { minPklVersion = "0.26.2" }
 module at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription
 
+import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/ServiceImplementationDescription.pkl" as SID
+
 extends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/ServiceImplementationDescription.pkl"
 
+type: SID.ServiceImplementationType = "HTTP"
 scheme: String
 host: String
 port: Int(isBetween(1, 65535))
