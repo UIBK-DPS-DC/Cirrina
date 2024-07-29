@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ac.at.uibk.dps.cirrina.cirrina.main.iml" filepath="$PROJECT_DIR$/.idea/modules/ac.at.uibk.dps.cirrina.cirrina.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cirrina.iml" filepath="$PROJECT_DIR$/.idea/modules/cirrina.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cirrina.core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cirrina.core.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cirrina.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cirrina.main.iml" />
