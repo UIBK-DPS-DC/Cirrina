@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.object.context;
 
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
+import java.util.Objects;
 
 /**
  * Context variable, contained within a context.
@@ -21,6 +22,10 @@ public record ContextVariable(
      */
     boolean isLazy
 ) {
+
+  public ContextVariable {
+    Objects.requireNonNull(name, "Name cannot be null");
+  }
 
   /**
    * Initializes a lazy context variable.
