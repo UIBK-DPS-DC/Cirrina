@@ -10,6 +10,7 @@ import at.ac.uibk.dps.cirrina.csml.description.event.EventDescription;
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
+import io.opentelemetry.api.trace.Span;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -31,7 +32,7 @@ public class NatsEventHandlerTest {
       public List<Event> events = new ArrayList<>();
 
       @Override
-      public boolean onReceiveEvent(Event event) {
+      public boolean onReceiveEvent(Event event, Span span) {
         events.add(event);
 
         latch.countDown();
@@ -112,7 +113,7 @@ public class NatsEventHandlerTest {
       public List<Event> events = new ArrayList<>();
 
       @Override
-      public boolean onReceiveEvent(Event event) {
+      public boolean onReceiveEvent(Event event, Span span)  {
         events.add(event);
 
         latch.countDown();

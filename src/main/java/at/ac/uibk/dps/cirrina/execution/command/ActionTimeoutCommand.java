@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
 import io.opentelemetry.api.trace.Span;
@@ -19,14 +20,16 @@ public final class ActionTimeoutCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
-    logging.logAction(this.timeoutAction.getName().isPresent() ? this.timeoutAction.getName().get(): "null", stateMachineId);
-    Span span = tracing.initianlizeSpan("Timeout Action", tracer, null);
-    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(this.timeoutAction.getName().isPresent() ? this.timeoutAction.getName().get(): "null", stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("Timeout Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
       final var commandFactory = new CommandFactory(executionContext);
 
-      return List.of(commandFactory.createActionCommand(timeoutAction.getAction()));
+      return List.of(commandFactory.createActionCommand(timeoutAction.getAction(), span));
     } finally {
       span.end();
     }

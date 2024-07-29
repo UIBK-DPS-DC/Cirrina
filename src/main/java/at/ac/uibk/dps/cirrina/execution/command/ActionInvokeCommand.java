@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE;
@@ -43,10 +44,12 @@ public final class ActionInvokeCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
-    logging.logAction(this.invokeAction.getName().isPresent() ? this.invokeAction.getName().get(): "null", stateMachineId);
-    Span span = tracing.initianlizeSpan("Invoke Action", tracer, null);
-    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(this.invokeAction.getName().isPresent() ? this.invokeAction.getName().get(): "null", stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("Invoke Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
       // Increment events received counter
       final var counters = executionContext.counters();
@@ -81,7 +84,7 @@ public final class ActionInvokeCommand extends ActionCommand {
         }
 
         // Invoke (asynchronously)
-        serviceImplementation.invoke(input, executionContext.scope().getId())
+        serviceImplementation.invoke(input, executionContext.scope().getId(), stateMachineName, span)
             .exceptionally(e -> {
               logger.error("Service invocation failed: {}", serviceImplementation.getInformationString());
               return null;
@@ -118,7 +121,7 @@ public final class ActionInvokeCommand extends ActionCommand {
                   .toList();
 
               // Raise all events (internally)
-              doneEvents.forEach(eventListener::onReceiveEvent);
+              doneEvents.forEach(event -> eventListener.onReceiveEvent(event, span));
 
               // Measure latency
               final var now = Time.timeInMillisecondsSinceStart();
@@ -143,7 +146,7 @@ public final class ActionInvokeCommand extends ActionCommand {
 
         return commands;
       } catch (Exception e) {
-        logging.logExeption(stateMachineId, e);
+        logging.logExeption(stateMachineId, e, stateMachineName);
         tracing.recordException(e, span);
         throw new UnsupportedOperationException("Could not execute invoke action", e);
       }

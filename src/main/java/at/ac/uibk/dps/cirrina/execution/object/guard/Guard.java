@@ -2,6 +2,7 @@ package at.ac.uibk.dps.cirrina.execution.object.guard;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_GUARD_EXPRESSION;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
@@ -54,12 +55,13 @@ public class Guard {
    * @throws UnsupportedOperationException If the guard expression could not be executed.
    * @throws IllegalArgumentException      If the expression could not be evaluated, or the expression does not produce a boolean value.
    */
-  public boolean evaluate(Extent extent, String stateMachineId) throws IllegalArgumentException, UnsupportedOperationException {
-    logging.logGuardEvaluation(expression.toString(), stateMachineId);
-    Span span = tracer.spanBuilder("Evaluate Guard" + name).startSpan();
+  public boolean evaluate(Extent extent, String stateMachineId, String stateMachineName, Span parentSpan) throws IllegalArgumentException, UnsupportedOperationException {
+    logging.logGuardEvaluation(expression.toString(), stateMachineName, stateMachineId);
+    Span span = tracing.initializeSpan("Guard Evaluation: " + expression.toString(), tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_GUARD_EXPRESSION, expression.toString(),
-        ATTR_STATE_MACHINE_ID, stateMachineId), span);
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
     try(Scope scope = span.makeCurrent()) {
       var result = expression.execute(extent);
 
@@ -69,7 +71,7 @@ public class Guard {
         }
       } catch (IllegalArgumentException e) {
         tracing.recordException(e, span);
-        logging.logExeption(stateMachineId, e);
+        logging.logExeption(stateMachineId, e, stateMachineName);
         throw e;
       }
 

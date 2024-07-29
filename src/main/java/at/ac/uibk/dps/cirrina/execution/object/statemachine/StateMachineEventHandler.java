@@ -3,6 +3,7 @@ package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_ID;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_EVENT_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
@@ -31,12 +32,13 @@ public class StateMachineEventHandler {
   }
 
 
-  public void sendEvent(Event event) throws IOException {
-    logging.logEventSending(event, stateMachine.getId());
+  public void sendEvent(Event event, Span parentSpan) throws IOException {
+    logging.logEventSending(event, stateMachine.getId(), stateMachine.getStateMachineClass().getName());
 
-    Span span = tracing.initianlizeSpan("Sending Event", tracer, null);
+    Span span = tracing.initializeSpan("Sending Event " + event.getName(), tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_STATE_MACHINE_ID, stateMachine.getId(),
+        ATTR_STATE_MACHINE_NAME, stateMachine.getStateMachineClass().getName(),
         ATTR_EVENT_NAME, event.getName(),
         ATTR_EVENT_ID, event.getId()), span);
 
@@ -45,7 +47,7 @@ public class StateMachineEventHandler {
       eventHandler.sendEvent(event, stateMachine.getStateMachineInstanceId().toString());
     } catch (IOException e) {
       tracing.recordException(e, span);
-      logging.logExeption(stateMachine.getId().toString(), e);
+      logging.logExeption(stateMachine.getId().toString(), e, stateMachine.getStateMachineClass().getName());
       throw e;
     } finally {
       span.end();

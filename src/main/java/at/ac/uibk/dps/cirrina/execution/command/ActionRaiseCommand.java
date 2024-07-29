@@ -1,11 +1,13 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 
 import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import io.opentelemetry.api.trace.Span;
+
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,10 +32,12 @@ public final class ActionRaiseCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
-    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get() + "(" + raiseAction.getEvent().getId() + ")" : "null", stateMachineId);
-    Span span = tracing.initianlizeSpan("Raise Action", tracer, null);
-    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get() + "(" + raiseAction.getEvent().getId() + ")" : "null", stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("Raise Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     final var commands = new ArrayList<ActionCommand>();
 
     try(Scope scope = span.makeCurrent()) {
@@ -47,13 +51,13 @@ public final class ActionRaiseCommand extends ActionCommand {
 
       // Dispatch the event
       if (evaluatedEvent.getChannel() == EventChannel.INTERNAL) {
-        eventListener.onReceiveEvent(evaluatedEvent);
+        eventListener.onReceiveEvent(evaluatedEvent, span);
       } else {
         // Send the event through the event handler
-        eventHandler.sendEvent(evaluatedEvent);
+        eventHandler.sendEvent(evaluatedEvent, span);
       }
     } catch (IOException e) {
-      logging.logExeption(stateMachineId, e);
+      logging.logExeption(stateMachineId, e, stateMachineName);
       tracing.recordException(e, span);
       logger.error("Data creation failed: {}", e.getMessage());
     } finally {

@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.MatchAction;
 import io.opentelemetry.api.trace.Span;
@@ -24,10 +25,12 @@ public final class ActionMatchCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
-    logging.logAction(this.matchAction.getName().isPresent() ? this.matchAction.getName().get() : "null", stateMachineId);
-    Span span = tracing.initianlizeSpan("Match Action", tracer, null);
-    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(this.matchAction.getName().isPresent() ? this.matchAction.getName().get() : "null", stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("Match Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
     final var commands = new ArrayList<ActionCommand>();
 
     try(Scope scope = span.makeCurrent()) {
@@ -43,13 +46,13 @@ public final class ActionMatchCommand extends ActionCommand {
 
         // In case the case condition matches, add the case action
         if (conditionValue == caseValue) {
-          final var command = commandFactory.createActionCommand(caseAction);
+          final var command = commandFactory.createActionCommand(caseAction, span);
 
           commands.add(command);
         }
       }
     } catch (UnsupportedOperationException e) {
-      logging.logExeption(stateMachineId, e);
+      logging.logExeption(stateMachineId, e, stateMachineName);
       tracing.recordException(e, span);
       logger.error("Could not execute match action: {}", e.getMessage());
     } finally {

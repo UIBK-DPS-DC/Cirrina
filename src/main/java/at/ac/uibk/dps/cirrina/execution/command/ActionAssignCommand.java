@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.AssignAction;
@@ -28,52 +29,56 @@ public final class ActionAssignCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
-    logging.logAction(this.assignAction.getName().isPresent() ? this.assignAction.getName().get(): "null", stateMachineId);
-    Span span = tracing.initianlizeSpan("Assign Action", tracer, null);
-    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(this.assignAction.getName().isPresent() ? this.assignAction.getName().get(): "null", stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("Assign Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
       final var start = Time.timeInMillisecondsSinceStart();
 
-    final var commands = new ArrayList<ActionCommand>();
+      final var commands = new ArrayList<ActionCommand>();
 
-    try {
-      final var variable = assignAction.getVariable();
-      final var variableName = variable.name();
+      try {
+        final var variable = assignAction.getVariable();
+        final var variableName = variable.name();
 
-      final var extent = executionContext.scope().getExtent();
+        final var extent = executionContext.scope().getExtent();
 
-      // Acquire the value, in case the variable is lazy, we have to find the value through evaluating the value expression
-      Object value = null;
-      if (variable.isLazy()) {
-        final var expression = variable.value();
+        // Acquire the value, in case the variable is lazy, we have to find the value through evaluating the value expression
+        Object value = null;
+        if (variable.isLazy()) {
+          final var expression = variable.value();
 
-        assert expression instanceof Expression;
-        value = ((Expression) expression).execute(extent);
-      } else {
-        value = variable.value();
-      }
+          assert expression instanceof Expression;
+          value = ((Expression) expression).execute(extent);
+        } else {
+          value = variable.value();
 
-      // Attempt to set the variable
-      final var result = extent.trySet(variableName, value);
+        }
 
-      // Measure latency
-      final var now = Time.timeInMillisecondsSinceStart();
-      final var delta = now - start;
+        // Attempt to set the variable
+        final var result = extent.trySet(variableName, value);
 
-      final var gauges = executionContext.gauges();
 
-      gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
-          gauges.attributesForData(
-              "assign",
-              result.context().isLocal() ? "local" : "persistent",
-              result.size()
-          ));
+        // Measure latency
+        final var now = Time.timeInMillisecondsSinceStart();
+        final var delta = now - start;
 
-    } catch (IOException e) {
-      logging.logExeption(stateMachineId, e);
-      tracing.recordException(e, span);
-      logger.error("Data assignment failed: {}", e.getMessage());
+        final var gauges = executionContext.gauges();
+
+        gauges.getGauge(GAUGE_ACTION_DATA_LATENCY).set(delta,
+            gauges.attributesForData(
+                "assign",
+                result.context().isLocal() ? "local" : "persistent",
+                result.size()
+            ));
+
+      } catch (IOException e) {
+        logging.logExeption(stateMachineId, e, stateMachineName);
+        tracing.recordException(e, span);
+        logger.error("Data assignment failed: {}", e.getMessage());
     }finally {
       span.end();
     }

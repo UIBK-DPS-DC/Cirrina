@@ -146,7 +146,7 @@ public class HttpServiceImplementationTest {
                 "/plus",
                 Method.POST));
 
-            final var output = service.invoke(variables, "some-id").get();
+            final var output = service.invoke(variables, "some-id", "some-name", null).get();
 
             assertEquals(output.size(), 1);
 
@@ -167,7 +167,7 @@ public class HttpServiceImplementationTest {
                 "/error",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id").get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
           });
 
           // Invalid response type
@@ -182,7 +182,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response1",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id").get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
           });
 
           // Invalid response type
@@ -197,7 +197,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response2",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id").get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
           });
         });
   }

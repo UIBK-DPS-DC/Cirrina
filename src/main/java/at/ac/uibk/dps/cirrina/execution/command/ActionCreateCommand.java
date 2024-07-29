@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
 
 import at.ac.uibk.dps.cirrina.execution.object.action.CreateAction;
@@ -27,10 +28,12 @@ public final class ActionCreateCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId) throws UnsupportedOperationException {
-    logging.logAction(this.createAction.getName().isPresent() ? this.createAction.getName().get(): "null", stateMachineId);
-    Span span = tracing.initianlizeSpan("Create Action", tracer, null);
-    tracing.addAttributes(Map.of(ATTR_STATE_MACHINE_ID, stateMachineId),span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(this.createAction.getName().isPresent() ? this.createAction.getName().get(): "null", stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("Create Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
       final var start = Time.timeInMillisecondsSinceStart();
 
@@ -79,7 +82,7 @@ public final class ActionCreateCommand extends ActionCommand {
           ));
 
     } catch (Exception e) {
-      logging.logExeption(stateMachineId, e);
+      logging.logExeption(stateMachineId, e, stateMachineName);
       tracing.recordException(e, span);
       logger.error("Data creation failed: {}", e.getMessage());
     } finally {

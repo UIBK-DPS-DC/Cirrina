@@ -6,6 +6,7 @@ import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.Span;
@@ -25,14 +26,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
-import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
-import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
-import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
-import org.apache.hc.core5.concurrent.FutureCallback;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.logging.log4j.core.layout.CsvParameterLayout;
 
 /**
  * HTTP service implementation, a service implementation that is accessible through HTTP.
@@ -106,10 +99,13 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
-  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, String stateMachineId) {
-    logging.logServiceResponseHandling("HTTP Service", response, stateMachineId);
-    Span span = tracing.initianlizeSpan("Handle Response", tracer, null);
-    tracing.addAttributes(Map.of("Response", response.body().toString(), "State Machine", stateMachineId), span);
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, String stateMachineId, String stateMachineName, Span parentSpan) {
+    logging.logServiceResponseHandling("HTTP Service", response, stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan("HTTP Service - Handle Response", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_RESPONSE, response.body().toString(),
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
     try(Scope scope = span.makeCurrent()) {
     // Require HTTP OK
     final var errorCode = response.statusCode();
@@ -139,7 +135,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
             .toList();
       } catch (InvalidProtocolBufferException e) {
         tracing.recordException(e, span);
-        logging.logExeption(stateMachineId, e);
+        logging.logExeption(stateMachineId, e, stateMachineName);
         throw new CompletionException(
             new IOException("Unexpected HTTP service invocation value type"));
       }
@@ -161,10 +157,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
    */
 
   @Override
-  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id) throws UnsupportedOperationException {
-    logging.logServiceInvocation("HTTPS", id);
-    Span span = tracing.initianlizeSpan("Invoke Service", tracer, null);
-    tracing.addAttributes(Map.of("Invoked by", id, "State Machine", id),span);
+  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    logging.logServiceInvocation("HTTPS", id, stateMachineName);
+    Span span = tracing.initializeSpan("HTTP Service - Invoke Service", tracer, parentSpan);
+    tracing.addAttributes(Map.of(ATTR_INVOKED_BY, id, ATTR_STATE_MACHINE_ID, id, ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
 
 
@@ -198,10 +194,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-          .thenApplyAsync(response -> handleResponse(response, id), handleExecutor);
+          .thenApplyAsync(response -> handleResponse(response, id, stateMachineName, span), handleExecutor);
     } catch (URISyntaxException | UnsupportedOperationException e) {
       tracing.recordException(e, span);
-      logging.logExeption(id, e);
+      logging.logExeption(id, e, stateMachineName);
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     } finally {
       span.end();

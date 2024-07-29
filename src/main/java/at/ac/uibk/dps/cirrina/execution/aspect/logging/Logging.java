@@ -9,89 +9,101 @@ public class Logging {
 
   public final Logger logger = LogManager.getLogger(Logging.class);
 
-  public void logStateMachineStart(String stateMachineName) {
-    logger.info("State Machine {} starting", stateMachineName);
+  public void logStateMachineStart(String stateMachineId, String stateMachineName) {
+    logger.info("State Machine {} ({}) starting", stateMachineName, stateMachineId);
   }
 
-  public void logExeption(String stateMachineId, Throwable ex) {
-    logger.error("State Machine {} {}",stateMachineId, ex.getMessage(), ex);
+  public void logExeption(String stateMachineId, Throwable ex, String stateMachineName) {
+    logger.error("State Machine {} ({}) {}", stateMachineName, stateMachineId, ex.getMessage(), ex);
+
   }
 
-  public void logAction(String actionName, String stateMachineId) {
-    logger.info("State Machine {} executing action {}", stateMachineId, actionName);
+  public void logAction(String actionName, String stateMachineId, String stateMachineName) {
+    logger.info("State Machine {} ({}) executing action {}", stateMachineName, stateMachineId, actionName);
+
   }
 
-  public void logTimeout(String type, String actionName, String stateMachineId) {
+  public void logTimeout(String type, String actionName, String stateMachineId, String stateMachineName) {
     switch (type) {
       case "Start":
-        logger.info("State Machine {} starting timeout {}", stateMachineId, actionName);
+        logger.info("State Machine {} ({}) starting timeout {}", stateMachineName, stateMachineId, actionName);
 
       case "Stop":
-        logger.info("State Machine {} stopping {}", stateMachineId, actionName);
+        logger.info("State Machine {} ({}) stopping {}", stateMachineName, stateMachineId, actionName);
 
-      case "Stop alL":
-        logger.info("State Machine {} stopping all timeout actions", stateMachineId);
+      case "Stop all":
+        logger.info("State Machine {} ({}) stopping all timeout actions", stateMachineName, stateMachineId);
 
     }
-  }
-
-  public void logServiceInvocation(String serviceName, String id) {
-    logger.info("State Machine {}: Service invocation: {}", id, serviceName);
-  }
-
-  public void logServiceResponseHandling(String serviceName, HttpResponse response, String stateMachineId){
-    logger.info("State Machine {}: Handling service response: {} with status code {} and body {}",
-        stateMachineId, serviceName, response.statusCode(), response.body().toString());
-  }
-
-  public void logEventReception(String stateMachne, Event event, String state){
-    logger.info("State Machine {} received event {} ({}) in State {}", stateMachne, event.getName(), event.getId(), state);
-  }
-
-  public void logActiveStateSwitch(String stateMachine, String currentState, String newState){
-    logger.info("State Machine {} switched from {} to {}", stateMachine, currentState, newState);
 
   }
 
-  public void logStateExit(String stateMachine, String exitedState, Event event){
+  public void logServiceInvocation(String serviceName, String stateMachineId, String stateMachineName) {
+    logger.info("State Machine {} ({}): Service invocation: {}", stateMachineName, stateMachineId, serviceName);
+  }
+
+  public void logServiceResponseHandling(String serviceName, HttpResponse response, String stateMachineId, String stateMachineName){
+    logger.info("State Machine {} ({}): Handling service response: {} with status code {} and body {}",
+        stateMachineName, stateMachineId, serviceName, response.statusCode(), response.body().toString());
+
+  }
+
+  public void logEventReception(String stateMachineId, Event event, String state, String stateMachineName){
+    logger.info("State Machine {} ({}) received event {} ({}) in State {}", stateMachineName, stateMachineId, event.getName(), event.getId(), state);
+
+  }
+
+  public void logActiveStateSwitch(String stateMachineId, String stateMachineName, String currentState, String newState){
+    logger.info("State Machine {} ({}) switched from {} to {}", stateMachineName, stateMachineId, currentState, newState);
+
+
+  }
+
+  public void logStateExit(String stateMachineId, String stateMachineName, String exitedState, Event event){
     if (event != null) {
-      logger.info("State Machine {} exiting from state {} due to Event: {} ({}) ",
-          stateMachine, exitedState, event.getName(), event.getId());
+      logger.info("State Machine {} ({}) exiting from state {} due to Event: {} ({}) ",
+          stateMachineName, stateMachineId, exitedState, event.getName(), event.getId());
     } else {
-      logger.info("State Machine {} exiting from state {}", stateMachine, exitedState);
+      logger.info("State Machine {} ({}) exiting from state {}", stateMachineName, stateMachineId, exitedState);
     }
+
+
   }
 
-  public void logStateEntry(String stateMachine, String enteringState, Event event){
+  public void logStateEntry(String stateMachineId, String stateMachineName, String enteringState, Event event){
     if (event != null) {
-      logger.info("State Machine {} entered state {} due to Event: {} ({}) ",
-          stateMachine, enteringState, event.getName(), event.getId());
+      logger.info("State Machine {} ({}) entered state {} due to Event: {} ({}) ",
+          stateMachineName, stateMachineId, enteringState, event.getName(), event.getId());
     } else {
-      logger.info("State Machine {} entering state {}", stateMachine, enteringState);
+      logger.info("State Machine {} ({}) entering state {}", stateMachineName, stateMachineId, enteringState);
     }
   }
 
-  public void logTransition(String stateMachine, String fromState, String toState, Event event){
+  public void logTransition(String stateMachineId, String stateMachineName, String fromState, String toState, Event event){
     if (event != null) {
-      logger.info("State Machine {} transitioning from state {} to {} due to Event: {} ({})",
-          stateMachine, fromState, toState, event.getName(), event.getId());
+      logger.info("State Machine {} ({}) transitioning from state {} to {} due to Event: {} ({})",
+          stateMachineName, stateMachineId, fromState, toState, event.getName(), event.getId());
     } else {
-      logger.info("State Machine {} transitioning from state {} to {}",
-          stateMachine, fromState, toState);
+      logger.info("State Machine {} ({}) transitioning from state {} to {}",
+          stateMachineName, stateMachineId, fromState, toState);
     }
+
+
   }
 
-  public void logEventHandling(String stateMachine, Event event){
-    logger.info("State Machine {} handling Event: {} ({})",
-        stateMachine, event.getName(), event.getId());
+  public void logEventHandling(String stateMachineId, String stateMachineName, Event event){
+    logger.info("State Machine {} ({}) handling Event: {} ({})",
+         stateMachineName, stateMachineId, event.getName(), event.getId());
+
   }
 
-  public void logGuardEvaluation(String expression, String stateMachineId){
-    logger.info("State Machine {} evaluating guard with expression: {}", stateMachineId, expression);
+  public void logGuardEvaluation(String expression, String stateMachineName, String stateMachineId){
+    logger.info("State Machine {} ({}) evaluating guard with expression: {}", stateMachineName, stateMachineId, expression);
+
   }
 
-  public void logEventSending(Event event, String stateMachine){
-    logger.info("State Machine {} sending event {} ({})", stateMachine, event.getName(), event.getId());
+  public void logEventSending(Event event, String stateMachineId, String stateMachineName){
+    logger.info("State Machine {} ({}) sending event {} ({})", stateMachineName, stateMachineId, event.getName(), event.getId());
   }
 
 

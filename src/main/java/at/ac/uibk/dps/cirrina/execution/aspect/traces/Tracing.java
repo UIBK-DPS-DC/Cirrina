@@ -13,11 +13,11 @@ public class Tracing {
     return GlobalOpenTelemetry.getTracer(name);
   }
 
-  public Span initianlizeSpan(String name, Tracer tracer, Context parentContext){
-    if(parentContext == null) {
+  public Span initializeSpan(String name, Tracer tracer, Span parentSpan){
+    if(parentSpan == null) {
       return tracer.spanBuilder(name).startSpan();
     } else {
-      return tracer.spanBuilder(name).setParent(parentContext).startSpan();
+      return tracer.spanBuilder(name).setParent(Context.current().with(parentSpan)).startSpan();
     }
   }
 
