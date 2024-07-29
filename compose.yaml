@@ -81,3 +81,13 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+
+  jaeger:
+    image: jaegertracing/all-in-one
+    ports:
+      - "5001:4317"
+      - "5002:4318"
+      - "5778:5778"
+      - "16686:16686"
+      - "6831:6831/udp"
+      - "14250:14250"

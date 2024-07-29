@@ -63,6 +63,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-sdk");
     implementation("io.opentelemetry:opentelemetry-exporter-logging");
     implementation("io.opentelemetry:opentelemetry-exporter-otlp");
+    implementation("io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1")
     implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha");
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure");
 
