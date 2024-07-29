@@ -8,12 +8,16 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESP
 
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
+import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
+import at.ac.uibk.dps.cirrina.execution.object.event.EventListener;
+import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementation;
 import at.ac.uibk.dps.cirrina.utils.Time;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,7 +27,7 @@ import org.apache.logging.log4j.Logger;
  * The execution of this command will use the service implementation selector to select the best matching service implementation and perform
  * the invocation.
  * <p>
- * An invocation is always asynchronous and subsequent done events are generated and handled by the containing state machine instance.
+ * An invocation is always asynchronous, and subsequent done events are generated and handled by the containing state machine instance.
  */
 public final class ActionInvokeCommand extends ActionCommand {
 
@@ -45,103 +49,34 @@ public final class ActionInvokeCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logAction(this.invokeAction.getName().isPresent() ? this.invokeAction.getName().get(): "null", stateMachineId, stateMachineName);
     Span span = tracing.initializeSpan("Invoke Action", tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_STATE_MACHINE_ID, stateMachineId,
-        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
-    try(Scope scope = span.makeCurrent()) {
-      // Increment events received counter
-      final var counters = executionContext.counters();
-
-      counters.getCounter(COUNTER_INVOCATIONS).add(1,
-          counters.attributesForInvocation());
-
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
+    try (Scope scope = span.makeCurrent()) {
+      incrementInvocationCounter();
       final var start = Time.timeInMillisecondsSinceStart();
 
       try {
-        final var serviceType = invokeAction.getServiceType();
-        final var isLocal = invokeAction.isLocal();
-
-        final var serviceImplementationSelector = executionContext.serviceImplementationSelector();
-
-          // Select a service implementation
-          final var serviceImplementation = serviceImplementationSelector.select(serviceType, isLocal)
-              .orElseThrow(
-                  () -> new IllegalArgumentException(
-                      "Could not find a service implementation for the service type '%s'".formatted(serviceType)));
+        final var serviceImplementation = selectServiceImplementation();
 
         final var commands = new ArrayList<ActionCommand>();
 
         final var extent = executionContext.scope().getExtent();
         final var eventListener = executionContext.eventListener();
 
-        // Evaluate all input
-        var input = new ArrayList<ContextVariable>();
-
-        for (var variable : invokeAction.getInput()) {
-          input.add(variable.evaluate(extent));
-        }
+        List<ContextVariable> input = prepareInput(extent);
 
         // Invoke (asynchronously)
         serviceImplementation.invoke(input, executionContext.scope().getId(), stateMachineName, span)
             .exceptionally(e -> {
-              logger.error("Service invocation failed: {}", serviceImplementation.getInformationString());
+              logger.error("Service invocation failed for service '{}': {}",
+                  serviceImplementation.getInformationString(), e.getMessage(), e);
               return null;
             }).thenAccept(output -> {
-              // Assign service output to the provided output context variables
-              for (final var outputReference : invokeAction.getOutput()) {
-
-                // Find output reference in the service output
-                final var outputVariable = output.stream()
-                    .filter(variable -> variable.name().equals(outputReference.reference))
-                    .findFirst();
-
-                if (outputVariable.isEmpty()) {
-                  logger.warn(
-                      "Service invocation output does not contain the expected output variable '{}'.",
-                      outputReference.reference
-                  );
-                  continue;
-                }
-
-                try {
-                  extent.trySet(outputReference.reference, outputVariable.get().value());
-                } catch (Exception e) {
-                  logger.error(
-                      "Failed to assign service output to output variable '{}': {}",
-                      outputReference.reference, e.getMessage()
-                  );
-                }
-              }
-
-              // Create new events with output data as event data
-              final var doneEvents = invokeAction.getDone().stream()
-                  .map(event -> event.withData(output))
-                  .toList();
-
-              // Raise all events (internally)
-              doneEvents.forEach(event -> eventListener.onReceiveEvent(event, span));
-
-              // Measure latency
-              final var now = Time.timeInMillisecondsSinceStart();
-
-              final var gauges = executionContext.gauges();
-
-              gauges.getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(now - start,
-                  gauges.attributesForInvocation(
-                      serviceImplementation.isLocal() ? "local" : "remote"
-                  ));
-
-              // Measure inclusive response time
-              final var raisingEvent = executionContext.raisingEvent();
-
-              if (raisingEvent != null) {
-                gauges.getGauge(GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE).set(Time.timeInMillisecondsSinceEpoch() - raisingEvent.getCreatedTime(),
-                    gauges.attributesForEvent(
-                        raisingEvent.getChannel().toString()
-                    ));
-              }
+              assignServiceOutput(output, extent);
+              raiseEvents(output, eventListener, span);
+              measurePerformance(start, serviceImplementation);
             });
 
         return commands;
@@ -152,6 +87,109 @@ public final class ActionInvokeCommand extends ActionCommand {
       }
     } finally {
       span.end();
+    }
+  }
+
+  /**
+   * Evaluate all input variables.
+   *
+   * @return List of evaluated input variables.
+   */
+  private List<ContextVariable> prepareInput(Extent extent) {
+    return invokeAction.getInput().stream()
+        .map(variable -> variable.evaluate(extent))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Increment the invocation counter.
+   */
+  private void incrementInvocationCounter() {
+    executionContext.counters().getCounter(COUNTER_INVOCATIONS)
+        .add(1, executionContext.counters().attributesForInvocation());
+  }
+
+  /**
+   * Selects the service implementation for the service type of this action.
+   *
+   * @return The service implementation.
+   */
+  private ServiceImplementation selectServiceImplementation() {
+    final var serviceType = invokeAction.getServiceType();
+    final var isLocal = invokeAction.isLocal();
+    final var serviceImplementationSelector = executionContext.serviceImplementationSelector();
+
+    return serviceImplementationSelector.select(serviceType, isLocal)
+        .orElseThrow(
+            () -> new IllegalArgumentException(
+                "Could not find a service implementation for the service type '%s'".formatted(serviceType)));
+  }
+
+  /**
+   * Assign service output to the provided output context variables
+   *
+   * @param output Service output.
+   * @param extent Extent.
+   */
+  private void assignServiceOutput(List<ContextVariable> output, Extent extent) {
+    for (final var outputReference : invokeAction.getOutput()) {
+      output.stream()
+          .filter(variable -> variable.name().equals(outputReference.reference))
+          .findFirst()
+          .ifPresentOrElse(
+              outputVariable -> {
+                try {
+                  extent.trySet(outputReference.reference, outputVariable.value());
+                } catch (Exception e) {
+                  logger.error(
+                      "Failed to assign service output to variable '{}': {}",
+                      outputReference.reference, e.getMessage(), e
+                  );
+                }
+              },
+              () -> logger.warn(
+                  "Service output does not contain expected variable '{}'",
+                  outputReference.reference
+              )
+          );
+    }
+  }
+
+  /**
+   * Raise all events (internally) with output data as event data.
+   *
+   * @param output        Output data.
+   * @param eventListener Event listener.
+   */
+  private void raiseEvents(List<ContextVariable> output, EventListener eventListener, Span span) {
+    invokeAction.getDone().stream()
+        .map(event -> event.withData(output))
+        .forEach(event -> eventListener.onReceiveEvent(event, span));
+  }
+
+  /**
+   * Measure the performance of the service invocation.
+   *
+   * @param start                 Start time.
+   * @param serviceImplementation Service implementation.
+   */
+  private void measurePerformance(double start, ServiceImplementation serviceImplementation) {
+    // Measure latency
+    final var now = Time.timeInMillisecondsSinceStart();
+    final var gauges = executionContext.gauges();
+
+    gauges.getGauge(GAUGE_ACTION_INVOKE_LATENCY).set(now - start,
+        gauges.attributesForInvocation(
+            serviceImplementation.isLocal() ? "local" : "remote"
+        ));
+
+    // Measure inclusive response time
+    final var raisingEvent = executionContext.raisingEvent();
+    if (raisingEvent != null) {
+      gauges.getGauge(GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE).set(
+          Time.timeInMillisecondsSinceEpoch() - raisingEvent.getCreatedTime(),
+          gauges.attributesForEvent(raisingEvent.getChannel().toString())
+      );
     }
   }
 }

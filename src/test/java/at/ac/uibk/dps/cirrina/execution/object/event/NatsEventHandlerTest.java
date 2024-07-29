@@ -69,17 +69,17 @@ public class NatsEventHandlerTest {
 
     latch.await();
 
-    assertEquals(eventListener.events.size(), 5);
+    assertEquals(5, eventListener.events.size());
 
     for (var e : eventListener.events) {
-      assertEquals(e.getName(), "e1");
-      assertEquals(e.getChannel(), EventChannel.GLOBAL);
-      assertEquals(e.getData().size(), 1);
+      assertEquals("e1", e.getName());
+      assertEquals(EventChannel.GLOBAL, e.getChannel());
+      assertEquals(1, e.getData().size());
 
       var ed = e.getData().getFirst();
 
-      assertEquals(ed.name(), "varName");
-      assertEquals(ed.value(), 5);
+      assertEquals("varName", ed.name());
+      assertEquals(5, ed.value());
       assertFalse(ed.isLazy());
     }
 
@@ -93,7 +93,7 @@ public class NatsEventHandlerTest {
       }
     });
 
-    assertEquals(eventListener.events.size(), 0);
+    assertEquals(0, eventListener.events.size());
 
     natsEventHandler.unsubscribe("e1");
 
@@ -150,17 +150,17 @@ public class NatsEventHandlerTest {
 
     latch.await();
 
-    assertEquals(eventListener.events.size(), 5);
+    assertEquals(5, eventListener.events.size());
 
     for (var e : eventListener.events) {
-      assertEquals(e.getName(), "e1");
-      assertEquals(e.getChannel(), EventChannel.EXTERNAL);
-      assertEquals(e.getData().size(), 1);
+      assertEquals("e1", e.getName());
+      assertEquals(EventChannel.EXTERNAL, e.getChannel());
+      assertEquals(1, e.getData().size());
 
       var ed = e.getData().getFirst();
 
-      assertEquals(ed.name(), "varName");
-      assertEquals(ed.value(), 5);
+      assertEquals("varName", ed.name());
+      assertEquals(5, ed.value());
       assertFalse(ed.isLazy());
     }
 
@@ -174,7 +174,7 @@ public class NatsEventHandlerTest {
       }
     });
 
-    assertEquals(eventListener.events.size(), 0);
+    assertEquals(0, eventListener.events.size());
 
     natsEventHandler.unsubscribe("source", "e1");
 
