@@ -52,21 +52,6 @@ public abstract class StateClassBuilder {
   }
 
   /**
-   * Construct a state class builder from a state class.
-   *
-   * @param parentStateMachineId This must be removed.
-   * @param stateClass           State class.
-   * @return State class builder.
-   */
-  public static StateClassBuilder from(
-      UUID parentStateMachineId,
-      StateClass stateClass,
-      List<Action> namedActions
-  ) {
-    return new StateClassFromClassBuilder(parentStateMachineId, stateClass, namedActions);
-  }
-
-  /**
    * Builds the stateClass.
    *
    * @return the stateClass.
@@ -193,84 +178,6 @@ public abstract class StateClassBuilder {
             baseStateClass
         ));
       }
-    }
-  }
-
-  /**
-   * StateClass builder implementation. Builds a stateClass based on another stateClass.
-   */
-  private static final class StateClassFromClassBuilder extends StateClassBuilder {
-
-    /**
-     * ID of the parent state machine class.
-     */
-    private final UUID parentStateMachineId;
-
-    /**
-     * State class.
-     */
-    private final StateClass stateClass;
-
-    /**
-     * Named actions.
-     */
-    private final Map<String, Action> namedActions;
-
-    /**
-     * Initializes this builder from a state class.
-     *
-     * @param parentStateMachineId ID of the parent state machine class.
-     * @param stateClass           State class.
-     */
-    public StateClassFromClassBuilder(
-        UUID parentStateMachineId,
-        StateClass stateClass,
-        List<Action> namedActions
-    ) {
-      this.parentStateMachineId = parentStateMachineId;
-      this.stateClass = stateClass;
-
-      // Construct a named actions map where the keys are the names of the actions
-      this.namedActions = namedActions.stream()
-          .filter(named -> named.getName().isPresent())
-          .collect(Collectors.toMap(named -> named.getName().get(), Function.identity()));
-    }
-
-    /**
-     * Builds the state class.
-     *
-     * @return State class.
-     * @throws IllegalArgumentException In case of error.
-     */
-    @Override
-    public StateClass build() throws IllegalArgumentException {
-
-      final var parameters = new StateClass.BaseParameters(
-          parentStateMachineId,
-          stateClass.getName(),
-          stateClass.getLocalContextDescription().orElse(null),
-          stateClass.isInitial(),
-          stateClass.isTerminal(),
-          replaceNamedActions(stateClass.getEntryActionGraph().getActions()),
-          replaceNamedActions(stateClass.getExitActionGraph().getActions()),
-          replaceNamedActions(stateClass.getWhileActionGraph().getActions()),
-          replaceNamedActions(stateClass.getAfterActionGraph().getActions())
-      );
-
-      // Create this stateClass
-      return new StateClass(parameters);
-    }
-
-    /**
-     * Replace actions in the list with named actions of this state class builder if their names match
-     *
-     * @param actions The actions where named actions should be replaced.
-     * @return Actions where named actions are replaced by the named actions of this state builder.
-     */
-    private List<Action> replaceNamedActions(List<Action> actions) {
-      return actions.stream()
-          .map(action -> namedActions.getOrDefault(action.getName().orElse(null), action))
-          .collect(Collectors.toList());
     }
   }
 }

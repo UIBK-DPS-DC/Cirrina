@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.classes.transition;
 
 import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.classes.helper.GuardResolver;
-import at.ac.uibk.dps.cirrina.classes.statemachine.ChildStateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionOrActionReferenceDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardOrGuardReferenceDescription;
@@ -34,16 +33,6 @@ public abstract class TransitionClassBuilder {
       ActionResolver actionResolver
   ) {
     return new TransitionClassFromDescriptionBuilder(transitionDescription, guardResolver, actionResolver);
-  }
-
-  /**
-   * Construct a builder from a transition class.
-   *
-   * @param transitionClass Transition class.
-   * @return Builder.
-   */
-  public static TransitionClassBuilder from(TransitionClass transitionClass, List<Guard> namedGuards) {
-    return new TransitionClassFromClassBuilder(transitionClass, namedGuards);
   }
 
   /**
@@ -148,76 +137,6 @@ public abstract class TransitionClassBuilder {
           );
         }
       }
-    }
-  }
-
-  /**
-   * TransitionClass builder implementation. Builds a transitionClass based on another transitionClass.
-   *
-   * @see ChildStateMachineClassBuilder
-   */
-  private static final class TransitionClassFromClassBuilder extends TransitionClassBuilder {
-
-    /**
-     * Transition class.
-     */
-    private final TransitionClass transitionClass;
-
-
-    /**
-     * Named Guards.
-     */
-    private final Map<String, Guard> namedGuards;
-
-    /**
-     * Initializes this builder.
-     *
-     * @param transitionClass Transition class.
-     */
-    private TransitionClassFromClassBuilder(TransitionClass transitionClass, List<Guard> namedGuards) {
-      this.transitionClass = transitionClass;
-      this.namedGuards = namedGuards.stream()
-          .filter(named -> named.getName().isPresent())
-          .collect(Collectors.toMap(named -> named.getName().get(), Function.identity()));
-      ;
-    }
-
-    /**
-     * Builds the transition class.
-     *
-     * @return Transition class.
-     * @throws IllegalArgumentException In case of error.
-     */
-    @Override
-    public TransitionClass build() {
-      if (transitionClass instanceof OnTransitionClass onTransition) {
-        return new OnTransitionClass(
-            onTransition.getTargetStateName().orElse(null),
-            onTransition.getElse().orElse(null),
-            replaceNamedGuards(onTransition.getGuards()),
-            onTransition.getActionGraph().getActions(),
-            onTransition.getEventName()
-        );
-      } else {
-        return new TransitionClass(
-            transitionClass.getTargetStateName().orElse(null),
-            transitionClass.getElse().orElse(null),
-            replaceNamedGuards(transitionClass.getGuards()),
-            transitionClass.getActionGraph().getActions()
-        );
-      }
-    }
-
-    /**
-     * Replace guards in the list with named guards of this transition class builder if their names match
-     *
-     * @param guards The guards where named guards should be replaced.
-     * @return Guards where named guards are replaced by the named guards of this state builder.
-     */
-    private List<Guard> replaceNamedGuards(List<Guard> guards) {
-      return guards.stream()
-          .map(guard -> namedGuards.getOrDefault(guard.getName().orElse(null), guard))
-          .collect(Collectors.toList());
     }
   }
 }

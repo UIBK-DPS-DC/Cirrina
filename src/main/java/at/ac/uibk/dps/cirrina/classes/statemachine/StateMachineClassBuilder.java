@@ -178,30 +178,6 @@ public final class StateMachineClassBuilder {
   }
 
   /**
-   * Builds a state machine which extends another state machine given by its name.
-   *
-   * @param extendsName The name of the state machine to extend.
-   * @return The state machine.
-   * @throws IllegalArgumentException In case the state machine could not be built or the provided state machine name is not known.
-   * @see ChildStateMachineClassBuilder
-   */
-  private StateMachineClass buildExtended(String extendsName)
-      throws IllegalArgumentException {
-    // Get the state machine to inherit from and throw an error if it does not exist
-    var baseStateMachine = knownStateMachineClasses.stream()
-        .filter(knownStateMachine -> knownStateMachine.getName().equals(extendsName))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Cannot extend '%s', state machine does not exist".formatted(extendsName)));
-
-    var guards = buildGuards();
-    var actions = buildActions();
-    var nestedStateMachines = buildNestedStateMachines();
-
-    // Create the child state machine
-    return ChildStateMachineClassBuilder.implement(stateMachineDescription, baseStateMachine, guards, actions, nestedStateMachines).build();
-  }
-
-  /**
    * Builds the state machine.
    *
    * @return The state machine.
@@ -210,7 +186,7 @@ public final class StateMachineClassBuilder {
    * @throws IllegalArgumentException If the state machine has declared a state with a non-deterministic outward transition.
    */
   public StateMachineClass build() throws IllegalArgumentException {
-    var stateMachine = this.buildBase();
+    var stateMachine = buildBase();
 
     var guardResolver = new GuardResolver(stateMachine);
     var actionResolver = new ActionResolver(stateMachine);
