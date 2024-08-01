@@ -148,11 +148,11 @@ public class HttpServiceImplementationTest {
 
             final var output = service.invoke(variables, "some-id").get();
 
-            assertEquals(output.size(), 1);
+            assertEquals(1, output.size());
 
             final var result = output.getFirst();
-            assertEquals(result.name(), "result");
-            assertEquals(result.value(), 11);
+            assertEquals("result", result.name());
+            assertEquals(11, result.value());
           });
 
           // HTTP error
