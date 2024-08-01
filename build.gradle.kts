@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "ac.at.uibk.dps.cirrina"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 application {
     mainClass = "at.ac.uibk.dps.cirrina.main.Main"
