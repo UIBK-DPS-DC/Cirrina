@@ -18,7 +18,9 @@ serviceImplementations {
 }
 collaborativeStateMachine = pingPongCSM
 stateMachineName = "stateMachine1"
-localData = new Mapping {}
+localData = new Mapping {
+    ["foo"] = "'bar'"
+}
 bindEventInstanceIds = new Listing {}
 runtimeName = "runtime"
 
