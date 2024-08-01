@@ -70,7 +70,7 @@ typealias ExpressionDescription = String
 /// </pre>
 ///
 /// @since CSML 0.1.
-class StateMachineDescription extends StateOrStateMachineDescription {
+open class StateMachineDescription extends StateOrStateMachineDescription {
     /// The name.
     name: String
     /// The states.
@@ -135,7 +135,7 @@ abstract class StateOrStateMachineDescription {}
 /// </pre>
 ///
 /// @since CSML 0.1.
-class StateDescription extends StateOrStateMachineDescription {
+open class StateDescription extends StateOrStateMachineDescription {
     /// The name.
     name: String
     /// The is initial flag. Indicating if this is the initial state of the state machine. Exactly one state must be the initial state of a
@@ -221,7 +221,7 @@ abstract class GuardOrGuardReferenceDescription {}
 /// </pre>
 ///
 /// @since CSML 0.1.
-class GuardDescription extends GuardOrGuardReferenceDescription {
+open class GuardDescription extends GuardOrGuardReferenceDescription {
     /// The optional name.
     /// <p>
     /// If present, can be referenced from within a state machine component when declared as part of the state machine's guards.
