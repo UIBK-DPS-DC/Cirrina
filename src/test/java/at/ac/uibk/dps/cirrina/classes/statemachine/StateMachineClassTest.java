@@ -38,25 +38,6 @@ public class StateMachineClassTest {
   }
 
   @Test
-  void testGetActions() {
-    assertEquals(stateMachineClass.getNamedActions().size(), 1);
-
-    var action = stateMachineClass.getNamedActions().getFirst();
-    Assertions.assertEquals(action.getName().get(), "action1");
-    assertTrue(action instanceof CreateAction);
-
-    var createAction = (CreateAction) action;
-    Assertions.assertEquals(createAction.getVariable().name(), "v");
-    Assertions.assertTrue(createAction.getVariable().isLazy());
-
-    var val = createAction.getVariable().value();
-    assertTrue(val instanceof Expression);
-
-    var expression = (Expression) val;
-    assertEquals(expression.getSource(), "5");
-  }
-
-  @Test
   void testGetHandledEvents() {
     var handledEvents = stateMachineClass.getInputEvents();
     var expectedHandledEvents = List.of("e1", "e2");

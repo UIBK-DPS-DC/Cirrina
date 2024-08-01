@@ -28,7 +28,7 @@ public class TimeoutTest {
   public static void setUp() {
     final var json = DefaultDescriptions.timeout;
 
-    final var parser = new DescriptionParser<CollaborativeStateMachineDescription>(CollaborativeStateMachineDescription.class);
+    final var parser = new DescriptionParser<>(CollaborativeStateMachineDescription.class);
     Assertions.assertDoesNotThrow(() -> {
       collaborativeStateMachineClass = CollaborativeStateMachineClassBuilder.from(parser.parse(json)).build();
     });
@@ -102,8 +102,6 @@ public class TimeoutTest {
       final var instances = runtime.newInstance(collaborativeStateMachineClass, serviceImplementationSelector);
 
       assertEquals(1, instances.size());
-
-      final var instance = runtime.findInstance(instances.getFirst()).get();
 
       assertTrue(runtime.waitForCompletion(10000));
 

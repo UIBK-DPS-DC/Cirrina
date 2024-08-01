@@ -48,16 +48,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   private final @Nullable ContextDescription localContextClass;
 
   /**
-   * Collection of named guards.
-   */
-  private final List<Guard> namedGuards;
-
-  /**
-   * Collection of named actions.
-   */
-  private final List<Action> namedActions;
-
-  /**
    * Initializes this state machine class instance.
    *
    * @param parameters Parameters.
@@ -67,8 +57,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
 
     this.name = parameters.name;
     this.localContextClass = parameters.localContextClass;
-    this.namedGuards = Collections.unmodifiableList(parameters.namedGuards);
-    this.namedActions = Collections.unmodifiableList(parameters.namedActions);
     this.nestedStateMachineClasses = Collections.unmodifiableList(parameters.nestedStateMachineClasses);
   }
 
@@ -139,30 +127,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   }
 
   /**
-   * Returns a guard by its name. If not one guard is known with the supplied name, empty is returned.
-   *
-   * @param guardName Name of the guard to return.
-   * @return The guard with the supplied name or empty.
-   */
-  public Optional<Guard> findGuardByName(String guardName) {
-    return namedGuards.stream()
-        .filter(guard -> guard.getName().equals(Optional.of(guardName)))
-        .findFirst();
-  }
-
-  /**
-   * Returns an action by its name. If not one action is known with the supplied name, empty is returned.
-   *
-   * @param actionName Name of the action to return.
-   * @return The action with the supplied name or empty.
-   */
-  public Optional<Action> findActionByName(String actionName) {
-    return namedActions.stream()
-        .filter(action -> action.getName().equals(Optional.of(actionName)))
-        .findFirst();
-  }
-
-  /**
    * Returns the collection of nested state machine classes.
    *
    * @return Nested state machine classes.
@@ -196,24 +160,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
    */
   public Optional<ContextDescription> getLocalContextClass() {
     return Optional.ofNullable(localContextClass);
-  }
-
-  /**
-   * Returns the named actions of this state machine.
-   *
-   * @return named actions.
-   */
-  public List<Action> getNamedActions() {
-    return namedActions;
-  }
-
-  /**
-   * Returns the named guards of this state machine.
-   *
-   * @return named guards.
-   */
-  public List<Guard> getNamedGuards() {
-    return namedGuards;
   }
 
   /**
@@ -273,45 +219,14 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   }
 
   /**
-   * Returns the collection of named guard names.
-   *
-   * @return Named guard names.
-   */
-  public List<String> getNamedGuardNames() {
-    return namedGuards.stream()
-        .map(Guard::getName)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .toList();
-  }
-
-  /**
-   * Returns the collection of named action names.
-   *
-   * @return Named action names.
-   */
-  public List<String> getNamedActionNames() {
-    return namedActions.stream()
-        .map(Action::getName)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .toList();
-  }
-
-  /**
    * Parameters for the construction of a state machine class.
    *
    * @param name                      Name.
    * @param localContextClass         Local context class or empty if none declared.
-   * @param namedGuards               Named guards.
-   * @param namedActions              Named actions.
-   * @param abstractt                 Is abstract.
    * @param nestedStateMachineClasses Nested state machine classes.
    */
   record Parameters(String name,
                     @Nullable ContextDescription localContextClass,
-                    List<Guard> namedGuards,
-                    List<Action> namedActions,
                     List<StateMachineClass> nestedStateMachineClasses) {
 
   }

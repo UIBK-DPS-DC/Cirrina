@@ -18,8 +18,6 @@ public final class TimeoutResetAction extends Action {
    * @param parameters Parameters.
    */
   TimeoutResetAction(Parameters parameters) {
-    super(parameters.name());
-
     this.action = parameters.action;
   }
 
@@ -33,7 +31,6 @@ public final class TimeoutResetAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       String action
   ) {
 

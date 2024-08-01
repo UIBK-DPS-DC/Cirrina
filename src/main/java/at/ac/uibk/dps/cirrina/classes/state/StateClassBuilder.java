@@ -1,16 +1,13 @@
 package at.ac.uibk.dps.cirrina.classes.state;
 
-import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionOrActionReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
+import at.ac.uibk.dps.cirrina.execution.object.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.action.TimeoutAction;
-import jakarta.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Abstract stateClass builder
@@ -22,33 +19,13 @@ public abstract class StateClassBuilder {
    *
    * @param parentStateMachineId This must be removed.
    * @param stateDescription     State description.
-   * @param actionResolver       Action resolver.
    * @return State class builder.
    */
   public static StateClassBuilder from(
       UUID parentStateMachineId,
-      StateDescription stateDescription,
-      ActionResolver actionResolver
+      StateDescription stateDescription
   ) {
-    return new StateClassFromDescriptionBuilder(parentStateMachineId, stateDescription, actionResolver);
-  }
-
-  /**
-   * Construct a state class builder from a state description with a base state class.
-   *
-   * @param parentStateMachineId This must be removed.
-   * @param stateDescription     State description.
-   * @param actionResolver       Action resolver.
-   * @param baseStateClass       Base state class.
-   * @return State class builder.
-   */
-  public static StateClassBuilder from(
-      UUID parentStateMachineId,
-      StateDescription stateDescription,
-      ActionResolver actionResolver,
-      StateClass baseStateClass
-  ) {
-    return new StateClassFromDescriptionBuilder(parentStateMachineId, stateDescription, actionResolver, baseStateClass);
+    return new StateClassFromDescriptionBuilder(parentStateMachineId, stateDescription);
   }
 
   /**
@@ -75,51 +52,17 @@ public abstract class StateClassBuilder {
     private final StateDescription stateDescription;
 
     /**
-     * Action resolver.
-     */
-    private final ActionResolver actionResolver;
-
-    /**
-     * Base state class, can be null in case a base class is being built.
-     */
-    private final @Nullable StateClass baseStateClass;
-
-    /**
      * Initializes this builder instance for a base state class.
      *
      * @param parentStateMachineId ID of the parent state machine class.
      * @param stateDescription     State description.
-     * @param actionResolver       Action resolver.
      */
     private StateClassFromDescriptionBuilder(
         UUID parentStateMachineId,
-        StateDescription stateDescription,
-        ActionResolver actionResolver
+        StateDescription stateDescription
     ) {
       this.parentStateMachineId = parentStateMachineId;
       this.stateDescription = stateDescription;
-      this.actionResolver = actionResolver;
-      this.baseStateClass = null;
-    }
-
-    /**
-     * Initializes this builder instance for a child state class.
-     *
-     * @param parentStateMachineId ID of the parent state machine class.
-     * @param stateDescription     State description.
-     * @param actionResolver       Action resolver.
-     * @param baseStateClass       Base state class.
-     */
-    private StateClassFromDescriptionBuilder(
-        UUID parentStateMachineId,
-        StateDescription stateDescription,
-        ActionResolver actionResolver,
-        StateClass baseStateClass
-    ) {
-      this.parentStateMachineId = parentStateMachineId;
-      this.stateDescription = stateDescription;
-      this.actionResolver = actionResolver;
-      this.baseStateClass = baseStateClass;
     }
 
     /**
@@ -132,16 +75,9 @@ public abstract class StateClassBuilder {
     @Override
     public StateClass build() throws IllegalArgumentException {
       // Resolve actions
-      final Function<List<? extends ActionOrActionReferenceDescription>, List<Action>> resolveActions = (List<? extends ActionOrActionReferenceDescription> actions) ->
+      final Function<List<? extends ActionDescription>, List<Action>> resolveActions = (List<? extends ActionDescription> actions) ->
           actions.stream()
-              .map(actionOrActionClass -> {
-                var resolvedAction = actionResolver.tryResolve(actionOrActionClass);
-                if (resolvedAction.isEmpty()) {
-                  throw new IllegalArgumentException(
-                      "An action with the name '%s' does not exist".formatted(actionOrActionClass.toString()));
-                }
-                return resolvedAction.get();
-              })
+              .map(actionDescription -> ActionBuilder.from(actionDescription).build())
               .toList();
 
       final var entryActions = resolveActions.apply(stateDescription.getEntry());
@@ -154,30 +90,17 @@ public abstract class StateClassBuilder {
       }
 
       // Create the state class
-      if (baseStateClass == null) {
-        return new StateClass(new StateClass.BaseParameters(
-            parentStateMachineId,
-            stateDescription.getName(),
-            stateDescription.getLocalContext(),
-            stateDescription.isInitial(),
-            stateDescription.isTerminal(),
-            entryActions,
-            exitActions,
-            whileActions,
-            afterActions
-        ));
-      } else {
-        return new StateClass(new StateClass.ChildParameters(
-            parentStateMachineId,
-            stateDescription.isInitial(),
-            stateDescription.isTerminal(),
-            entryActions,
-            exitActions,
-            whileActions,
-            afterActions,
-            baseStateClass
-        ));
-      }
+      return new StateClass(new StateClass.BaseParameters(
+          parentStateMachineId,
+          stateDescription.getName(),
+          stateDescription.getLocalContext(),
+          stateDescription.isInitial(),
+          stateDescription.isTerminal(),
+          entryActions,
+          exitActions,
+          whileActions,
+          afterActions
+      ));
     }
   }
 }

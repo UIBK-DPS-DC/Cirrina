@@ -1,5 +1,5 @@
-amends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/CollaborativeStateMachineDescription.pkl"
-import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/CollaborativeStateMachineDescription.pkl" as CSM
+amends "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl"
+import "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl" as CSM
 
 // ------------------------ CSM -------------------------------
 name = "collaborativeStateMachine"
@@ -19,9 +19,6 @@ local stateMachine1: CSM.StateMachineDescription = new {
         state2
         state3
     }
-    actions {
-        action1
-    }
 }
 
 local stateMachine2: CSM.StateMachineDescription = new {
@@ -29,13 +26,6 @@ local stateMachine2: CSM.StateMachineDescription = new {
     states {
         state1_sm2
         state2_sm2
-    }
-    actions {
-        action1
-        action2
-    }
-    guards {
-        guard1
     }
 }
 
@@ -125,9 +115,7 @@ local state1: CSM.StateDescription = new {
     name = "state1"
     initial = true
     entry {
-        new CSM.ActionReferenceDescription {
-            reference = "action1"
-        }
+        action1
         new CSM.RaiseActionDescription {
             event {
                 name = "e1"
@@ -230,8 +218,6 @@ local state3: CSM.StateDescription = new {
 
 // ------------------------ Actions -------------------------------
 local action1: CSM.CreateActionDescription = new {
-    name = "action1"
-    type = "create"
     variable {
         name = "v"
         value = "5"
@@ -239,8 +225,6 @@ local action1: CSM.CreateActionDescription = new {
 }
 
 local action2: CSM.CreateActionDescription = new {
-    name = "action2"
-    type = "create"
     variable {
         name = "b"
         value = "true"
@@ -252,9 +236,7 @@ local state1_sm2: CSM.StateDescription = new {
     name = "state1"
     initial = true
     entry {
-        new CSM.ActionReferenceDescription {
-            reference = "action1"
-        }
+        action1
         new CSM.RaiseActionDescription {
             event {
                 name = "e1"
@@ -275,14 +257,10 @@ local state1_sm2: CSM.StateDescription = new {
                 new CSM.GuardDescription {
                     expression = "v != 0"
                 }
-                new CSM.GuardReferenceDescription {
-                    reference = "guard1"
-                }
+                guard1
             }
             actions {
-                new CSM.ActionReferenceDescription {
-                    reference = "action1"
-                }
+                action1
             }
         }
     }
@@ -303,6 +281,5 @@ local state2_sm2: CSM.StateDescription = new {
 
 // ------------------------ Guards -------------------------------
 local guard1: CSM.GuardDescription = new {
-    name = "guard1"
     expression = "v < 4 && b"
 }

@@ -1,18 +1,16 @@
 package at.ac.uibk.dps.cirrina.classes.transition;
 
-import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.classes.helper.GuardResolver;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionOrActionReferenceDescription;
-import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardOrGuardReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.OnTransitionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TransitionDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
+import at.ac.uibk.dps.cirrina.execution.object.action.ActionBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
+import at.ac.uibk.dps.cirrina.execution.object.guard.GuardBuilder;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Abstract transitionClass builder.
@@ -23,16 +21,12 @@ public abstract class TransitionClassBuilder {
    * Construct a builder from a transition description.
    *
    * @param transitionDescription Transition description.
-   * @param guardResolver         Guard resolver.
-   * @param actionResolver        Action resolver.
    * @return Builder.
    */
   public static TransitionClassBuilder from(
-      TransitionDescription transitionDescription,
-      GuardResolver guardResolver,
-      ActionResolver actionResolver
+      TransitionDescription transitionDescription
   ) {
-    return new TransitionClassFromDescriptionBuilder(transitionDescription, guardResolver, actionResolver);
+    return new TransitionClassFromDescriptionBuilder(transitionDescription);
   }
 
   /**
@@ -56,30 +50,14 @@ public abstract class TransitionClassBuilder {
     private final TransitionDescription transitionDescription;
 
     /**
-     * Guard resolver.
-     */
-    private final GuardResolver guardResolver;
-
-    /**
-     * Action resolver.
-     */
-    private final ActionResolver actionResolver;
-
-    /**
      * Initializes this builder.
      *
      * @param transitionDescription Transition description.
-     * @param guardResolver         Guard resolver.
-     * @param actionResolver        Action resolver.
      */
     private TransitionClassFromDescriptionBuilder(
-        TransitionDescription transitionDescription,
-        GuardResolver guardResolver,
-        ActionResolver actionResolver
+        TransitionDescription transitionDescription
     ) {
       this.transitionDescription = transitionDescription;
-      this.guardResolver = guardResolver;
-      this.actionResolver = actionResolver;
     }
 
     /**
@@ -92,29 +70,15 @@ public abstract class TransitionClassBuilder {
     @Override
     public TransitionClass build() throws IllegalArgumentException {
       // Resolve guards
-      Function<List<? extends GuardOrGuardReferenceDescription>, List<Guard>> resolveGuards = (List<? extends GuardOrGuardReferenceDescription> guards) ->
+      Function<List<? extends GuardDescription>, List<Guard>> resolveGuards = (List<? extends GuardDescription> guards) ->
           guards.stream()
-              .map(guardOrReferenceClass -> {
-                var resolvedGuard = guardResolver.resolve(guardOrReferenceClass);
-                if (resolvedGuard.isEmpty()) {
-                  throw new IllegalArgumentException(
-                      "A guard with the name '%s' does not exist".formatted(guardOrReferenceClass.toString()));
-                }
-                return resolvedGuard.get();
-              })
+              .map(guardClass -> GuardBuilder.from(guardClass).build())
               .toList();
 
       // Resolve actions
-      Function<List<? extends ActionOrActionReferenceDescription>, List<Action>> resolveActions = (List<? extends ActionOrActionReferenceDescription> actions) ->
+      Function<List<? extends ActionDescription>, List<Action>> resolveActions = (List<? extends ActionDescription> actions) ->
           actions.stream()
-              .map(actionOrActionClass -> {
-                var resolvedAction = actionResolver.tryResolve(actionOrActionClass);
-                if (resolvedAction.isEmpty()) {
-                  throw new IllegalArgumentException(
-                      "An action with the name '%s' does not exist".formatted(actionOrActionClass.toString()));
-                }
-                return resolvedAction.get();
-              })
+              .map(actionClass -> ActionBuilder.from(actionClass).build())
               .toList();
 
       // Create the appropriate transitionClass

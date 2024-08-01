@@ -39,6 +39,6 @@ public final class GuardBuilder {
    * @throws IllegalArgumentException In case the guard could not be built.
    */
   public Guard build() throws IllegalArgumentException {
-    return new Guard(guardClass.getName(), ExpressionBuilder.from(guardClass.getExpression()).build());
+    return new Guard(ExpressionBuilder.from(guardClass.getExpression()).build());
   }
 }

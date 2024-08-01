@@ -1,5 +1,5 @@
-amends "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/CollaborativeStateMachineDescription.pkl"
-import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/CollaborativeStateMachineDescription.pkl" as CSM
+amends "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl"
+import "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl" as CSM
 
 // ------------------------ CSM -------------------------------
 name = "collaborativeStateMachine"
@@ -14,6 +14,14 @@ local stateMachine1: CSM.StateMachineDescription = new {
     states {
         stateA
         stateB
+    }
+    persistentContext {
+        variables {
+            new {
+                name = "v"
+                value = "0"
+            }
+        }
     }
 }
 
@@ -41,7 +49,7 @@ local stateA: CSM.StateDescription = new {
                 new CSM.MatchActionDescription {
                     value = "v < 10"
                     cases {
-                        new CSM.MatchCaseDescription {
+                        new {
                             `case` = "true"
                             action = new CSM.AssignActionDescription {
                                 variable {
@@ -50,7 +58,7 @@ local stateA: CSM.StateDescription = new {
                                 }
                             }
                         }
-                        new CSM.MatchCaseDescription {
+                        new {
                             `case` = "false"
                             action = new CSM.RaiseActionDescription {
                                 event {

@@ -8,7 +8,6 @@ public final class RaiseAction extends Action {
   private final Event event;
 
   RaiseAction(Parameters parameters) {
-    super(parameters.name());
 
     this.event = parameters.event();
   }
@@ -18,7 +17,6 @@ public final class RaiseAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       Event event
   ) {
 

@@ -21,14 +21,13 @@ class GuardTest {
       var extent = new Extent(context);
 
       assertDoesNotThrow(() -> {
-        var guardClass = new GuardDescription("name", "v==5");
+        var guardClass = new GuardDescription("v==5");
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        assertEquals("name", guard.getName().get());
         assertTrue(guard.evaluate(extent));
 
-        guardClass = new GuardDescription("name", "v==6");
+        guardClass = new GuardDescription("v==6");
 
         guard = GuardBuilder.from(guardClass).build();
 
@@ -36,7 +35,7 @@ class GuardTest {
       });
 
       assertThrows(IllegalArgumentException.class, () -> {
-        var guardClass = new GuardDescription("name", "v");
+        var guardClass = new GuardDescription("v");
 
         var guard = GuardBuilder.from(guardClass).build();
 

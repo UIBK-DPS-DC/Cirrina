@@ -22,8 +22,6 @@ public final class InvokeAction extends Action {
   private final List<ContextVariableReferenceDescription> output;
 
   InvokeAction(Parameters parameters) {
-    super(parameters.name());
-
     this.serviceType = parameters.serviceType();
     this.isLocal = parameters.isLocal();
     this.input = parameters.input();
@@ -52,7 +50,6 @@ public final class InvokeAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       String serviceType,
       boolean isLocal,
       List<ContextVariable> input,

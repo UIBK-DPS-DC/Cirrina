@@ -53,8 +53,6 @@ typealias ExpressionDescription = String
 ///  <tr><td>name</td><td>Unique name</td><td>Yes</td></tr>
 ///  <tr><td>localContext</td><td>Lexical description of the local context</td><td>No</td></tr>
 ///  <tr><td>persistentContext</td><td>Lexical description of the persistent context</td><td>No</td></tr>
-///  <tr><td>guards</td><td>Named guards</td><td>No</td></tr>
-///  <tr><td>actions</td><td>Named actions</td><td>No</td></tr>
 /// </table>
 ///
 /// Example:
@@ -82,16 +80,6 @@ open class StateMachineDescription extends StateOrStateMachineDescription {
     localContext: ContextDescription?
     /// The optional lexical declaration of persistent context variables.
     persistentContext: ContextDescription?
-    /// The optional named guards.
-    /// <p>
-    /// The guards declared here may be used inside this state machine by referencing the names.
-    /// </p>
-    guards: Listing<GuardDescription>
-    /// The optional named actions.
-    /// <p>
-    /// The actions declared here may be used inside this state machine by referencing the names.
-    /// </p>
-    actions: Listing<ActionDescription>
 }
 
 abstract class StateOrStateMachineDescription {}
@@ -143,15 +131,14 @@ open class StateDescription extends StateOrStateMachineDescription {
     initial: Boolean = false
     /// The is terminal flag. Indicating if this is a terminal state of the state machine. If omitted, the state is not terminal.
     terminal: Boolean = false
-    /// The optional entry actions. Can be provided as action references to previously declared actions, or inline actions.
-    entry: Listing<ActionOrActionReferenceDescription>
-    /// The optional exit actions. Can be provided as action references to previously declared actions, or inline actions.
-    exit: Listing<ActionOrActionReferenceDescription>
-    /// The optional while actions. Can be provided as action references to previously declared actions, or inline actions.
-    while: Listing<ActionOrActionReferenceDescription>
-    /// The optional after (timeout) actions. Can be provided as action references to previously declared actions, or inline actions. Actions
-    /// provided must be raise event actions.
-    after: Listing<ActionOrActionReferenceDescription>
+    /// The optional entry actions.
+    entry: Listing<ActionDescription>
+    /// The optional exit actions.
+    exit: Listing<ActionDescription>
+    /// The optional while actions.
+    while: Listing<ActionDescription>
+    /// The optional after (timeout) actions. Actions provided must be raise event actions.
+    after: Listing<ActionDescription>
     /// The optional on transitions. On transitions are taken upon event receiving an event that matches the 'event' keyword of the on
     /// transition.
     on: Listing<OnTransitionDescription>
@@ -189,21 +176,15 @@ open class StateDescription extends StateOrStateMachineDescription {
 open class TransitionDescription {
     /// The optional target state name. If the target is omitted, the transition is internal.
     target: String?
-    /// The optional guards. All guard expressions need to evaluate to true before a transition can be taken. Can be provided as guard
-    /// references to previously declared guards, or inline guards.
-    guards: Listing<GuardOrGuardReferenceDescription>
-    /// The optional actions. These actions are executed during the transition, if the transition is taken. Can be provided as action
-    /// references to previously declared actions, or inline actions.
-    actions: Listing<ActionOrActionReferenceDescription>
+    /// The optional guards. All guard expressions need to evaluate to true before a transition can be taken.
+    guards: Listing<GuardDescription>
+    /// The optional actions. These actions are executed during the transition, if the transition is taken.
+    actions: Listing<ActionDescription>
     /// The optional else target name. If the guards evaluate to false, the state machine ends up in this target state.
     `else`: String?
 }
 
-/// [deprecated]
-abstract class GuardOrGuardReferenceDescription {}
-
-/// Guard construct. Represents a conditional (if) that determines if a transition can be taken. Guards can be declared and referenced as
-/// part of a state machine, or be declared inline.
+/// Guard construct. Represents a conditional (if) that determines if a transition can be taken.
 ///
 /// Keywords:
 /// <table border="1">
@@ -221,21 +202,12 @@ abstract class GuardOrGuardReferenceDescription {}
 /// </pre>
 ///
 /// @since CSML 0.1.
-open class GuardDescription extends GuardOrGuardReferenceDescription {
-    /// The optional name.
-    /// <p>
-    /// If present, can be referenced from within a state machine component when declared as part of the state machine's guards.
-    name: String?
+open class GuardDescription {
     /// An expression.
     /// <p>
     /// The expression must evaluate to a boolean value.
     /// </p>
     expression: ExpressionDescription
-}
-
-/// [deprecated]
-class GuardReferenceDescription extends GuardOrGuardReferenceDescription {
-    reference: String
 }
 
 /// On transition construct. Represents a transition that is to be taken based on a received event.
@@ -261,18 +233,9 @@ class OnTransitionDescription extends TransitionDescription {
     event: String
 }
 
-/// [deprecated]
-abstract class ActionOrActionReferenceDescription {}
-
 /// An abstract action construct. Represents an action that can be taken in a state machine.
-abstract class ActionDescription extends ActionOrActionReferenceDescription {
+abstract class ActionDescription {
     type: Type
-    name: String?
-}
-
-/// [deprecated]
-class ActionReferenceDescription extends ActionOrActionReferenceDescription {
-    reference: String
 }
 
 typealias Type = "invoke" | "create" | "assign" | "lock" | "unlock" | "raise" | "timeout" | "timeoutReset" | "match"
@@ -321,7 +284,7 @@ class MatchCaseDescription {
     /// The case value.
     `case`: ExpressionDescription
     /// The actions to be taken if the case value matches the value of the match action.
-    action: ActionOrActionReferenceDescription
+    action: ActionDescription
 }
 
 /// Raise action construct. Represents the raising of an event.
@@ -334,10 +297,12 @@ class RaiseActionDescription extends ActionDescription {
 /// Timeout action construct. Represents a timeout action.
 class TimeoutActionDescription extends ActionDescription {
     type: Type = "timeout"
+    /// The name of the timeout action.
+    name: String
     /// The delay until the timeout action is executed.
     delay: ExpressionDescription // Note: if Code Generation is working replace with Duration type
     /// The action to be executed when the timeout occurs.
-    action: ActionOrActionReferenceDescription
+    action: ActionDescription
 }
 
 /// Timeout reset action construct. Represents a timeout reset action.

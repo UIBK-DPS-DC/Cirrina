@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.action;
 
-import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ActionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.AssignActionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
@@ -34,18 +33,12 @@ public final class ActionBuilder {
   private final ActionDescription actionDescription;
 
   /**
-   * Action resolver, resolves action names or constructs action objects.
-   */
-  private final ActionResolver actionResolver;
-
-  /**
    * Initializes an action builder.
    *
    * @param actionDescription Action class.
    */
-  private ActionBuilder(ActionDescription actionDescription, ActionResolver actionResolver) {
+  private ActionBuilder(ActionDescription actionDescription) {
     this.actionDescription = actionDescription;
-    this.actionResolver = actionResolver;
   }
 
   /**
@@ -54,8 +47,8 @@ public final class ActionBuilder {
    * @param actionClass Action class.
    * @return Action builder.
    */
-  public static ActionBuilder from(ActionDescription actionClass, ActionResolver actionResolver) {
-    return new ActionBuilder(actionClass, actionResolver);
+  public static ActionBuilder from(ActionDescription actionClass) {
+    return new ActionBuilder(actionClass);
   }
 
   /**
@@ -93,8 +86,7 @@ public final class ActionBuilder {
     final Map<Expression, Action> ret = new HashMap<>();
 
     for (final var casee : cases) {
-      ret.put(ExpressionBuilder.from(casee.getCase()).build(), actionResolver.tryResolve(casee.getAction())
-          .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(casee.getAction()))));
+      ret.put(ExpressionBuilder.from(casee.getCase()).build(), ActionBuilder.from(casee.getAction()).build());
     }
 
     return ret;
@@ -115,7 +107,6 @@ public final class ActionBuilder {
 
         // Construct parameters
         final var parameters = new AssignAction.Parameters(
-            Optional.ofNullable(assign.getName()),
             contextVariable
         );
 
@@ -127,7 +118,6 @@ public final class ActionBuilder {
 
         // Construct parameters
         final var parameters = new CreateAction.Parameters(
-            Optional.ofNullable(create.getName()),
             contextVariable,
             create.isIsPersistent()
         );
@@ -144,7 +134,6 @@ public final class ActionBuilder {
 
         // Construct parameters
         final var parameters = new InvokeAction.Parameters(
-            Optional.ofNullable(invoke.getName()),
             invoke.getServiceType(),
             invoke.isIsLocal(),
             input,
@@ -164,7 +153,6 @@ public final class ActionBuilder {
 
         // Construct parameters
         final var parameters = new MatchAction.Parameters(
-            Optional.ofNullable(match.getName()),
             valueExpression,
             cases
         );
@@ -178,7 +166,6 @@ public final class ActionBuilder {
 
         // Construct parameters
         final var parameters = new RaiseAction.Parameters(
-            Optional.ofNullable(raise.getName()),
             event
         );
 
@@ -194,8 +181,7 @@ public final class ActionBuilder {
         final var delayExpression = ExpressionBuilder.from(timeout.getDelay()).build();
 
         // Acquire the timeout action
-        final var timeoutAction = actionResolver.tryResolve(timeout.getAction())
-            .orElseThrow(() -> new IllegalArgumentException("Action name '%s' does not exist".formatted(timeout.getAction())));
+        final var timeoutAction = ActionBuilder.from(timeout.getAction()).build();
 
         // Construct parameters
         final var parameters = new TimeoutAction.Parameters(
@@ -210,7 +196,6 @@ public final class ActionBuilder {
       case TimeoutResetActionDescription timeoutReset -> {
         // Construct parameters
         final var parameters = new TimeoutResetAction.Parameters(
-            Optional.ofNullable(timeoutReset.getName()),
             timeoutReset.getAction()
         );
 

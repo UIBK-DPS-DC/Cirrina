@@ -1,17 +1,10 @@
 package at.ac.uibk.dps.cirrina.classes.statemachine;
 
-import at.ac.uibk.dps.cirrina.classes.helper.ActionResolver;
-import at.ac.uibk.dps.cirrina.classes.helper.GuardResolver;
 import at.ac.uibk.dps.cirrina.classes.state.StateClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateMachineDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TransitionDescription;
-import at.ac.uibk.dps.cirrina.execution.object.action.Action;
-import at.ac.uibk.dps.cirrina.execution.object.action.ActionBuilder;
-import at.ac.uibk.dps.cirrina.execution.object.guard.Guard;
-import at.ac.uibk.dps.cirrina.execution.object.guard.GuardBuilder;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -77,56 +70,6 @@ public final class StateMachineClassBuilder {
   }
 
   /**
-   * Builds the collection of guards.
-   * <p>
-   * Guard names must be unique.
-   *
-   * @return Collection of guards.
-   * @throws IllegalArgumentException If guard names are not unique.
-   */
-  private List<Guard> buildGuards() throws IllegalArgumentException {
-    var guards = stateMachineDescription.getGuards().stream()
-        .map(guardClass -> GuardBuilder.from(guardClass).build())
-        .toList();
-
-    // Ensure that no duplicate entries exist
-    var duplicates = new HashSet<Guard>();
-
-    guards.stream()
-        .filter(n -> !duplicates.add(n))
-        .collect(Collectors.toSet()).forEach(guard -> {
-          throw new IllegalArgumentException("Guard name '%s' is not unique".formatted(guard.getName()));
-        });
-
-    return guards;
-  }
-
-  /**
-   * Builds the collection of actions.
-   * <p>
-   * Action names must be unique.
-   *
-   * @return The list of named actions or empty.
-   * @throws IllegalArgumentException If action names are not unique.
-   */
-  private List<Action> buildActions() throws IllegalArgumentException {
-    // Construct the list of named actions of this state machine, or leave empty if no named actions are declared
-    var actions = stateMachineDescription.getActions().stream()
-        .map(actionClass -> ActionBuilder.from(actionClass, null /* TODO: Provide me */).build())
-        .toList();
-
-    // Ensure that no duplicate entries exist
-    var duplicates = new HashSet<Action>();
-    actions.stream()
-        .filter(n -> !duplicates.add(n))
-        .collect(Collectors.toSet()).forEach(action -> {
-          throw new IllegalArgumentException("Action name '%s' is not unique".formatted(action.getName()));
-        });
-
-    return actions;
-  }
-
-  /**
    * Builds all nested state machines contained in the state machine class.
    *
    * @return A list containing all nested state machines.
@@ -152,26 +95,20 @@ public final class StateMachineClassBuilder {
    * @throws IllegalArgumentException In case the state machine could not be built.
    */
   private StateMachineClass buildBase() throws IllegalArgumentException {
-    var namedGuards = buildGuards();
-    var namedActions = buildActions();
     var nestedStateMachines = buildNestedStateMachines();
 
     var parameters = new StateMachineClass.Parameters(
         stateMachineDescription.getName(),
         stateMachineDescription.getLocalContext(),
-        namedGuards,
-        namedActions,
         nestedStateMachines
     );
 
     var stateMachine = new StateMachineClass(parameters);
 
-    var actionResolver = new ActionResolver(stateMachine);
-
     // Attempt to add vertices
     stateMachineDescription.getStates().stream()
         .filter(StateDescription.class::isInstance)
-        .map(stateClass -> StateClassBuilder.from(stateMachine.getId(), (StateDescription) stateClass, actionResolver).build())
+        .map(stateClass -> StateClassBuilder.from(stateMachine.getId(), (StateDescription) stateClass).build())
         .forEach(stateMachine::addVertex);
 
     return stateMachine;
@@ -187,9 +124,6 @@ public final class StateMachineClassBuilder {
    */
   public StateMachineClass build() throws IllegalArgumentException {
     var stateMachine = buildBase();
-
-    var guardResolver = new GuardResolver(stateMachine);
-    var actionResolver = new ActionResolver(stateMachine);
 
     // Attempt to add edges
     stateMachineDescription.getStates().stream()
@@ -208,7 +142,7 @@ public final class StateMachineClassBuilder {
 
               // Attempt to add an edge to the state machine graph that resembles the transition
               if (!stateMachine.addEdge(sourceStateClass, targetStateClass,
-                  TransitionClassBuilder.from(transitionClass, guardResolver, actionResolver).build())) {
+                  TransitionClassBuilder.from(transitionClass).build())) {
                 throw new IllegalArgumentException(
                     "The edge between states '%s' and '%s' is illegal in '%s'".formatted(sourceStateClass.getName(),
                         targetStateClass.getName(), stateMachineDescription.getName()));
