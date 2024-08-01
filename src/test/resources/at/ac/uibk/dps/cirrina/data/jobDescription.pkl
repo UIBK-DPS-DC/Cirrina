@@ -18,21 +18,27 @@ serviceImplementations {
 }
 collaborativeStateMachine = pingPongCSM
 stateMachineName = "stateMachine1"
-localData = new Mapping {
-    ["foo"] = "bar"
-}
+localData = new Mapping {}
 bindEventInstanceIds = new Listing {}
 runtimeName = "runtime"
 
 
 // ------------------------ CSM -------------------------------
 local pingPongCSM: CSM = new {
-  name = "collaborativeStateMachine"
-  version = "0.1"
-  stateMachines {
-      stateMachine1
-      stateMachine2
-  }
+    name = "collaborativeStateMachine"
+    version = "0.1"
+    stateMachines {
+        stateMachine1
+        stateMachine2
+    }
+    persistentContext {
+        variables {
+            new {
+                name = "v"
+                value = "0"
+            }
+        }
+    }
 }
 
 // ------------------------ StateMachine1 Description -------------------------------

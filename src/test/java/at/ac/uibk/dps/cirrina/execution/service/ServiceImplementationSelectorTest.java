@@ -18,7 +18,7 @@ class ServiceImplementationSelectorTest {
 
     // Service one
     {
-      final var service = new HttpServiceImplementationDescription("A", ServiceImplementationType.HTTP, 1.0, true, "http", "localhost",
+      final var service = new HttpServiceImplementationDescription("A", 1.0, true, ServiceImplementationType.HTTP, "http", "localhost",
           12345, "", Method.GET);
 
       serviceDescriptions[0] = service;
@@ -26,7 +26,7 @@ class ServiceImplementationSelectorTest {
 
     // Service two
     {
-      final var service = new HttpServiceImplementationDescription("A", ServiceImplementationType.HTTP, 0.5, false, "http", "localhost",
+      final var service = new HttpServiceImplementationDescription("A", 0.5, false, ServiceImplementationType.HTTP, "http", "localhost",
           12345, "", Method.GET);
 
       serviceDescriptions[1] = service;
@@ -34,7 +34,7 @@ class ServiceImplementationSelectorTest {
 
     // Service three
     {
-      final var service = new HttpServiceImplementationDescription("B", ServiceImplementationType.HTTP, 0.4, false, "http", "localhost",
+      final var service = new HttpServiceImplementationDescription("B", 0.4, false, ServiceImplementationType.HTTP, "http", "localhost",
           12345, "", Method.GET);
 
       serviceDescriptions[2] = service;
@@ -42,7 +42,7 @@ class ServiceImplementationSelectorTest {
 
     // Service four
     {
-      final var service = new HttpServiceImplementationDescription("B", ServiceImplementationType.HTTP, 0.2, false, "http", "localhost",
+      final var service = new HttpServiceImplementationDescription("B", 0.2, false, ServiceImplementationType.HTTP, "http", "localhost",
           12345, "", Method.GET);
 
       serviceDescriptions[3] = service;
@@ -50,7 +50,7 @@ class ServiceImplementationSelectorTest {
 
     // Service five
     {
-      final var service = new HttpServiceImplementationDescription("C", ServiceImplementationType.HTTP, 1.0, true, "http", "localhost",
+      final var service = new HttpServiceImplementationDescription("C", 1.0, true, ServiceImplementationType.HTTP, "http", "localhost",
           12345, "", Method.GET);
 
       serviceDescriptions[4] = service;

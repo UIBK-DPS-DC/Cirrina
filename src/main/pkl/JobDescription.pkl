@@ -1,8 +1,8 @@
 @ModuleInfo { minPklVersion = "0.26.2" }
 module at.ac.uibk.dps.cirrina.csml.description.JobDescription
 
-import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/CollaborativeStateMachineDescription.pkl"
-import "https://raw.githubusercontent.com/elkoDev/Cirrina/feat-pkl/descriptions/ServiceImplementationDescription.pkl"
+import "CollaborativeStateMachineDescription.pkl"
+import "ServiceImplementationDescription.pkl"
 
 serviceImplementations: Listing<ServiceImplementationDescription>
 collaborativeStateMachine: CollaborativeStateMachineDescription

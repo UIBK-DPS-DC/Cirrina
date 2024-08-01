@@ -148,7 +148,7 @@ public class ServiceInvocationTest {
       var serviceDescriptions = new ServiceImplementationDescription[1];
 
       {
-        var service = new HttpServiceImplementationDescription("increment", ServiceImplementationType.HTTP, 1.0, true, "http", "localhost",
+        var service = new HttpServiceImplementationDescription("increment", 1.0, true, ServiceImplementationType.HTTP, "http", "localhost",
             8000, "/increment", Method.GET);
 
         serviceDescriptions[0] = service;

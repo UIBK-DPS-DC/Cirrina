@@ -6,6 +6,7 @@ plugins {
     jacoco
 
     id("com.google.protobuf") version "0.9.4"
+    id("org.pkl-lang") version "0.26.2"
 }
 
 group = "ac.at.uibk.dps.cirrina"
@@ -21,26 +22,24 @@ java {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir("src/main/java")
-            srcDir("generated/java") // Add the generated sources
-        }
-        resources {
-            srcDir("src/main/resources")
-            srcDir("generated/resources")  // Add the generated resources
-        }
-    }
-    test {
-        java {
-            srcDir("src/test/java")
-        }
-    }
-}
-
 jacoco {
     toolVersion = "0.8.11"
+}
+
+pkl {
+    javaCodeGenerators {
+        register("pklGenJava") {
+            allowedModules.add(".+")
+            sourceModules.addAll(
+                "src/main/pkl/CollaborativeStateMachineDescription.pkl",
+                "src/main/pkl/HttpServiceImplementationDescription.pkl",
+                "src/main/pkl/JobDescription.pkl",
+                "src/main/pkl/ServiceImplementationDescription.pkl"
+            )
+            generateGetters.set(true)
+            generateJavadoc.set(true)
+        }
+    }
 }
 
 protobuf {
@@ -56,6 +55,7 @@ protobuf {
 
 dependencies {
     implementation("org.pkl-lang:pkl-config-java:0.26.2")
+    implementation("org.pkl-lang:pkl-codegen-java:0.26.2")
 
     implementation("com.beust:jcommander:1.82")
 
