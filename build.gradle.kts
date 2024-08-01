@@ -29,12 +29,12 @@ jacoco {
 pkl {
     javaCodeGenerators {
         register("pklGenJava") {
-            allowedModules.add(".+")
-            sourceModules.addAll(
-                "src/main/pkl/CollaborativeStateMachineDescription.pkl",
-                "src/main/pkl/HttpServiceImplementationDescription.pkl",
-                "src/main/pkl/JobDescription.pkl",
-                "src/main/pkl/ServiceImplementationDescription.pkl"
+            allowedModules.add("https:")
+            sourceModules.addAll( //TODO Adjust URLs to the repo (including URLs in the test resources pkl files)
+                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl",
+                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/HttpServiceImplementationDescription.pkl",
+                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/JobDescription.pkl",
+                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/ServiceImplementationDescription.pkl"
             )
             generateGetters.set(true)
             generateJavadoc.set(true)
