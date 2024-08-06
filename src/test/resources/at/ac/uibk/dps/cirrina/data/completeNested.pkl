@@ -12,9 +12,11 @@ stateMachines {
 // ------------------------ StateMachine Description -------------------------------
 local stateMachine1: CSM.StateMachineDescription = new {
     name = "stateMachine1"
-    states {
+    stateMachines {
         stateMachine1_1
         stateMachine1_2
+    }
+    states {
         state1
         state2
         state3

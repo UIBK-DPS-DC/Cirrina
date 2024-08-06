@@ -2,6 +2,7 @@ package at.ac.uibk.dps.cirrina.classes.statemachine;
 
 import at.ac.uibk.dps.cirrina.classes.state.StateClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClassBuilder;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.OnTransitionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateMachineDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TransitionDescription;
@@ -21,28 +22,12 @@ public final class StateMachineClassBuilder {
   private final StateMachineDescription stateMachineDescription;
 
   /**
-   * The collection of known state machine classes, used to acquire the base state machine class.
-   */
-  private final List<StateMachineClass> knownStateMachineClasses;
-
-  /**
-   * Initializes this builder instance.
-   *
-   * @param stateMachineDescription State machine description.
-   */
-  private StateMachineClassBuilder(StateMachineDescription stateMachineDescription) {
-    this(stateMachineDescription, List.of());
-  }
-
-  /**
    * Initializes this builder instance.
    *
    * @param stateMachineDescription  State machine description.
-   * @param knownStateMachineClasses Collection of known state machine classes.
    */
-  private StateMachineClassBuilder(StateMachineDescription stateMachineDescription, List<StateMachineClass> knownStateMachineClasses) {
+  private StateMachineClassBuilder(StateMachineDescription stateMachineDescription) {
     this.stateMachineDescription = stateMachineDescription;
-    this.knownStateMachineClasses = knownStateMachineClasses;
   }
 
   /**
@@ -56,35 +41,15 @@ public final class StateMachineClassBuilder {
   }
 
   /**
-   * Construct a builder from a state machine description.
-   *
-   * @param stateMachineDescription  State machine description.
-   * @param knownStateMachineClasses Collection of known state machine classes.
-   * @return Builder.
-   */
-  public static StateMachineClassBuilder from(
-      StateMachineDescription stateMachineDescription,
-      List<StateMachineClass> knownStateMachineClasses
-  ) {
-    return new StateMachineClassBuilder(stateMachineDescription, knownStateMachineClasses);
-  }
-
-  /**
    * Builds all nested state machines contained in the state machine class.
    *
    * @return A list containing all nested state machines.
    * @throws IllegalArgumentException In case one nested state machine could not be built.
    */
   private List<StateMachineClass> buildNestedStateMachines() throws IllegalArgumentException {
-    // Gather the nested state machines
-    List<StateMachineDescription> nestedStateMachinesClasses = stateMachineDescription.getStates().stream()
-        .filter(StateMachineDescription.class::isInstance)
-        .map(StateMachineDescription.class::cast)
-        .toList();
-
     // Build all nested state machines
-    return nestedStateMachinesClasses.stream()
-        .map(nestedStateMachineClass -> new StateMachineClassBuilder(nestedStateMachineClass, knownStateMachineClasses).build())
+    return stateMachineDescription.getStateMachines().stream()
+        .map(nestedStateMachineClass -> new StateMachineClassBuilder(nestedStateMachineClass).build())
         .toList();
   }
 
@@ -107,8 +72,7 @@ public final class StateMachineClassBuilder {
 
     // Attempt to add vertices
     stateMachineDescription.getStates().stream()
-        .filter(StateDescription.class::isInstance)
-        .map(stateClass -> StateClassBuilder.from(stateMachine.getId(), (StateDescription) stateClass).build())
+        .map(stateClass -> StateClassBuilder.from(stateMachine.getId(), stateClass).build())
         .forEach(stateMachine::addVertex);
 
     return stateMachine;
@@ -127,7 +91,6 @@ public final class StateMachineClassBuilder {
 
     // Attempt to add edges
     stateMachineDescription.getStates().stream()
-        .filter(StateDescription.class::isInstance)
         .map(StateDescription.class::cast)
         .forEach(stateClass -> {
           // Acquire source node, this is expected to always succeed as we use the previously created state
@@ -137,7 +100,8 @@ public final class StateMachineClassBuilder {
             for (var transitionClass : on) {
               // Acquire the target node, if the target is not provided, this is a self-transition
               var targetStateClass = Optional.ofNullable(transitionClass.getTarget())
-                  .map(targetName -> stateMachine.findStateClassByName(targetName).get())
+                  .map(targetName -> stateMachine.findStateClassByName(targetName)
+                      .orElseThrow(() -> new IllegalArgumentException("Transition has an invalid target state '%s'".formatted(targetName))))
                   .orElse(sourceStateClass);
 
               // Attempt to add an edge to the state machine graph that resembles the transition
@@ -150,13 +114,12 @@ public final class StateMachineClassBuilder {
             }
           };
 
-          // Ensure that "on" transitions have distinct events
-          var hasDuplicateEdges = stateClass.getOn().stream()
-              .collect(Collectors.groupingBy(transitionClass -> transitionClass.getEvent(), Collectors.counting())).entrySet().stream()
-              .anyMatch(entry -> entry.getValue() > 1);
-
           // TODO: This is actually allowed, depending on the guard conditions
-          /*if (hasDuplicateEdges) {
+          /* // Ensure that "on" transitions have distinct events
+          var hasDuplicateEdges = stateClass.getOn().stream()
+              .collect(Collectors.groupingBy(OnTransitionDescription::getEvent, Collectors.counting())).entrySet().stream()
+              .anyMatch(entry -> entry.getValue() > 1);
+          if (hasDuplicateEdges) {
             throw new IllegalArgumentException(
                 "Multiple outwards transitions with the same event in '%s'".formatted(stateMachineDescription.name));
           }*/
@@ -166,9 +129,6 @@ public final class StateMachineClassBuilder {
           // Attempt to add edges corresponding to the "always" transitions, these transitions are optional
           processTransitions.accept(stateClass.getAlways());
         });
-
-    // Add the created state machine as a known state machine in this builder
-    knownStateMachineClasses.add(stateMachine);
 
     return stateMachine;
   }

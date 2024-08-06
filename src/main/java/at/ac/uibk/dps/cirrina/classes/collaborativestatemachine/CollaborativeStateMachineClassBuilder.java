@@ -48,11 +48,8 @@ public final class CollaborativeStateMachineClassBuilder {
    * @param collaborativeStateMachineClass The collaborative state machine class being built.
    */
   private void buildVertices(CollaborativeStateMachineClass collaborativeStateMachineClass) {
-    final var knownStateMachines = new ArrayList<StateMachineClass>();
-
     collaborativeStateMachineDescription.getStateMachines().stream()
-        .map(stateMachineClass -> StateMachineClassBuilder.from(stateMachineClass,
-            knownStateMachines).build())
+        .map(stateMachineClass -> StateMachineClassBuilder.from(stateMachineClass).build())
         .forEach(collaborativeStateMachineClass::addVertex);
   }
 
