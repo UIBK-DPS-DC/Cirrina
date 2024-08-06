@@ -2,14 +2,12 @@ package at.ac.uibk.dps.cirrina.classes.statemachine;
 
 import at.ac.uibk.dps.cirrina.classes.state.StateClassBuilder;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.OnTransitionDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.StateMachineDescription;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.TransitionDescription;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * StateClass machine builder. Builds a state machine based on a state machine class.
@@ -82,7 +80,7 @@ public final class StateMachineClassBuilder {
    * Builds the state machine.
    *
    * @return The state machine.
-   * @throws IllegalArgumentException If the state machine has declared abstract states, but the state machine is not abstract.
+   * @throws IllegalArgumentException If the state machine has declared a transition with an invalid (non-existent) target state.
    * @throws IllegalArgumentException If the state machine has declared a transition between two states that is illegal.
    * @throws IllegalArgumentException If the state machine has declared a state with a non-deterministic outward transition.
    */

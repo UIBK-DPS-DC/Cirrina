@@ -208,17 +208,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   }
 
   /**
-   * Returns the collection of state names.
-   *
-   * @return State names.
-   */
-  public List<String> getStateNames() {
-    return vertexSet().stream()
-        .map(StateClass::getName)
-        .toList();
-  }
-
-  /**
    * Parameters for the construction of a state machine class.
    *
    * @param name                      Name.
