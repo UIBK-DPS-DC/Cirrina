@@ -28,7 +28,7 @@ runtimeName = "runtime"
 // ------------------------ CSM -------------------------------
 local pingPongCSM: CSM = new {
     name = "collaborativeStateMachine"
-    version = "0.1"
+    version = "2.0"
     stateMachines {
         stateMachine1
         stateMachine2
