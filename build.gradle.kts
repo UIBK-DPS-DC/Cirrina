@@ -30,7 +30,7 @@ pkl {
     javaCodeGenerators {
         register("pklGenJava") {
             allowedModules.add("https:")
-            sourceModules.addAll( //TODO Adjust URLs to the repo (including URLs in the test resources pkl files)
+            sourceModules.addAll(
                 "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl",
                 "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/HttpServiceImplementationDescription.pkl",
                 "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/JobDescription.pkl",
