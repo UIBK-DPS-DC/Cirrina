@@ -31,10 +31,10 @@ pkl {
         register("pklGenJava") {
             allowedModules.add("https:")
             sourceModules.addAll( //TODO Adjust URLs to the repo (including URLs in the test resources pkl files)
-                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl",
-                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/HttpServiceImplementationDescription.pkl",
-                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/JobDescription.pkl",
-                "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/ServiceImplementationDescription.pkl"
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl",
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/HttpServiceImplementationDescription.pkl",
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/JobDescription.pkl",
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/ServiceImplementationDescription.pkl"
             )
             generateGetters.set(true)
             generateJavadoc.set(true)

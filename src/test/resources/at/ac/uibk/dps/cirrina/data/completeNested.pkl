@@ -1,5 +1,5 @@
-amends "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl"
-import "https://raw.githubusercontent.com/Lellson/Cirrina-Specifications/develop/pkl/CollaborativeStateMachineDescription.pkl" as CSM
+amends "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl"
+import "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl" as CSM
 
 // ------------------------ CSM -------------------------------
 name = "collaborativeStateMachine"
