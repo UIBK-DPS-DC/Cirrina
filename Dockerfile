@@ -19,7 +19,7 @@ RUN gradle distZip
 FROM openjdk:21-bookworm
 
 # Define a build argument for the application version
-ARG CIRRINA_VERSION="cirrina-1.0-SNAPSHOT"
+ARG CIRRINA_VERSION="cirrina-1.0.0"
 
 # Copy the application distribution ZIP from the build stage
 COPY --from=build /usr/src/cirrina/build/distributions/${CIRRINA_VERSION}.zip /tmp/${CIRRINA_VERSION}.zip
