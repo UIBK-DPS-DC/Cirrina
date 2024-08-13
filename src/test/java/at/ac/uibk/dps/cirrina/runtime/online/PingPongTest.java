@@ -37,7 +37,7 @@ public class PingPongTest {
   public static void setUp() {
     var json = DefaultDescriptions.pingPong;
 
-    var parser = new DescriptionParser<CollaborativeStateMachineDescription>(CollaborativeStateMachineDescription.class);
+    var parser = new DescriptionParser<>(CollaborativeStateMachineDescription.class);
     Assertions.assertDoesNotThrow(() -> {
       collaborativeStateMachineClass = CollaborativeStateMachineClassBuilder.from(parser.parse(json)).build();
     });
@@ -45,7 +45,7 @@ public class PingPongTest {
 
   @Disabled
   @Test
-  public void testPingPongExecute() {
+  void testPingPongExecute() {
     final var natsServerURL = System.getenv("NATS_SERVER_URL");
     final var natsBucketName = System.getenv("NATS_BUCKET_NAME");
     final var zooKeeperConnectString = System.getenv("ZOOKEEPER_CONNECT_STRING");

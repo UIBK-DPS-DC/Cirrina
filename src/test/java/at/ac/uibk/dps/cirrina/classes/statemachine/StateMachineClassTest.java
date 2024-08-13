@@ -24,7 +24,7 @@ public class StateMachineClassTest {
   public static void setUp() {
     var json = DefaultDescriptions.complete;
 
-    var parser = new DescriptionParser<CollaborativeStateMachineDescription>(CollaborativeStateMachineDescription.class);
+    var parser = new DescriptionParser<>(CollaborativeStateMachineDescription.class);
     assertDoesNotThrow(() -> {
       var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(parser.parse(json)).build();
 
@@ -33,50 +33,26 @@ public class StateMachineClassTest {
   }
 
   @Test
-  public void testGetName() {
+  void testGetName() {
     assertEquals(stateMachineClass.getName(), "stateMachine1");
   }
 
   @Test
-  public void testIsAbstract() {
-    assertEquals(stateMachineClass.isAbstract(), false);
-  }
-
-  @Test
-  public void testGetActions() {
-    assertEquals(stateMachineClass.getNamedActions().size(), 1);
-
-    var action = stateMachineClass.getNamedActions().getFirst();
-    Assertions.assertEquals(action.getName().get(), "action1");
-    assertTrue(action instanceof CreateAction);
-
-    var createAction = (CreateAction) action;
-    Assertions.assertEquals(createAction.getVariable().name(), "v");
-    Assertions.assertTrue(createAction.getVariable().isLazy());
-
-    var val = createAction.getVariable().value();
-    assertTrue(val instanceof Expression);
-
-    var expression = (Expression) val;
-    assertEquals(expression.getSource(), "5");
-  }
-
-  @Test
-  public void testGetHandledEvents() {
+  void testGetHandledEvents() {
     var handledEvents = stateMachineClass.getInputEvents();
     var expectedHandledEvents = List.of("e1", "e2");
     assertEquals(handledEvents, expectedHandledEvents);
   }
 
   @Test
-  public void testGetRaisedEvents() {
+  void testGetRaisedEvents() {
     var raisedEvents = stateMachineClass.getInputEvents();
     var expectedRaisedEvents = List.of("e1", "e2");
     assertEquals(raisedEvents, expectedRaisedEvents);
   }
 
   @Test
-  public void testGetStateByName() {
+  void testGetStateByName() {
     assertDoesNotThrow(() -> stateMachineClass.findStateClassByName("state1"));
     assertDoesNotThrow(() -> stateMachineClass.findStateClassByName("state2"));
 
@@ -84,14 +60,14 @@ public class StateMachineClassTest {
   }
 
   @Test
-  public void testGetActionByName() {
+  void testGetActionByName() {
     assertDoesNotThrow(() -> stateMachineClass.findStateClassByName("action1"));
 
     assertTrue(stateMachineClass.findStateClassByName("nonExisting").isEmpty());
   }
 
   @Test
-  public void testFindStateByName() {
+  void testFindStateByName() {
     assertDoesNotThrow(() -> {
       stateMachineClass.findStateClassByName("state1").get().getName().equals("state1");
 
@@ -100,7 +76,7 @@ public class StateMachineClassTest {
   }
 
   @Test
-  public void testFindTransitionByEventName() {
+  void testFindTransitionByEventName() {
     assertDoesNotThrow(() -> {
       var t = stateMachineClass.findOnTransitionsFromStateByEventName(stateMachineClass.findStateClassByName("state1").get(), "e1");
       assertEquals(1, t.size());
@@ -113,7 +89,7 @@ public class StateMachineClassTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertEquals(stateMachineClass.toString(), "stateMachine1");
   }
 }

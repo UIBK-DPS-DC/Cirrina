@@ -119,22 +119,22 @@ public final class ActionInvokeCommand extends ActionCommand {
   private void assignServiceOutput(List<ContextVariable> output, Extent extent) {
     for (final var outputReference : invokeAction.getOutput()) {
       output.stream()
-          .filter(variable -> variable.name().equals(outputReference.reference))
+          .filter(variable -> variable.name().equals(outputReference.getReference()))
           .findFirst()
           .ifPresentOrElse(
               outputVariable -> {
                 try {
-                  extent.trySet(outputReference.reference, outputVariable.value());
+                  extent.trySet(outputReference.getReference(), outputVariable.value());
                 } catch (Exception e) {
                   logger.error(
                       "Failed to assign service output to variable '{}': {}",
-                      outputReference.reference, e.getMessage(), e
+                      outputReference.getReference(), e.getMessage(), e
                   );
                 }
               },
               () -> logger.warn(
                   "Service output does not contain expected variable '{}'",
-                  outputReference.reference
+                  outputReference.getReference()
               )
           );
     }

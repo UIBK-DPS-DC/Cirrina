@@ -3,7 +3,7 @@ package at.ac.uibk.dps.cirrina.classes.statemachine;
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.transition.OnTransitionClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClass;
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
@@ -48,21 +48,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   private final @Nullable ContextDescription localContextClass;
 
   /**
-   * Whether this state machine is abstract.
-   */
-  private final boolean abstractt;
-
-  /**
-   * Collection of named guards.
-   */
-  private final List<Guard> namedGuards;
-
-  /**
-   * Collection of named actions.
-   */
-  private final List<Action> namedActions;
-
-  /**
    * Initializes this state machine class instance.
    *
    * @param parameters Parameters.
@@ -72,9 +57,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
 
     this.name = parameters.name;
     this.localContextClass = parameters.localContextClass;
-    this.namedGuards = Collections.unmodifiableList(parameters.namedGuards);
-    this.namedActions = Collections.unmodifiableList(parameters.namedActions);
-    this.abstractt = parameters.abstractt;
     this.nestedStateMachineClasses = Collections.unmodifiableList(parameters.nestedStateMachineClasses);
   }
 
@@ -126,8 +108,8 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
    */
   public List<OnTransitionClass> findOnTransitionsFromStateByEventName(StateClass fromStateClass, String eventName) {
     return outgoingEdgesOf(fromStateClass).stream()
-        .filter(transition -> transition instanceof OnTransitionClass)
-        .map(transition -> (OnTransitionClass) transition)
+        .filter(OnTransitionClass.class::isInstance)
+        .map(OnTransitionClass.class::cast)
         .filter(transition -> transition.getEventName().equals(eventName))
         .toList();
   }
@@ -142,39 +124,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
     return outgoingEdgesOf(fromStateClass).stream()
         .filter(transition -> !(transition instanceof OnTransitionClass))
         .toList();
-  }
-
-  /**
-   * Returns a guard by its name. If not one guard is known with the supplied name, empty is returned.
-   *
-   * @param guardName Name of the guard to return.
-   * @return The guard with the supplied name or empty.
-   */
-  public Optional<Guard> findGuardByName(String guardName) {
-    return namedGuards.stream()
-        .filter(guard -> guard.getName().equals(Optional.of(guardName)))
-        .findFirst();
-  }
-
-  /**
-   * Returns an action by its name. If not one action is known with the supplied name, empty is returned.
-   *
-   * @param actionName Name of the action to return.
-   * @return The action with the supplied name or empty.
-   */
-  public Optional<Action> findActionByName(String actionName) {
-    return namedActions.stream()
-        .filter(action -> action.getName().equals(Optional.of(actionName)))
-        .findFirst();
-  }
-
-  /**
-   * Returns a boolean value which indicates whether this state machine is abstract.
-   *
-   * @return true, if this state machine is abstract.
-   */
-  public boolean isAbstract() {
-    return abstractt;
   }
 
   /**
@@ -211,24 +160,6 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
    */
   public Optional<ContextDescription> getLocalContextClass() {
     return Optional.ofNullable(localContextClass);
-  }
-
-  /**
-   * Returns the named actions of this state machine.
-   *
-   * @return named actions.
-   */
-  public List<Action> getNamedActions() {
-    return namedActions;
-  }
-
-  /**
-   * Returns the named guards of this state machine.
-   *
-   * @return named guards.
-   */
-  public List<Guard> getNamedGuards() {
-    return namedGuards;
   }
 
   /**
@@ -277,57 +208,14 @@ public final class StateMachineClass extends DirectedPseudograph<StateClass, Tra
   }
 
   /**
-   * Returns the collection of state names.
-   *
-   * @return State names.
-   */
-  public List<String> getStateNames() {
-    return vertexSet().stream()
-        .map(StateClass::getName)
-        .toList();
-  }
-
-  /**
-   * Returns the collection of named guard names.
-   *
-   * @return Named guard names.
-   */
-  public List<String> getNamedGuardNames() {
-    return namedGuards.stream()
-        .map(Guard::getName)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .toList();
-  }
-
-  /**
-   * Returns the collection of named action names.
-   *
-   * @return Named action names.
-   */
-  public List<String> getNamedActionNames() {
-    return namedActions.stream()
-        .map(Action::getName)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .toList();
-  }
-
-  /**
    * Parameters for the construction of a state machine class.
    *
    * @param name                      Name.
    * @param localContextClass         Local context class or empty if none declared.
-   * @param namedGuards               Named guards.
-   * @param namedActions              Named actions.
-   * @param abstractt                 Is abstract.
    * @param nestedStateMachineClasses Nested state machine classes.
    */
   record Parameters(String name,
                     @Nullable ContextDescription localContextClass,
-                    List<Guard> namedGuards,
-                    List<Action> namedActions,
-                    boolean abstractt,
                     List<StateMachineClass> nestedStateMachineClasses) {
 
   }

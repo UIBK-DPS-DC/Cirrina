@@ -9,6 +9,11 @@ import java.util.Optional;
 public final class TimeoutAction extends Action {
 
   /**
+   * The name of the timeout action.
+   */
+  private final String name;
+
+  /**
    * The delay expression. Needs to evaluate to a numeric value, representing the delay in milliseconds.
    *
    * @see Number
@@ -26,10 +31,18 @@ public final class TimeoutAction extends Action {
    * @param parameters Parameters.
    */
   TimeoutAction(Parameters parameters) {
-    super(Optional.of(parameters.name()));
-
+    this.name = parameters.name;
     this.delay = parameters.delay;
     this.action = parameters.action;
+  }
+
+  /**
+   * Returns the name.
+   *
+   * @return Name.
+   */
+  public String getName() {
+    return name;
   }
 
   /**

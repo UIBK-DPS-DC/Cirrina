@@ -13,7 +13,7 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESP
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClass;
-import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.command.ActionCommand;
 import at.ac.uibk.dps.cirrina.execution.command.ActionRaiseCommand;
 import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
@@ -421,9 +421,8 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         throw new IllegalArgumentException("A timeout action must be a raise action");
       }
 
-      // Acquire the name, which must be provided (otherwise it cannot be reset)
-      final var actionName = timeoutActionObject.getName()
-          .orElseThrow(() -> new IllegalArgumentException("A timeout action must have a name"));
+      // Acquire the name
+      final var actionName = timeoutActionObject.getName();
 
       // Start the timeout task
       timeoutActionManager.start(actionName, (Number) delay, () -> {
