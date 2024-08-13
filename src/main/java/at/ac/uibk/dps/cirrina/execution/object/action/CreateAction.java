@@ -25,8 +25,6 @@ public final class CreateAction extends Action {
    * @throws IllegalArgumentException In case compilation of the expressions fails.
    */
   CreateAction(Parameters parameters) {
-    super(parameters.name());
-
     this.variable = parameters.variable();
     this.isPersistent = parameters.isPersistent();
   }
@@ -40,7 +38,6 @@ public final class CreateAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       ContextVariable variable,
       boolean isPersistent
   ) {

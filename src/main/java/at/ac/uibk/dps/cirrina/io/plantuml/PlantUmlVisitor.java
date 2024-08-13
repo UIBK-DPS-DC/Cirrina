@@ -96,19 +96,19 @@ public class PlantUmlVisitor {
   public void visit(Action action) {
     switch (action) {
       case AssignAction a -> actionBuilder.append(String.format("<color:%s>%s{%s = %s}()</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("Assign"), a.getVariable().name(), a.getVariable().value()));
+          "Assign", a.getVariable().name(), a.getVariable().value()));
       case CreateAction a -> actionBuilder.append(String.format("<color:%s>%s()</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("Create")));
+          "Create"));
       case InvokeAction a -> actionBuilder.append(String.format("<color:%s>%s{%s}(%s)</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("Invoke"), a.getServiceType(), a.getInput()));
+          "Invoke", a.getServiceType(), a.getInput()));
       case MatchAction a -> actionBuilder.append(String.format("<color:%s>%s()</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("Match")));
+          "Match"));
       case RaiseAction a -> actionBuilder.append(String.format("<color:%s>%s{%s}()</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("Raise"), a.getEvent()));
+          "Raise", a.getEvent()));
       case TimeoutAction a -> actionBuilder.append(String.format("<color:%s>%s()</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("Timeout")));
+          "Timeout{%s}".formatted(a.getName())));
       case TimeoutResetAction a -> actionBuilder.append(String.format("<color:%s>%s()</color>", ActionColors.getActionColor(a),
-          a.getName().orElse("TimeoutReset")));
+          "TimeoutReset"));
       default -> throw new IllegalStateException("Unexpected action");
     }
   }
@@ -164,7 +164,9 @@ public class PlantUmlVisitor {
   }
 
   private String getArrow(TransitionClass transitionClass) {
-    if (transitionClass.getSource().getName().equals(transitionClass.getTargetStateName())) {
+    boolean isInternal = transitionClass.getTargetStateName().isEmpty();
+
+    if (isInternal) {
       return " -[dashed]-> ";
     } else {
       return " --> ";

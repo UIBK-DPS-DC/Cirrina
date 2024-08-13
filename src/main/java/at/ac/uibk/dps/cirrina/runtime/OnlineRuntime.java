@@ -1,14 +1,13 @@
 package at.ac.uibk.dps.cirrina.runtime;
 
 import at.ac.uibk.dps.cirrina.classes.collaborativestatemachine.CollaborativeStateMachineClassBuilder;
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
+import at.ac.uibk.dps.cirrina.csml.description.JobDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
 import at.ac.uibk.dps.cirrina.execution.service.RandomServiceImplementationSelector;
 import at.ac.uibk.dps.cirrina.execution.service.ServiceImplementationBuilder;
 import at.ac.uibk.dps.cirrina.runtime.job.Job;
-import at.ac.uibk.dps.cirrina.runtime.job.JobDescription;
 import at.ac.uibk.dps.cirrina.runtime.job.JobListener;
 import at.ac.uibk.dps.cirrina.runtime.job.JobMonitor;
 import at.ac.uibk.dps.cirrina.utils.Time;
@@ -83,7 +82,7 @@ public class OnlineRuntime extends Runtime implements JobListener {
   public void newJob(Job job) throws UnsupportedOperationException {
     // TODO: Add additional conditions/rules
 
-    final var jobDescriptionRuntimeName = job.getJobDescription().runtimeName;
+    final var jobDescriptionRuntimeName = job.getJobDescription().getRuntimeName();
 
     if (!name.equals(jobDescriptionRuntimeName)) {
       logger.info(
@@ -103,9 +102,9 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
         // Schedule job
         synchronized (futureJobs) {
-          logger.info("Found a job for {} it is {} now", jobDescription.startTime, Time.timeInMillisecondsSinceStart());
+          logger.info("Found a job for {} it is {} now", jobDescription.getStartTime(), Time.timeInMillisecondsSinceStart());
 
-          futureJobs.put(jobDescription.startTime, jobDescription);
+          futureJobs.put(jobDescription.getStartTime(), jobDescription);
         }
 
         // Delete the job (it has been consumed)
@@ -121,26 +120,20 @@ public class OnlineRuntime extends Runtime implements JobListener {
 
   private void startJob(JobDescription jobDescription) {
     // Create the collaborative state machine from the description
-    final var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(jobDescription.collaborativeStateMachine)
+    final var collaborativeStateMachine = CollaborativeStateMachineClassBuilder.from(jobDescription.getCollaborativeStateMachine())
         .build();
 
     // Acquire the service implementation selector
     final var serviceImplementationSelector = new RandomServiceImplementationSelector(
-        ServiceImplementationBuilder.from(jobDescription.serviceImplementations).build());
+        ServiceImplementationBuilder.from(jobDescription.getServiceImplementations()).build());
 
     // Acquire the state machine name
-    final var stateMachineName = jobDescription.stateMachineName;
+    final var stateMachineName = jobDescription.getStateMachineName();
 
     // Find the state machine by name
     final var stateMachine = collaborativeStateMachine.findStateMachineClassByName(stateMachineName)
         .orElseThrow(() -> new UnsupportedOperationException(
             "A state machine with the name '%s' does not exist in the collaborative state machine".formatted(stateMachineName)));
-
-    // Throw an error if the state machine is abstract (should not be instantiated)
-    if (stateMachine.isAbstract()) {
-      throw new UnsupportedOperationException(
-          "State machine '%s' is abstract and can not be instantiated".formatted(stateMachineName));
-    }
 
     // Create persistent variables
     final var persistentContextVariables = collaborativeStateMachine.getPersistentContextVariables();
@@ -156,19 +149,19 @@ public class OnlineRuntime extends Runtime implements JobListener {
     });
 
     // Create instances, newInstances will also instantiate nested state machines
-    final var instanceIds = newInstances(List.of(stateMachine), serviceImplementationSelector, null, jobDescription.endTime);
+    final var instanceIds = newInstances(List.of(stateMachine), serviceImplementationSelector, null, jobDescription.getEndTime());
 
     // Assign local data from the job description if the job description contains any local data. Assign to the parent and nested state machines
-    if (!jobDescription.localData.isEmpty()) {
+    if (!jobDescription.getLocalData().isEmpty()) {
       for (final var instanceId : instanceIds) {
         final var stateMachineInstance = findInstance(instanceId)
             .orElseThrow(() -> new UnsupportedOperationException(
                 "State machine '%s' with id '%s' was not instantiated.".formatted(stateMachine.getName(), instanceId)));
 
-        for (final var localData : jobDescription.localData.entrySet()) {
+        for (final var localData : jobDescription.getLocalData().entrySet()) {
           try {
             // Assign local data entry, evaluate the value as an expression
-            final var valueExpression = ExpressionBuilder.from(new ExpressionDescription(localData.getValue())).build();
+            final var valueExpression = ExpressionBuilder.from(localData.getValue()).build();
 
             stateMachineInstance.getExtent().setOrCreate(localData.getKey(), valueExpression.execute(stateMachineInstance.getExtent()));
           } catch (IOException | IllegalArgumentException e) {

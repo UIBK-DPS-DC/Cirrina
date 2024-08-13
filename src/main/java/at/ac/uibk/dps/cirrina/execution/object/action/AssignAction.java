@@ -19,8 +19,6 @@ public final class AssignAction extends Action {
    * @param parameters Initialization parameters.
    */
   AssignAction(Parameters parameters) {
-    super(parameters.name());
-
     this.variable = parameters.variable();
   }
 
@@ -29,7 +27,6 @@ public final class AssignAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       ContextVariable variable
   ) {
 

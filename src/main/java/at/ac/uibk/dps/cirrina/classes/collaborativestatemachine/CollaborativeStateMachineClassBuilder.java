@@ -3,7 +3,8 @@ package at.ac.uibk.dps.cirrina.classes.collaborativestatemachine;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClassBuilder;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription;
-import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
+import at.ac.uibk.dps.cirrina.execution.object.context.Context;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import com.google.common.collect.HashBasedTable;
@@ -47,11 +48,8 @@ public final class CollaborativeStateMachineClassBuilder {
    * @param collaborativeStateMachineClass The collaborative state machine class being built.
    */
   private void buildVertices(CollaborativeStateMachineClass collaborativeStateMachineClass) {
-    final var knownStateMachines = new ArrayList<StateMachineClass>();
-
-    collaborativeStateMachineDescription.stateMachines.stream()
-        .map(stateMachineClass -> StateMachineClassBuilder.from(stateMachineClass,
-            knownStateMachines).build())
+    collaborativeStateMachineDescription.getStateMachines().stream()
+        .map(stateMachineClass -> StateMachineClassBuilder.from(stateMachineClass).build())
         .forEach(collaborativeStateMachineClass::addVertex);
   }
 
@@ -156,21 +154,18 @@ public final class CollaborativeStateMachineClassBuilder {
    */
   public CollaborativeStateMachineClass build() throws IllegalArgumentException {
     // Construct a local context from the persistent context description, such that we can easily acquire the context variables
-    final var persistentContext = collaborativeStateMachineDescription.persistentContext.map(
-            contextDescription -> {
-              try {
-                return ContextBuilder.from(contextDescription)
-                    .inMemoryContext(true)
-                    .build();
-              } catch (IOException ignored) {
-                throw new IllegalStateException();
-              }
-            })
-        .orElse(null);
+    Context persistentContext;
+    try {
+      persistentContext = ContextBuilder.from(collaborativeStateMachineDescription.getPersistentContext())
+          .inMemoryContext(true)
+          .build();
+    } catch (IOException ignored) {
+      throw new IllegalStateException();
+    }
 
     try {
       final var collaborativeStateMachine = new CollaborativeStateMachineClass(
-          collaborativeStateMachineDescription.name,
+          collaborativeStateMachineDescription.getName(),
           persistentContext != null ? persistentContext.getAll() : List.of()
       );
 

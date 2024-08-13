@@ -11,8 +11,6 @@ public final class MatchAction extends Action {
   private final Map<Expression, Action> casee;
 
   MatchAction(Parameters parameters) {
-    super(parameters.name());
-
     this.value = parameters.value();
     this.casee = parameters.casee();
   }
@@ -26,7 +24,6 @@ public final class MatchAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       Expression value,
       Map<Expression, Action> casee
   ) {

@@ -4,13 +4,13 @@ plugins {
     application
 
     jacoco
-    id("net.razvan.jacoco-to-cobertura") version "1.2.0"
 
     id("com.google.protobuf") version "0.9.4"
+    id("org.pkl-lang") version "0.26.2"
 }
 
 group = "ac.at.uibk.dps.cirrina"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 application {
     mainClass = "at.ac.uibk.dps.cirrina.main.Main"
@@ -26,6 +26,22 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
+pkl {
+    javaCodeGenerators {
+        register("pklGenJava") {
+            allowedModules.add("https:")
+            sourceModules.addAll(
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl",
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/HttpServiceImplementationDescription.pkl",
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/JobDescription.pkl",
+                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/ServiceImplementationDescription.pkl"
+            )
+            generateGetters.set(true)
+            generateJavadoc.set(true)
+        }
+    }
+}
+
 protobuf {
     generateProtoTasks {
         all().forEach { task ->
@@ -38,6 +54,9 @@ protobuf {
 }
 
 dependencies {
+    implementation("org.pkl-lang:pkl-config-java:0.26.2")
+    implementation("org.pkl-lang:pkl-codegen-java:0.26.2")
+
     implementation("com.beust:jcommander:1.82")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
@@ -66,7 +85,7 @@ dependencies {
 
     implementation("org.apache.curator:curator-framework:5.6.0")
     implementation("org.apache.curator:curator-recipes:5.6.0")
-    
+
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
 
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
@@ -77,7 +96,6 @@ dependencies {
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
-    implementation("org.jgrapht:jgrapht-io:1.5.2")
 
     testImplementation("org.mockito:mockito-core:5.11.0")
 
@@ -87,6 +105,7 @@ dependencies {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
     maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
 }
 
@@ -101,7 +120,6 @@ tasks.jacocoTestReport {
         html.required = false
         csv.required = false
     }
-    finalizedBy(tasks.jacocoToCobertura)
 }
 
 tasks.withType<Jar> {

@@ -22,15 +22,25 @@ build:
     expire_in: 1 week
 
 docker-build:
-  image: docker:latest
   stage: build
   variables:
-    GIT_SUBMODULE_STRATEGY: recursive
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    http_proxy: http://proxy.uibk.ac.at:3128
+    https_proxy: http://proxy.uibk.ac.at:3128
+    no_proxy: "localhost,.uibk.ac.at,docker"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [ "" ]
   script:
-    - docker build -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG} ${CI_PROJECT_DIR}
-    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --build-arg "http_proxy=${http_proxy}"
+      --build-arg "HTTP_PROXY=${http_proxy}"
+      --build-arg "https_proxy=${https_proxy}"
+      --build-arg "HTTPS_PROXY=${https_proxy}"
+      --build-arg "no_proxy=${no_proxy}"
+      --build-arg "NO_PROXY=${no_proxy}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}"
   rules:
     - if: '$CI_COMMIT_TAG'
 

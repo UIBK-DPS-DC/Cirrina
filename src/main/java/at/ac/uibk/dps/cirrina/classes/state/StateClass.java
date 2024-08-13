@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.classes.state;
 
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextDescription;
 import at.ac.uibk.dps.cirrina.execution.object.action.Action;
 import at.ac.uibk.dps.cirrina.execution.object.action.ActionGraph;
 import at.ac.uibk.dps.cirrina.execution.object.action.ActionGraphBuilder;
@@ -46,16 +46,6 @@ public final class StateClass implements Exportable {
   private final boolean terminal;
 
   /**
-   * Flag that indicates whether this state is abstract.
-   */
-  private final boolean abstractt;
-
-  /**
-   * Flag that indicates whether this state is virtual.
-   */
-  private final boolean virtual;
-
-  /**
    * The entry action graph.
    */
   private final ActionGraph entryActionGraph;
@@ -94,9 +84,6 @@ public final class StateClass implements Exportable {
     this.exitActionGraph = ActionGraphBuilder.from(baseParameters.exitActions).build();
     this.whileActionGraph = ActionGraphBuilder.from(baseParameters.whileActions).build();
     this.afterActionGraph = ActionGraphBuilder.from(baseParameters.afterActions).build();
-
-    this.abstractt = baseParameters.abstractt;
-    this.virtual = baseParameters.virtual;
   }
 
   /**
@@ -120,11 +107,6 @@ public final class StateClass implements Exportable {
     this.exitActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.exitActionGraph), childParameters.exitActions).build();
     this.whileActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.whileActionGraph), childParameters.whileActions).build();
     this.afterActionGraph = ActionGraphBuilder.extend(new ActionGraph(baseState.afterActionGraph), childParameters.afterActions).build();
-
-    this.abstractt = childParameters.abstractt;
-
-    // Ensure overridden abstract states are virtual if they are no longer abstract, so they can be further overridden
-    this.virtual = (baseState.abstractt && !abstractt) || baseState.virtual;
   }
 
   /**
@@ -163,24 +145,6 @@ public final class StateClass implements Exportable {
    */
   public boolean isTerminal() {
     return terminal;
-  }
-
-  /**
-   * Returns the is abstract flag.
-   *
-   * @return Is abstract.
-   */
-  public boolean isAbstract() {
-    return abstractt;
-  }
-
-  /**
-   * Returns the is virtual flag.
-   *
-   * @return Is virtual.
-   */
-  public boolean isVirtual() {
-    return virtual;
   }
 
   /**
@@ -268,8 +232,6 @@ public final class StateClass implements Exportable {
    * @param localContextClass    Local context class.
    * @param initial              Is initial.
    * @param terminal             Is terminal.
-   * @param abstractt            Is abstract.
-   * @param virtual              Is virtual.
    * @param entryActions         Entry actions.
    * @param exitActions          Exit actions.
    * @param whileActions         While actions.
@@ -281,8 +243,6 @@ public final class StateClass implements Exportable {
       @Nullable ContextDescription localContextClass,
       boolean initial,
       boolean terminal,
-      boolean abstractt,
-      boolean virtual,
       List<Action> entryActions,
       List<Action> exitActions,
       List<Action> whileActions,
@@ -297,7 +257,6 @@ public final class StateClass implements Exportable {
    * @param parentStateMachineId ID of the parent state machine class.
    * @param initial              Is initial.
    * @param terminal             Is terminal.
-   * @param abstractt            Is abstract.
    * @param entryActions         Entry actions.
    * @param exitActions          Exit actions.
    * @param whileActions         While actions.
@@ -308,7 +267,6 @@ public final class StateClass implements Exportable {
       UUID parentStateMachineId,
       boolean initial,
       boolean terminal,
-      boolean abstractt,
       List<Action> entryActions,
       List<Action> exitActions,
       List<Action> whileActions,
