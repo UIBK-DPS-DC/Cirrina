@@ -2,12 +2,10 @@ package at.ac.uibk.dps.cirrina.execution.command;
 
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
-
-import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import io.opentelemetry.api.trace.Span;
-
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.util.ArrayList;

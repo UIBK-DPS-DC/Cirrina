@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.object.event;
 
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
-import at.ac.uibk.dps.cirrina.csml.description.event.EventDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
 import java.util.List;
@@ -48,9 +48,9 @@ public class EventBuilder {
    */
   public Event build() {
     return new Event(
-        eventDescription.name,
-        eventDescription.channel,
-        buildVariableList(eventDescription.data)
+        eventDescription.getName(),
+        eventDescription.getChannel(),
+        buildVariableList(eventDescription.getData())
     );
   }
 }

@@ -5,7 +5,7 @@ import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import at.ac.uibk.dps.cirrina.classes.state.StateClass;
 import at.ac.uibk.dps.cirrina.classes.statemachine.StateMachineClass;
 import at.ac.uibk.dps.cirrina.classes.transition.TransitionClass;
-import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
 import at.ac.uibk.dps.cirrina.execution.command.ActionCommand;

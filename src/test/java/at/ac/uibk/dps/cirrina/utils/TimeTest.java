@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class TimeTest {
+class TimeTest {
 
   @Test
-  public void testTimeInMillisecondsSinceEpoch() throws InterruptedException {
+  void testTimeInMillisecondsSinceEpoch() throws InterruptedException {
     final var a = Time.timeInMillisecondsSinceEpoch();
 
     Thread.sleep(100);
@@ -18,7 +18,7 @@ public class TimeTest {
   }
 
   @Test
-  public void testtTmeInMillisecondsSinceStart() throws InterruptedException {
+  void testTimeInMillisecondsSinceStart() throws InterruptedException {
     final var a = Time.timeInMillisecondsSinceStart();
 
     Thread.sleep(100);

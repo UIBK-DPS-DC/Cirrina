@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.action;
 
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableReferenceDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableReferenceDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import java.util.List;
@@ -22,8 +22,6 @@ public final class InvokeAction extends Action {
   private final List<ContextVariableReferenceDescription> output;
 
   InvokeAction(Parameters parameters) {
-    super(parameters.name());
-
     this.serviceType = parameters.serviceType();
     this.isLocal = parameters.isLocal();
     this.input = parameters.input();
@@ -52,7 +50,6 @@ public final class InvokeAction extends Action {
   }
 
   public record Parameters(
-      Optional<String> name,
       String serviceType,
       boolean isLocal,
       List<ContextVariable> input,

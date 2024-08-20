@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class ServiceImplementation {
 
   private final String name;
-  private final float cost;
+  private final double cost;
   private final boolean local;
 
   /**
@@ -24,7 +24,7 @@ public abstract class ServiceImplementation {
    * @param cost  Cost of this service implementation.
    * @param local Whether this service implementation is local.
    */
-  public ServiceImplementation(String name, float cost, boolean local) {
+  public ServiceImplementation(String name, double cost, boolean local) {
     this.name = name;
     this.cost = cost;
     this.local = local;
@@ -71,7 +71,7 @@ public abstract class ServiceImplementation {
    *
    * @return Cost.
    */
-  public float getCost() {
+  public double getCost() {
     return cost;
   }
 

@@ -2,10 +2,10 @@ package at.ac.uibk.dps.cirrina.execution.service;
 
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription.Method;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
-import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.trace.Tracer;
@@ -87,7 +87,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
     this.scheme = parameters.scheme;
     this.host = parameters.host;
-    this.port = parameters.port;
+    this.port = (int) parameters.port;
     this.endPoint = parameters.endPoint;
     this.method = parameters.method;
   }
@@ -232,11 +232,11 @@ public class HttpServiceImplementation extends ServiceImplementation {
 
   public record Parameters(
       String name,
-      float cost,
+      double cost,
       boolean local,
       String scheme,
       String host,
-      int port,
+      long port,
       String endPoint,
       Method method
   ) {

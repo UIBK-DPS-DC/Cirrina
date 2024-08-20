@@ -4,16 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import at.ac.uibk.dps.cirrina.csml.keyword.EventChannel;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class EventExchangeTest {
+class EventExchangeTest {
 
   @Test
-  public void testToFromBytes() {
+  void testToFromBytes() {
     var contextVariable = new ContextVariable("varName", "some string");
 
     assertDoesNotThrow(() -> {

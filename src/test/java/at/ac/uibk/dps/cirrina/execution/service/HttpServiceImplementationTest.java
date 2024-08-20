@@ -4,15 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.HttpServiceImplementationDescription.Method;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariableBuilder;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.HttpServiceImplementation.Parameters;
-import at.ac.uibk.dps.cirrina.execution.service.description.HttpServiceImplementationDescription.Method;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -121,14 +120,10 @@ public class HttpServiceImplementationTest {
     List.of(Method.POST, Method.GET).stream()
         .forEach(method -> {
           // First variable
-          final var varOne = new ContextVariableDescription();
-          varOne.name = "varOne";
-          varOne.value = new ExpressionDescription("5");
+          final var varOne = new ContextVariableDescription("varOne", "5");
 
           // Second variable
-          final var varTwo = new ContextVariableDescription();
-          varTwo.name = "varTwo";
-          varTwo.value = new ExpressionDescription("6");
+          final var varTwo = new ContextVariableDescription("varTwo", "6");
 
           // Success
           assertDoesNotThrow(() -> {

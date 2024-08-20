@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.cirrina.execution.object.expression;
 
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
 
 /**
  * Expression builder, builds an expression based on an expression source string. Built expressions are cached, repeatedly building the same
@@ -8,13 +7,13 @@ import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
  */
 public final class ExpressionBuilder {
 
-  private ExpressionDescription expressionDescription;
+  private String expressionDescription;
 
-  private ExpressionBuilder(ExpressionDescription expressionDescription) {
+  private ExpressionBuilder(String expressionDescription) {
     this.expressionDescription = expressionDescription;
   }
 
-  public static ExpressionBuilder from(ExpressionDescription expressionDescription) {
+  public static ExpressionBuilder from(String expressionDescription) {
     return new ExpressionBuilder(expressionDescription);
   }
 
@@ -25,6 +24,6 @@ public final class ExpressionBuilder {
    * @throws IllegalArgumentException In case the expression could not be built.
    */
   public Expression build() throws IllegalArgumentException {
-    return new JexlExpression(expressionDescription.expression);
+    return new JexlExpression(expressionDescription);
   }
 }

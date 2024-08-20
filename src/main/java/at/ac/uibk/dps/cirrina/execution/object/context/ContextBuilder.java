@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.context;
 
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextDescription;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
@@ -88,12 +88,12 @@ public class ContextBuilder {
 
     // Add all variables contained within the context class to the newly created context, only do this if there is a class
     if (contextClass != null) {
-      for (var contextVariable : contextClass.variables) {
+      for (var contextVariable : contextClass.getVariables()) {
         // Build the value expression
-        var expression = ExpressionBuilder.from(contextVariable.value).build();
+        var expression = ExpressionBuilder.from(contextVariable.getValue()).build();
 
         // Acquire the variable name
-        var name = contextVariable.name;
+        var name = contextVariable.getName();
 
         // Acquire the variable value
         // We pass an empty extent here, I don't think that it makes too much sense to provide anything other than an empty extent here,

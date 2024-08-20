@@ -21,11 +21,6 @@ import java.util.Optional;
 public class Guard {
 
   /**
-   * Guard name, only applicable for a named guard. An in-line guard can have null as its name.
-   */
-  private final @Nullable String name;
-
-  /**
    * Guard expression.
    */
   private final Expression expression;
@@ -39,11 +34,9 @@ public class Guard {
    * <p>
    * The name can be empty in case the guard is in-line.
    *
-   * @param name       Name of the guard.
    * @param expression Expression of the guard.
    */
-  Guard(@Nullable String name, Expression expression) {
-    this.name = name;
+  Guard(Expression expression) {
     this.expression = expression;
   }
 
@@ -79,15 +72,6 @@ public class Guard {
     }finally {
       span.end();
     }
-  }
-
-  /**
-   * Returns the guard name.
-   *
-   * @return Guard name.
-   */
-  public Optional<String> getName() {
-    return Optional.ofNullable(name);
   }
 
   /**

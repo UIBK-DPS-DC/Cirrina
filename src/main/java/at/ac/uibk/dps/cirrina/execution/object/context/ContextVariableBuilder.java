@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.context;
 
-import at.ac.uibk.dps.cirrina.csml.description.context.ContextVariableDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.ContextVariableDescription;
 import at.ac.uibk.dps.cirrina.execution.object.expression.ExpressionBuilder;
 import java.util.Optional;
 
@@ -43,7 +43,7 @@ public class ContextVariableBuilder {
   public static ContextVariableBuilder from() {
     return new ContextVariableBuilder();
   }
-  
+
   /**
    * Creates a context variable builder.
    *
@@ -88,8 +88,8 @@ public class ContextVariableBuilder {
     }
     // If the variable comes from a context variable class, build based on the class
     else if (contextVariableClass.isPresent()) {
-      var lazyVariable = ExpressionBuilder.from(contextVariableClass.get().value).build();
-      return new ContextVariable(contextVariableClass.get().name, lazyVariable);
+      var lazyVariable = ExpressionBuilder.from(contextVariableClass.get().getValue()).build();
+      return new ContextVariable(contextVariableClass.get().getName(), lazyVariable);
     }
     // If neither name and value nor context variable class is provided, throw an exception or handle it according to your use case
     else {

@@ -36,6 +36,15 @@ The following arguments are expected to be provided (otherwise it is assumed tha
 - `--nats-event-handler-url` The NATS server URL where the event bus resides.
 - `--zookeeper-connect-string` The ZooKeeper server connection string.
 
+## Dependencies
+
+The following components are used by this version of Cirrina:
+
+| Name                   | Version |
+|------------------------|---------|
+| Cirrina-Specifications | 2.0     |
+| Cirrina-UseCases       | 1.0.0   |
+
 ## Citing
 
 ```

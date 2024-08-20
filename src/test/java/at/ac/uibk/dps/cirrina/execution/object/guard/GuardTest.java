@@ -6,34 +6,28 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.uibk.dps.cirrina.csml.description.ExpressionDescription;
-import at.ac.uibk.dps.cirrina.csml.description.guard.GuardDescription;
+import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
-public class GuardTest {
+class GuardTest {
 
   @Test
-  public void testGuard() throws Exception {
+  void testGuard() throws Exception {
     try (var context = new InMemoryContext(true)) {
       context.create("v", 5);
 
       var extent = new Extent(context);
 
       assertDoesNotThrow(() -> {
-        var guardClass = new GuardDescription();
-
-        guardClass.name = Optional.of("name");
-        guardClass.expression = new ExpressionDescription("v==5");
+        var guardClass = new GuardDescription("v==5");
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        assertEquals("name", guard.getName().get());
         assertTrue(guard.evaluate(extent, "null", "some-name", null));
 
-        guardClass.expression = new ExpressionDescription("v==6");
+        guardClass = new GuardDescription("v==6");
 
         guard = GuardBuilder.from(guardClass).build();
 
@@ -41,10 +35,7 @@ public class GuardTest {
       });
 
       assertThrows(IllegalArgumentException.class, () -> {
-        var guardClass = new GuardDescription();
-
-        guardClass.name = Optional.of("name");
-        guardClass.expression = new ExpressionDescription("v");
+        var guardClass = new GuardDescription("v");
 
         var guard = GuardBuilder.from(guardClass).build();
 
