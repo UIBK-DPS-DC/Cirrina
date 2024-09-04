@@ -26,7 +26,7 @@ public final class ActionMatchCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logAction(this.matchAction.getName().isPresent() ? this.matchAction.getName().get() : "null", stateMachineId, stateMachineName);
+    logging.logAction(matchAction.toString(), stateMachineId, stateMachineName);
     Span span = tracing.initializeSpan("Match Action", tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_STATE_MACHINE_ID, stateMachineId,

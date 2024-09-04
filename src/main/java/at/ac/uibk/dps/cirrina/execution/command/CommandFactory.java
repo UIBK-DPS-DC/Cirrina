@@ -24,7 +24,7 @@ public class CommandFactory {
   }
 
   public ActionCommand createActionCommand(Action action, Span parentSpan) {
-    Span span = tracing.initializeSpan("Action Factory " + (action.getName().isPresent() ? action.getName().get() : null), tracer, parentSpan);
+    Span span = tracing.initializeSpan("Action Factory " + action.toString(), tracer, parentSpan);
     try (Scope scope = span.makeCurrent()) {
       switch (action) {
         case AssignAction assignAction -> {

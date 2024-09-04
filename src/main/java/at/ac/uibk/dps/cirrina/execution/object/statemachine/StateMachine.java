@@ -533,8 +533,7 @@ public final class StateMachine implements Runnable, EventListener, Scope {
         }
         try {
           // Acquire the name, which must be provided (otherwise it cannot be reset)
-          final var actionName = timeoutActionObject.getName()
-              .orElseThrow(() -> new IllegalArgumentException("A timeout action must have a name"));
+          final var actionName = timeoutActionObject.getName();
 
           // Start the timeout task
           timeoutActionManager.start(actionName, (Number) delay, () -> {

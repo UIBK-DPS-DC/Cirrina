@@ -21,7 +21,7 @@ public final class ActionTimeoutCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logAction(this.timeoutAction.getName().isPresent() ? this.timeoutAction.getName().get(): "null", stateMachineId, stateMachineName);
+    logging.logAction(timeoutAction.getName(), stateMachineId, stateMachineName);
     Span span = tracing.initializeSpan("Timeout Action", tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_STATE_MACHINE_ID, stateMachineId,

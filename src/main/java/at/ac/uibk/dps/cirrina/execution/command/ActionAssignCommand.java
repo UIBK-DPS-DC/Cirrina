@@ -30,7 +30,7 @@ public final class ActionAssignCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logAction(this.assignAction.getName().isPresent() ? this.assignAction.getName().get(): "null", stateMachineId, stateMachineName);
+    logging.logAction(assignAction.toString(), stateMachineId, stateMachineName);
     Span span = tracing.initializeSpan("Assign Action", tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_STATE_MACHINE_ID, stateMachineId,

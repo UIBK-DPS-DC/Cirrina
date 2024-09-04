@@ -31,7 +31,7 @@ public final class ActionRaiseCommand extends ActionCommand {
 
   @Override
   public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logAction(this.raiseAction.getName().isPresent() ? this.raiseAction.getName().get() + "(" + raiseAction.getEvent().getId() + ")" : "null", stateMachineId, stateMachineName);
+    logging.logAction(raiseAction.toString() + "(" + raiseAction.getEvent().getId() + ")", stateMachineId, stateMachineName);
     Span span = tracing.initializeSpan("Raise Action", tracer, parentSpan);
     tracing.addAttributes(Map.of(
         ATTR_STATE_MACHINE_ID, stateMachineId,
