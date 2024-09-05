@@ -6,7 +6,7 @@ plugins {
     jacoco
 
     id("com.google.protobuf") version "0.9.4"
-    id("org.pkl-lang") version "0.26.2"
+    id("org.pkl-lang") version "0.26.3"
 }
 
 group = "ac.at.uibk.dps.cirrina"
@@ -27,14 +27,21 @@ jacoco {
 }
 
 pkl {
+    project {
+        packagers {
+            register("pklMakePackages") {
+                projectDirectories.from(file("src/main/resources/pkl/"))
+                skipPublishCheck = true
+            }
+        }
+    }
     javaCodeGenerators {
         register("pklGenJava") {
-            allowedModules.add("https:")
             sourceModules.addAll(
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl",
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/HttpServiceImplementationDescription.pkl",
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/JobDescription.pkl",
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/ServiceImplementationDescription.pkl"
+                "src/main/resources/pkl/CollaborativeStateMachineDescription.pkl",
+                "src/main/resources/pkl/HttpServiceImplementationDescription.pkl",
+                "src/main/resources/pkl/JobDescription.pkl",
+                "src/main/resources/pkl/ServiceImplementationDescription.pkl"
             )
             generateGetters.set(true)
             generateJavadoc.set(true)

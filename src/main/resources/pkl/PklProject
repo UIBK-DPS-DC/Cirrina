@@ -1,7 +1,7 @@
 amends "pkl:Project"
 
 package {
-  name = "cirrina"
+  name = "csm"
   version = "1.0.0"
   baseUri = "package://example.com/\(name)"
   packageZipUrl = "https://example.com/\(name)/\(name)@\(version).zip"
