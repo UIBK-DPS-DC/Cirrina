@@ -5,6 +5,7 @@ job "helloworld" {
 
   group "helloworld" {
     count = 3
+
     network {
       port "http" {
         to = 80
@@ -15,6 +16,7 @@ job "helloworld" {
       name = "nginx-webserver"
       tags = ["urlprefix-/"]
       port = "http"
+
       check {
         name     = "alive"
         type     = "http"
@@ -33,6 +35,7 @@ job "helloworld" {
 
     task "nginx" {
       driver = "docker"
+      
       config {
         image = "nginxdemos/hello"
         ports = ["http"]

@@ -38,7 +38,7 @@ vagrant plugin install vagrant-docker-compose
 Use Vagrant to bring the configured VMs up as follows:
 
 ```bash
-vagrant up
+vagrant up --provision --parallel
 ```
 
 It may be necessary to adjust the allowed IP ranges in `/etc/vbox/networks.conf`:
@@ -93,7 +93,7 @@ Assuming that [w3m](https://w3m.sourceforge.net/) is installed.
 Nomad jobs can be stopped (and purged) with:
 
 ```bash
-nomad job -purge job-name
+nomad job stop -purge job-name
 ```
 
 To destroy the VMs, you can use:
@@ -101,6 +101,13 @@ To destroy the VMs, you can use:
 ```bash
 vagrant hosts list | cut -f 2 -d ' ' | xargs -L 1 vagrant destroy -f --no-tty
 ```
+
+The services required by Cirrina are provided as Nomad jobs:
+
+- InfluxDB
+- Telegraf
+- Zookeeper
+- NATS
 
 **Note:** This will destroy all hosts!
 

@@ -15,10 +15,11 @@ job "fabio" {
 
     task "fabio" {
       driver = "docker"
+
       config {
         image        = "fabiolb/fabio"
-        network_mode = "host"
         ports = ["lb", "ui"]
+        network_mode = "host"
       }
     }
   }

@@ -16,3 +16,27 @@
   apt:
     name: [ "nomad" ]
     update_cache: yes
+
+- name: ensure /etc/systemd/resolved.conf.d directory exists
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+
+- name: install consul.conf
+  copy:
+    dest: /etc/systemd/resolved.conf.d/consul.conf
+    content: |
+      [Resolve]
+      DNS=127.0.0.1:8600
+      DNSSEC=false
+      Domains=~consul
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: restart systemd-resolved to apply changes
+  systemd:
+    name: systemd-resolved
+    state: restarted
+    enabled: true
