@@ -6,16 +6,16 @@ data_dir   = "{{ nomad_data_dir }}"
 datacenter = "{{ datacenter }}"
 
 advertise {
-http = "{{ servers[0] }}"
-rpc  = "{{ servers[0] }}"
-serf = "{{ servers[0] }}"
+  http = "{{ servers[0] }}"
+  rpc  = "{{ servers[0] }}"
+  serf = "{{ servers[0] }}"
 }
 
 server {
-enabled          = true
-bootstrap_expect = 1
+  enabled          = true
+  bootstrap_expect = 1
 }
 
 ui {
-enabled = true
+  enabled = true
 }

@@ -40,7 +40,7 @@ job "telegraf" {
 
       template {
         change_mode = "noop"
-        destination = "/etc/telegraf/telegraf.conf"
+        destination = "telegraf/telegraf.conf"
         data        = <<EOH
 [[inputs.opentelemetry]]
 [[outputs.influxdb_v2]]
@@ -66,7 +66,9 @@ EOH
 
       config {
         image = "telegraf:latest"
-        ports = ["oltp"]
+        ports = ["oltp", "http"]
+        volumes = ["telegraf/telegraf.conf:/etc/telegraf/telegraf.conf"]
+        cap_add = ["net_raw"]
       }
     }
   }
