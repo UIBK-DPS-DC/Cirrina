@@ -102,14 +102,20 @@ To destroy the VMs, you can use:
 vagrant hosts list | cut -f 2 -d ' ' | xargs -L 1 vagrant destroy -f --no-tty
 ```
 
+**Note:** This will destroy all hosts!
+
+# Starting Cirrina
+
 The services required by Cirrina are provided as Nomad jobs:
 
 - InfluxDB
 - Telegraf
-- Zookeeper
+- ZooKeeper
 - NATS
 
-**Note:** This will destroy all hosts!
+The Cirrina Nomad job is used to deploy Cirrina on the Nomad cluster, it is provided as a _system_ service, meaning that the runtime gets
+deployed on all clients in the Nomad cluster. Communication with dependencies (Telegraf, ZooKeeper, and NATS) happens by means of Consul
+DNS forwarding.
 
 ## Acknowledgements
 
