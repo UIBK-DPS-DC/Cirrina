@@ -14,6 +14,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
+import info.schnatterer.mobynamesgenerator.MobyNamesGenerator;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import java.io.IOException;
@@ -101,14 +102,18 @@ public class Main {
       // Connect to persistent context system and ZooKeeper
       try (final var persistentContext = newPersistentContext()
           ; final var curatorFramework = newCuratorFramework()) {
+        // Connect to ZooKeeper
         curatorFramework.start();
 
         // Acquire OpenTelemetry instance
         final var openTelemetry = getOpenTelemetry();
 
+        // Generate a runtime name
+        final var name = MobyNamesGenerator.getRandomName();
+
         // Create the shared runtime
         final var runtime = new OnlineRuntime(
-            args.name,
+            name,
             eventHandler,
             persistentContext,
             openTelemetry,
@@ -116,6 +121,9 @@ public class Main {
             args.deleteJob);
 
         try (final var healthService = newHealthService(runtime)) {
+          logger.info("Starting runtime: {}", name);
+
+          // Run, will return when finished
           runtime.run();
 
           logger.info("Done running");
@@ -300,9 +308,6 @@ public class Main {
 
     @Parameter(names = {"--persistent-context", "-p"})
     private PersistentContext persistentContext = PersistentContext.Nats;
-
-    @Parameter(names = {"--name", "-n"}, required = true)
-    private String name;
 
     @Parameter(names = {"--delete-job", "-d"}, arity = 1)
     private boolean deleteJob = true;
