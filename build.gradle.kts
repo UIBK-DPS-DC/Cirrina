@@ -74,7 +74,7 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java:4.27.5")
 
     implementation("io.nats:jnats:2.17.3")
 
