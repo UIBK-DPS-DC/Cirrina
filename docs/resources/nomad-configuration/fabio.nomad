@@ -1,7 +1,6 @@
 job "fabio" {
-  region = "global"
-  datacenters = ["dc-local"]
-  type   = "system"
+  datacenters = ["*"]
+  type = "system"
 
   group "fabio" {
     network {

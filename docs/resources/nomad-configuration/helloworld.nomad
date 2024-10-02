@@ -1,7 +1,6 @@
 job "helloworld" {
-  region = "global"
-  datacenters = ["dc-local"]
-  type   = "service"
+  datacenters = ["*"]
+  type = "service"
 
   group "helloworld" {
     count = 3
@@ -35,7 +34,7 @@ job "helloworld" {
 
     task "nginx" {
       driver = "docker"
-      
+
       config {
         image = "nginxdemos/hello"
         ports = ["http"]

@@ -1,7 +1,6 @@
 job "telegraf" {
-  region = "global"
-  datacenters = ["dc-local"]
-  type   = "service"
+  datacenters = ["*"]
+  type = "service"
 
   group "telegraf" {
     count = 1

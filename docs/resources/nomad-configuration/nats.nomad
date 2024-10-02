@@ -1,7 +1,6 @@
 job "nats" {
-  region = "global"
-  datacenters = ["dc-local"]
-  type   = "service"
+  datacenters = ["*"]
+  type = "service"
 
   group "nats" {
     count = 1

@@ -1,7 +1,6 @@
 job "influxdb" {
-  region = "global"
-  datacenters = ["dc-local"]
-  type   = "service"
+  datacenters = ["*"]
+  type = "service"
 
   group "influxdb" {
     count = 1

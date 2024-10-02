@@ -1,4 +1,3 @@
-# // @formatter:off
 # Ref: https://learn.hashicorp.com/tutorials/nomad/clustering
 # NOTE: `ansible_eth1` because `eth1` is the name of the interface created via Vagrant
 bind_addr  = "{{ ansible_eth1.ipv4.address }}"
@@ -7,7 +6,7 @@ datacenter = "{{ datacenter }}"
 
 client {
   enabled           = true
-  servers           = [{{ servers|map("to_json")|join(", ") }}]
+  servers = [{{ servers|map("to_json")|join(", ") }}]
   # Ref: https://discuss.hashicorp.com/t/internal-routing-problem/34201/5
   # Ref: https://www.nomadproject.io/docs/configuration/client#network_interface
   network_interface = "eth1"
@@ -19,7 +18,9 @@ plugin "docker" {
       enabled = true
     }
 
-    allow_caps = ["audit_write", "chown", "dac_override", "fowner", "fsetid", "kill", "mknod", "net_bind_service", "setfcap", "setgid",
-      "setpcap", "setuid", "sys_chroot", "net_raw"]
+    allow_caps = [
+      "audit_write", "chown", "dac_override", "fowner", "fsetid", "kill", "mknod", "net_bind_service", "setfcap", "setgid",
+      "setpcap", "setuid", "sys_chroot", "net_raw"
+    ]
   }
 }
