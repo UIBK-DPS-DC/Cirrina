@@ -1,7 +1,6 @@
 job "zookeeper" {
-  region = "global"
-  datacenters = ["dc-local"]
-  type   = "service"
+  datacenters = ["*"]
+  type = "service"
 
   group "zookeeper" {
     count = 1
