@@ -6,7 +6,9 @@ import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.event.NatsEventHandler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RoundRobinRuntimeScheduler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RuntimeScheduler;
+import at.ac.uibk.dps.cirrina.runtime.HealthService;
 import at.ac.uibk.dps.cirrina.runtime.OnlineRuntime;
+import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.utils.Id;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -96,24 +98,24 @@ public class Main {
       eventHandler.subscribe(NatsEventHandler.GLOBAL_SOURCE, "*");
       eventHandler.subscribe(NatsEventHandler.PERIPHERAL_SOURCE, "*");
 
-      // Connect to persistent context system
-      try (final var persistentContext = newPersistentContext()) {
-        // Connect to coordination system
-        try (final var curatorFramework = newCuratorFramework()) {
-          curatorFramework.start();
+      // Connect to persistent context system and ZooKeeper
+      try (final var persistentContext = newPersistentContext()
+          ; final var curatorFramework = newCuratorFramework()) {
+        curatorFramework.start();
 
-          // Acquire OpenTelemetry instance
-          final var openTelemetry = getOpenTelemetry();
+        // Acquire OpenTelemetry instance
+        final var openTelemetry = getOpenTelemetry();
 
-          // Create the shared runtime
-          final var runtime = new OnlineRuntime(
-              args.name,
-              eventHandler,
-              persistentContext,
-              openTelemetry,
-              curatorFramework,
-              args.deleteJob);
+        // Create the shared runtime
+        final var runtime = new OnlineRuntime(
+            args.name,
+            eventHandler,
+            persistentContext,
+            openTelemetry,
+            curatorFramework,
+            args.deleteJob);
 
+        try (final var healthService = newHealthService(runtime)) {
           runtime.run();
 
           logger.info("Done running");
@@ -125,6 +127,21 @@ public class Main {
       Thread.currentThread().interrupt();
     } catch (Exception e) {
       logger.error("Could not initialize the shared runtime", e);
+    }
+  }
+
+  /**
+   * Constructs a health service for the provided runtime.
+   *
+   * @param runtime Runtime.
+   * @return Health service.
+   * @throws RuntimeException If the health service could not be started.
+   */
+  private HealthService newHealthService(Runtime runtime) {
+    try {
+      return new HealthService(args.healthPort, runtime);
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Failed to start the health service: " + e);
     }
   }
 
@@ -271,6 +288,9 @@ public class Main {
 
     @ParametersDelegate
     private final ZooKeeperArgs zooKeeperArgs = new ZooKeeperArgs();
+
+    @Parameter(names = {"--health-port", "-z"})
+    private int healthPort = 0xCAFE;
 
     @Parameter(names = {"--scheduler", "-s"})
     private Scheduler scheduler = Scheduler.RoundRobin;
