@@ -4,7 +4,7 @@
     <img src="cirrina.svg" alt="Logo" width="400"/>
 </div>
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.md) [![Build](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/build.yml?event=push) [![Test](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/report.yml/badge.svg?event=push)](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/report.yml?event=push)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.md) [![Build](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/UIBK-DPS-DC/Cirrina/actions/workflows/build.yml?event=push)
 
 Cirrina, a distributed Collaborative State Machines (CSM) runtime for the Cloud-Edge-IoT continuum. Collaborative state machines is a state
 machine-based programming model for the Cloud-Edge-IoT continuum inspired by David
@@ -36,6 +36,10 @@ The following arguments are expected to be provided (otherwise it is assumed tha
 - `--nats-event-handler-url` The NATS server URL where the event bus resides.
 - `--zookeeper-connect-string` The ZooKeeper server connection string.
 
+## Documentation
+
+The Cirrina documentation can be found [here](docs/README.md).
+
 ## Dependencies
 
 The following components are used by this version of Cirrina:
@@ -44,6 +48,8 @@ The following components are used by this version of Cirrina:
 |------------------------|---------|
 | Cirrina-Specifications | 2.0     |
 | Cirrina-UseCases       | 1.0.0   |
+
+Attributions can be found [here](ATTRIBUTIONS.md).
 
 ## Citing
 

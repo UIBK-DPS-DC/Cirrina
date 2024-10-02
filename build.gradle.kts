@@ -61,9 +61,6 @@ protobuf {
 }
 
 dependencies {
-    implementation("org.pkl-lang:pkl-config-java:0.26.2")
-    implementation("org.pkl-lang:pkl-codegen-java:0.26.2")
-
     implementation("com.beust:jcommander:1.82")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
@@ -105,11 +102,14 @@ dependencies {
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
-
-    testImplementation("org.mockito:mockito-core:5.11.0")
+    
+    implementation("org.pkl-lang:pkl-config-java:0.26.2")
+    implementation("org.pkl-lang:pkl-codegen-java:0.26.2")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+
+    testImplementation("org.mockito:mockito-core:5.11.0")
 }
 
 repositories {

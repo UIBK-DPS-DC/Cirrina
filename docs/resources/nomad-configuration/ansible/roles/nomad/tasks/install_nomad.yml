@@ -17,26 +17,45 @@
     name: [ "nomad" ]
     update_cache: yes
 
-- name: ensure /etc/systemd/resolved.conf.d directory exists
-  file:
-    path: /etc/systemd/resolved.conf.d
-    state: directory
-    mode: '0755'
+- name: install dnsmasq
+  apt:
+    name: dnsmasq
+    state: present
+    update_cache: yes
 
-- name: install consul.conf
+- name: create /etc/dnsmasq.d/10-consul.conf for Consul DNS
   copy:
-    dest: /etc/systemd/resolved.conf.d/consul.conf
+    dest: /etc/dnsmasq.d/10-consul.conf
     content: |
-      [Resolve]
-      DNS=127.0.0.1:8600
-      DNSSEC=false
-      Domains=~consul
+      server=/consul/127.0.0.1#8600
     owner: root
     group: root
     mode: '0644'
 
-- name: restart systemd-resolved to apply changes
+- name: set up /etc/resolv.conf
+  blockinfile:
+    path: /etc/resolv.conf
+    block: |
+      nameserver {{ ansible_default_ipv4.address }}
+      nameserver 8.8.8.8
+    create: yes
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: disable systemd-resolved
   systemd:
     name: systemd-resolved
-    state: restarted
+    enabled: false
+    state: stopped
+
+- name: enable and start dnsmasq
+  systemd:
+    name: dnsmasq
     enabled: true
+    state: started
+
+- name: restart Docker service
+  systemd:
+    name: docker
+    state: restarted
