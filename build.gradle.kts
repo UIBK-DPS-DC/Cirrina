@@ -118,6 +118,10 @@ repositories {
     maven(url = "https://repository.cloudera.com/artifactory/cloudera-repos/")
 }
 
+tasks.distZip {
+    archiveFileName.set("${project.name}.zip")
+}
+
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)
