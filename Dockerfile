@@ -19,11 +19,10 @@ RUN gradle distZip
 FROM openjdk:21-bookworm
 
 # Copy the application distribution ZIP from the build stage
-COPY --from=build /usr/src/cirrina/build/distributions/cirrina-build.zip /tmp/cirrina-build.zip
+COPY --from=build /usr/src/cirrina/build/distributions/cirrina.zip /tmp/cirrina.zip
 
 # Unzip the application distribution to /usr/bin
-RUN unzip /tmp/cirrina-build.zip -d /usr/bin \
-    && mv /usr/bin/cirrina-build /usr/bin/cirrina \
+RUN unzip /tmp/cirrina.zip -d /usr/bin \
     && chmod +x /usr/bin/cirrina/bin/cirrina
 
 # Set the working directory for the application
