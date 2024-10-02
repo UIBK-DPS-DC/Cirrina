@@ -1,11 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.COUNTER_INVOCATIONS;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_INVOKE_LATENCY;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_EVENT_RESPONSE_TIME_INCLUSIVE;
-
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import at.ac.uibk.dps.cirrina.execution.object.action.InvokeAction;
 import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
@@ -48,17 +43,21 @@ public final class ActionInvokeCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    Span span = tracing.initializeSpan("Invoke Action", tracer, parentSpan);
-    tracing.addAttributes(Map.of(
-        ATTR_STATE_MACHINE_ID, stateMachineId,
-        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) throws UnsupportedOperationException {
+    Span span = tracing.initializeSpan(
+        "Invoke Action", tracer, parentSpan,
+        Map.of(
+            ATTR_STATE_MACHINE_ID, stateMachineId,
+            ATTR_STATE_MACHINE_NAME, stateMachineName,
+            ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
+            ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
+
     try (Scope scope = span.makeCurrent()) {
       incrementInvocationCounter();
       final var start = Time.timeInMillisecondsSinceStart();
 
       try {
-        final var serviceImplementation = selectServiceImplementation();
+        final var serviceImplementation = selectServiceImplementation(stateMachineId, stateMachineName, parentStateMachineId, parentStateMachineName, span);
 
         final var commands = new ArrayList<ActionCommand>();
 
@@ -68,7 +67,7 @@ public final class ActionInvokeCommand extends ActionCommand {
         List<ContextVariable> input = prepareInput(extent);
 
         // Invoke (asynchronously)
-        serviceImplementation.invoke(input, executionContext.scope().getId(), stateMachineName, span)
+        serviceImplementation.invoke(input, executionContext.scope().getId(), stateMachineName, stateMachineId, parentStateMachineId, parentStateMachineName, span)
             .exceptionally(e -> {
               logger.error("Service invocation failed for service '{}': {}",
                   serviceImplementation.getInformationString(), e.getMessage(), e);
@@ -114,12 +113,20 @@ public final class ActionInvokeCommand extends ActionCommand {
    *
    * @return The service implementation.
    */
-  private ServiceImplementation selectServiceImplementation() {
+  private ServiceImplementation selectServiceImplementation(String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) {
+    logging.logServiceSelection(stateMachineId, stateMachineName);
+    Span span = tracing.initializeSpan(
+        "Selecting Service Implementation", tracer, parentSpan,
+        Map.of(ATTR_STATE_MACHINE_ID, stateMachineId,
+               ATTR_STATE_MACHINE_NAME, stateMachineName,
+               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
+               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
+
     final var serviceType = invokeAction.getServiceType();
     final var isLocal = invokeAction.isLocal();
     final var serviceImplementationSelector = executionContext.serviceImplementationSelector();
 
-    return serviceImplementationSelector.select(serviceType, isLocal)
+    return serviceImplementationSelector.select(serviceType, isLocal, stateMachineId, stateMachineName, parentStateMachineId, parentStateMachineName, span)
         .orElseThrow(
             () -> new IllegalArgumentException(
                 "Could not find a service implementation for the service type '%s'".formatted(serviceType)));

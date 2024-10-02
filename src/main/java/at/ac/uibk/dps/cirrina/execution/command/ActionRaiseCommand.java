@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.EventChannel;
 import at.ac.uibk.dps.cirrina.execution.object.action.RaiseAction;
 import at.ac.uibk.dps.cirrina.execution.object.event.Event;
@@ -30,12 +29,15 @@ public final class ActionRaiseCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) throws UnsupportedOperationException {
     logging.logAction(raiseAction.toString() + "(" + raiseAction.getEvent().getId() + ")", stateMachineId, stateMachineName);
-    Span span = tracing.initializeSpan("Raise Action", tracer, parentSpan);
-    tracing.addAttributes(Map.of(
-        ATTR_STATE_MACHINE_ID, stateMachineId,
-        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
+    Span span = tracing.initializeSpan(
+        "Raise Action", tracer, parentSpan,
+        Map.of(ATTR_STATE_MACHINE_ID, stateMachineId,
+               ATTR_STATE_MACHINE_NAME, stateMachineName,
+               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
+               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
+
     final var commands = new ArrayList<ActionCommand>();
 
     try(Scope scope = span.makeCurrent()) {
@@ -52,7 +54,7 @@ public final class ActionRaiseCommand extends ActionCommand {
         eventListener.onReceiveEvent(evaluatedEvent, span);
       } else {
         // Send the event through the event handler
-        eventHandler.sendEvent(evaluatedEvent, span);
+        eventHandler.sendEvent(evaluatedEvent, span, parentStateMachineId, parentStateMachineName);
       }
     } catch (IOException e) {
       logging.logExeption(stateMachineId, e, stateMachineName);

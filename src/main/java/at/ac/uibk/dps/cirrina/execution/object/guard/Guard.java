@@ -1,9 +1,6 @@
 package at.ac.uibk.dps.cirrina.execution.object.guard;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_GUARD_EXPRESSION;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
-
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
@@ -48,13 +45,16 @@ public class Guard {
    * @throws UnsupportedOperationException If the guard expression could not be executed.
    * @throws IllegalArgumentException      If the expression could not be evaluated, or the expression does not produce a boolean value.
    */
-  public boolean evaluate(Extent extent, String stateMachineId, String stateMachineName, Span parentSpan) throws IllegalArgumentException, UnsupportedOperationException {
+  public boolean evaluate(Extent extent, String stateMachineId, String stateMachineName, String parentStateMachineName, String parentStateMachineId, Span parentSpan) throws IllegalArgumentException, UnsupportedOperationException {
     logging.logGuardEvaluation(expression.toString(), stateMachineName, stateMachineId);
-    Span span = tracing.initializeSpan("Guard Evaluation: " + expression.toString(), tracer, parentSpan);
-    tracing.addAttributes(Map.of(
-        ATTR_GUARD_EXPRESSION, expression.toString(),
-        ATTR_STATE_MACHINE_ID, stateMachineId,
-        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
+    Span span = tracing.initializeSpan(
+        "Guard Evaluation: " + expression.toString(), tracer, parentSpan,
+        Map.of(ATTR_GUARD_EXPRESSION, expression.toString(),
+               ATTR_STATE_MACHINE_ID, stateMachineId,
+               ATTR_STATE_MACHINE_NAME, stateMachineName,
+               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
+               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
+
     try(Scope scope = span.makeCurrent()) {
       var result = expression.execute(extent);
 

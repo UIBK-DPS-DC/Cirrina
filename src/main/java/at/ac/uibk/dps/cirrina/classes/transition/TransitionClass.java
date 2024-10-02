@@ -81,10 +81,10 @@ public class TransitionClass extends DefaultEdge implements Exportable {
    * @return True if the transition can be taken based on the guards, otherwise false.
    * @throws UnsupportedOperationException If the transition could not be evaluated.
    */
-  public boolean evaluate(Extent extent, String stateMachineId, String stateMachineName, Span span) throws UnsupportedOperationException {
+  public boolean evaluate(Extent extent, String stateMachineId, String stateMachineName, String parentStateMachineName, String parentStateMachineId, Span span) throws UnsupportedOperationException {
     try {
       for (var guard : guards) {
-        if (!guard.evaluate(extent, stateMachineId.toString(), stateMachineName, span)) {
+        if (!guard.evaluate(extent, stateMachineId, stateMachineName, parentStateMachineName, parentStateMachineId, span)) {
           return false;
         }
       }

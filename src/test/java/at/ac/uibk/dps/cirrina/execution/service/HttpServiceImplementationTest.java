@@ -31,7 +31,7 @@ public class HttpServiceImplementationTest {
 
   @BeforeAll
   public static void setUp() throws IOException {
-    httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
+    httpServer = HttpServer.create(new InetSocketAddress(8001), 0);
 
     httpServer.createContext("/plus", new HttpHandler() {
       public void handle(HttpExchange exchange) throws IOException {
@@ -137,11 +137,11 @@ public class HttpServiceImplementationTest {
                 false,
                 "http",
                 "localhost",
-                8000,
+                8001,
                 "/plus",
                 Method.POST));
 
-            final var output = service.invoke(variables, "some-id", "some-name", null).get();
+            final var output = service.invoke(variables, "some-id", "some-name", null, null, null, null).get();
 
             assertEquals(1, output.size());
 
@@ -158,11 +158,11 @@ public class HttpServiceImplementationTest {
                 false,
                 "http",
                 "localhost",
-                8000,
+                8001,
                 "/error",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null, null, null, null).get();
           });
 
           // Invalid response type
@@ -173,11 +173,11 @@ public class HttpServiceImplementationTest {
                 false,
                 "http",
                 "localhost",
-                8000,
+                8001,
                 "/broken-response1",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null, null, null, null).get();
           });
 
           // Invalid response type
@@ -188,11 +188,11 @@ public class HttpServiceImplementationTest {
                 false,
                 "http",
                 "localhost",
-                8000,
+                8001,
                 "/broken-response2",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null, null, null, null).get();
           });
         });
   }

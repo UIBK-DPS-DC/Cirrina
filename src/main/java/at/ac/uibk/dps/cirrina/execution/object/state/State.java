@@ -44,7 +44,7 @@ public final class State implements Scope {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(stateClassObject.getEntryActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, null, "null", "null", "null", "null")));
 
     return actionCommands;
   }
@@ -53,7 +53,7 @@ public final class State implements Scope {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(stateClassObject.getWhileActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, null, "null", "null", "null", "null")));
 
     return actionCommands;
   }
@@ -62,7 +62,7 @@ public final class State implements Scope {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(stateClassObject.getExitActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, null, "null", "null", "null", "null")));
 
     return actionCommands;
   }

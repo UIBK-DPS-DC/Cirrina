@@ -13,7 +13,7 @@ import java.util.List;
 public abstract class ActionCommand {
 
   protected final Tracing tracing = new Tracing();
-  protected final Tracer tracer = tracing.initializeTracer("Action");
+  protected final Tracer tracer = tracing.initializeTracer("Action Command");
   protected final Logging logging = new Logging();
 
   protected final ExecutionContext executionContext;
@@ -22,5 +22,5 @@ public abstract class ActionCommand {
     this.executionContext = executionContext;
   }
 
-  public abstract List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException;
+  public abstract List<ActionCommand> execute(String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) throws UnsupportedOperationException;
 }

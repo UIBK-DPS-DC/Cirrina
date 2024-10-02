@@ -1,14 +1,23 @@
 package at.ac.uibk.dps.cirrina.execution.service;
 
+
+import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
+import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.Span;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class OptimalServiceImplementationSelector extends ServiceImplementationSelector {
-
+  final Tracing tracing = new Tracing();
+  final Tracer tracer = tracing.initializeTracer("Optimal Selector");
+  final Logging logging = new Logging();
   /**
    * Initializes this service implementation selector.
    *
@@ -27,7 +36,14 @@ public class OptimalServiceImplementationSelector extends ServiceImplementationS
    * @return Selected service implementation.
    */
   @Override
-  public Optional<ServiceImplementation> select(String name, boolean local) {
+  public Optional<ServiceImplementation> select(String name, boolean local, String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) {
+    tracing.initializeSpan("Optimal Service Implementation Selection", tracer, parentSpan,
+        Map.of(ATTR_STATE_MACHINE_ID, stateMachineId,
+            ATTR_STATE_MACHINE_NAME, stateMachineName,
+            ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
+            ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName,
+            ATTR_SERVICE_NAME, name));
+
     final var serviceImplementationsWithName = new ArrayList<ServiceImplementation>(local ?
         Multimaps.filterValues(serviceImplementations, ServiceImplementation::isLocal).get(name) :
         serviceImplementations.get(name));

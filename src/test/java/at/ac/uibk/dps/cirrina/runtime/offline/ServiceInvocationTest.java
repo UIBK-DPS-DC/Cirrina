@@ -42,7 +42,7 @@ public class ServiceInvocationTest {
 
   @BeforeAll
   public static void setUp() throws IOException {
-    httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
+    httpServer = HttpServer.create(new InetSocketAddress(8001), 0);
 
     httpServer.createContext("/increment", new HttpHandler() {
       public void handle(HttpExchange exchange) throws IOException {
@@ -149,7 +149,7 @@ public class ServiceInvocationTest {
 
       {
         var service = new HttpServiceImplementationDescription("increment", 1.0, true, ServiceImplementationType.HTTP, "http", "localhost",
-            8000, "/increment", Method.GET);
+            8001, "/increment", Method.GET);
 
         serviceDescriptions[0] = service;
       }

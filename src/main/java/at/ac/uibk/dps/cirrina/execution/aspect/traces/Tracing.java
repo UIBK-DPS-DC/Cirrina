@@ -13,18 +13,18 @@ public class Tracing {
     return GlobalOpenTelemetry.getTracer(name);
   }
 
-  public Span initializeSpan(String name, Tracer tracer, Span parentSpan){
+  public Span initializeSpan(String name, Tracer tracer, Span parentSpan,  Map<String, String> attributes){
+    Span span;
     if(parentSpan == null) {
-      return tracer.spanBuilder(name).startSpan();
+      span = tracer.spanBuilder(name).startSpan();
     } else {
-      return tracer.spanBuilder(name).setParent(Context.current().with(parentSpan)).startSpan();
+      span = tracer.spanBuilder(name).setParent(Context.current().with(parentSpan)).startSpan();
     }
-  }
 
-  public void addAttributes(Map<String, String> attributes, Span span){
     for (Map.Entry<String, String> entry : attributes.entrySet()){
       span.setAttribute(entry.getKey(), entry.getValue());
     }
+    return span;
   }
 
   public void recordException(Throwable throwable, Span span){

@@ -38,7 +38,7 @@ public abstract class ServiceImplementation {
    * @return The service invocation output.
    * @throws IOException If the service invocation failed.
    */
-  public abstract CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, String stateMachineName, Span parentSpan) throws IOException;
+  public abstract CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, String stateMachineName, String stateMachineId, String parentStateMachineName, String parentStateMachineId, Span parentSpan) throws IOException;
 
 
   /**
