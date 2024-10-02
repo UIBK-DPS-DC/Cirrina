@@ -11,23 +11,36 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      # Checkout repository
       - uses: actions/checkout@v4
+
+      # Setup GraalVM
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      # Perform commit linting
       - uses: wagoid/commitlint-github-action@v6
+
+      # Install Protocolbuffers compiler
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
+
+      # Build
       - name: Build using Gradle
         run: ./gradlew build
-      - name: Upload Test Reports
-        uses: actions/upload-artifact@v3
-        if: always()
+      # Test
+      - name: Test using Gradle
+        run: ./gradlew test
+
+      # Publish test report
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
         with:
-          name: test-reports
-          path: |
-            build/test-results/test/TEST-*.xml
-            build/reports/jacoco/**/jacocoTestReport.xml
-          retention-days: 1
+          commit: ${{github.event.workflow_run.head_sha}}
+          report_paths: 'build/test-results/test/TEST-*.xml'
+          fail_on_failure: true
+          require_tests: true
+          include_passed: true
+          detailed_summary: true
