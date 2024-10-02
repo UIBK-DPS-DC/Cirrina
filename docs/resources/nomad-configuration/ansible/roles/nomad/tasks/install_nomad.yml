@@ -1,0 +1,42 @@
+---
+# Ref: https://www.nomadproject.io/downloads
+- name: add hashicorp signing key
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: add hashicorp repository
+  apt_repository:
+    # NOTE: `ansible_distribution_release` is an Ansible fact
+    # Ref: https://docs.ansible.com/ansible/latest/user_guide/playbooks_vars_facts.html
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    state: present
+
+- name: install nomad
+  apt:
+    name: [ "nomad" ]
+    update_cache: yes
+
+- name: ensure /etc/systemd/resolved.conf.d directory exists
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+
+- name: install consul.conf
+  copy:
+    dest: /etc/systemd/resolved.conf.d/consul.conf
+    content: |
+      [Resolve]
+      DNS=127.0.0.1:8600
+      DNSSEC=false
+      Domains=~consul
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: restart systemd-resolved to apply changes
+  systemd:
+    name: systemd-resolved
+    state: restarted
+    enabled: true

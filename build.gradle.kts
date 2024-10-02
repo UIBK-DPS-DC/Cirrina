@@ -6,11 +6,11 @@ plugins {
     jacoco
 
     id("com.google.protobuf") version "0.9.4"
-    id("org.pkl-lang") version "0.26.2"
+    id("org.pkl-lang") version "0.26.3"
 }
 
 group = "ac.at.uibk.dps.cirrina"
-version = "1.0.0"
+version = rootProject.file("version.txt").readText().trim()
 
 application {
     mainClass = "at.ac.uibk.dps.cirrina.main.Main"
@@ -27,14 +27,21 @@ jacoco {
 }
 
 pkl {
+    project {
+        packagers {
+            register("pklMakePackages") {
+                projectDirectories.from(file("src/main/resources/pkl/"))
+                skipPublishCheck = true
+            }
+        }
+    }
     javaCodeGenerators {
         register("pklGenJava") {
-            allowedModules.add("https:")
             sourceModules.addAll(
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/CollaborativeStateMachineDescription.pkl",
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/HttpServiceImplementationDescription.pkl",
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/JobDescription.pkl",
-                "https://raw.githubusercontent.com/UIBK-DPS-DC/Cirrina-Specifications/main/pkl/ServiceImplementationDescription.pkl"
+                "src/main/resources/pkl/CollaborativeStateMachineDescription.pkl",
+                "src/main/resources/pkl/HttpServiceImplementationDescription.pkl",
+                "src/main/resources/pkl/JobDescription.pkl",
+                "src/main/resources/pkl/ServiceImplementationDescription.pkl"
             )
             generateGetters.set(true)
             generateJavadoc.set(true)
@@ -67,7 +74,9 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java:4.27.5")
+
+    implementation("info.schnatterer.moby-names-generator:moby-names-generator:20.10.1-r0")
 
     implementation("io.nats:jnats:2.17.3")
 

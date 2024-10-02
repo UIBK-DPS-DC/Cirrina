@@ -1,0 +1,20 @@
+---
+# NOTE: IMPORTANT: Keep these values in sync with `Vagrantfile`
+servers:
+  - "10.10.2.10"
+
+clients:
+  - "10.10.2.21"
+  - "10.10.2.22"
+
+# NOTE: Replace `Europe/Amsterdam` with your timezone
+local_time_zone: "Europe/Amsterdam"
+
+# NOTE: IMPORTANT: Remember to explicitly specify the data center in jobs
+datacenter: "dc-local"
+
+consul_config_dir: "/etc/consul.d"
+consul_data_dir: "/var/consul"
+
+nomad_config_dir: "/etc/nomad.d"
+nomad_data_dir: "/var/nomad"

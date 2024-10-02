@@ -6,12 +6,15 @@ import at.ac.uibk.dps.cirrina.execution.object.event.EventHandler;
 import at.ac.uibk.dps.cirrina.execution.object.event.NatsEventHandler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RoundRobinRuntimeScheduler;
 import at.ac.uibk.dps.cirrina.execution.scheduler.RuntimeScheduler;
+import at.ac.uibk.dps.cirrina.runtime.HealthService;
 import at.ac.uibk.dps.cirrina.runtime.OnlineRuntime;
+import at.ac.uibk.dps.cirrina.runtime.Runtime;
 import at.ac.uibk.dps.cirrina.utils.Id;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
+import info.schnatterer.mobynamesgenerator.MobyNamesGenerator;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import java.io.IOException;
@@ -96,24 +99,31 @@ public class Main {
       eventHandler.subscribe(NatsEventHandler.GLOBAL_SOURCE, "*");
       eventHandler.subscribe(NatsEventHandler.PERIPHERAL_SOURCE, "*");
 
-      // Connect to persistent context system
-      try (final var persistentContext = newPersistentContext()) {
-        // Connect to coordination system
-        try (final var curatorFramework = newCuratorFramework()) {
-          curatorFramework.start();
+      // Connect to persistent context system and ZooKeeper
+      try (final var persistentContext = newPersistentContext()
+          ; final var curatorFramework = newCuratorFramework()) {
+        // Connect to ZooKeeper
+        curatorFramework.start();
 
-          // Acquire OpenTelemetry instance
-          final var openTelemetry = getOpenTelemetry();
+        // Acquire OpenTelemetry instance
+        final var openTelemetry = getOpenTelemetry();
 
-          // Create the shared runtime
-          final var runtime = new OnlineRuntime(
-              args.name,
-              eventHandler,
-              persistentContext,
-              openTelemetry,
-              curatorFramework,
-              args.deleteJob);
+        // Generate a runtime name
+        final var name = MobyNamesGenerator.getRandomName();
 
+        // Create the shared runtime
+        final var runtime = new OnlineRuntime(
+            name,
+            eventHandler,
+            persistentContext,
+            openTelemetry,
+            curatorFramework,
+            args.deleteJob);
+
+        try (final var healthService = newHealthService(runtime)) {
+          logger.info("Starting runtime: {}", name);
+
+          // Run, will return when finished
           runtime.run();
 
           logger.info("Done running");
@@ -125,6 +135,21 @@ public class Main {
       Thread.currentThread().interrupt();
     } catch (Exception e) {
       logger.error("Could not initialize the shared runtime", e);
+    }
+  }
+
+  /**
+   * Constructs a health service for the provided runtime.
+   *
+   * @param runtime Runtime.
+   * @return Health service.
+   * @throws RuntimeException If the health service could not be started.
+   */
+  private HealthService newHealthService(Runtime runtime) {
+    try {
+      return new HealthService(args.healthPort, runtime);
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Failed to start the health service: " + e);
     }
   }
 
@@ -272,6 +297,9 @@ public class Main {
     @ParametersDelegate
     private final ZooKeeperArgs zooKeeperArgs = new ZooKeeperArgs();
 
+    @Parameter(names = {"--health-port", "-z"})
+    private int healthPort = 0xCAFE;
+
     @Parameter(names = {"--scheduler", "-s"})
     private Scheduler scheduler = Scheduler.RoundRobin;
 
@@ -280,9 +308,6 @@ public class Main {
 
     @Parameter(names = {"--persistent-context", "-p"})
     private PersistentContext persistentContext = PersistentContext.Nats;
-
-    @Parameter(names = {"--name", "-n"}, required = true)
-    private String name;
 
     @Parameter(names = {"--delete-job", "-d"}, arity = 1)
     private boolean deleteJob = true;
