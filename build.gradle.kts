@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "ac.at.uibk.dps.cirrina"
-version = "1.0.0"
+version = rootProject.file("version.txt").readText().trim()
 
 application {
     mainClass = "at.ac.uibk.dps.cirrina.main.Main"
@@ -77,7 +77,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:4.27.5")
 
     implementation("info.schnatterer.moby-names-generator:moby-names-generator:20.10.1-r0")
-    
+
     implementation("io.nats:jnats:2.17.3")
 
     implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"));
