@@ -74,8 +74,10 @@ dependencies {
 
     implementation("com.google.guava:guava:33.0.0-jre")
 
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java:4.27.5")
 
+    implementation("info.schnatterer.moby-names-generator:moby-names-generator:20.10.1-r0")
+    
     implementation("io.nats:jnats:2.17.3")
 
     implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"));

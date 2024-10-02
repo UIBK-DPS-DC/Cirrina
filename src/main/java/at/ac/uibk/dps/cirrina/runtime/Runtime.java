@@ -248,6 +248,10 @@ public abstract class Runtime implements EventListener {
     return stateMachineInstanceId;
   }
 
+  public void remove(StateMachine stateMachine) {
+    stateMachines.remove(stateMachine);
+  }
+
   /**
    * Run to completion given the currently instantiated state machines.
    * <p>
@@ -313,7 +317,12 @@ public abstract class Runtime implements EventListener {
     return eventHandler;
   }
 
-  public void remove(StateMachine stateMachine) {
-    stateMachines.remove(stateMachine);
+  /**
+   * Returns the number of state machines.
+   *
+   * @return Number of state machines.
+   */
+  public int getNumStateMachines() {
+    return stateMachines.size();
   }
 }
