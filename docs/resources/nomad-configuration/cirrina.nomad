@@ -35,9 +35,9 @@ job "cirrina" {
         image = "marlonetheredgeuibk/cirrina:latest"
         ports = ["monitoring"]
         args = [
-          "--nats-persistent-context-url", "nats.service.consul",
-          "--nats-event-handler-url", "nats.service.consul",
-          "--zookeeper-connect-string", "zookeeper.service.consul"
+          "--nats-context-url", "nats.service.consul",
+          "--nats-event-url", "nats.service.consul",
+          "--zk-url", "zookeeper.service.consul"
         ]
       }
     }

@@ -25,16 +25,41 @@ To run a Cirrina runtime without compiling or building a Docker image manually, 
 docker run \ 
   -e OTEL_EXPORTER_OTLP_ENDPOINT=http://192.168.64.84:4317/ \
   marlonetheredgeuibk/cirrina:develop \
-    --nats-persistent-context-url nats://192.168.64.84:4222/ \
-    --nats-event-handler-url nats://192.168.64.84:4222/ \
+    --nats-context-url nats://192.168.64.84:4222/ \
+    --nats-event-url nats://192.168.64.84:4222/ \
     --zookeeper-connect-string 192.168.64.84:2181
 ```
 
-The following arguments are expected to be provided (otherwise it is assumed that the dependent services are running on the local host).
+Please refer to the help text for arguments, `cirrina -h`:
 
-- `--nats-persistent-context-url` The NATS server URL where the persistent context resides.
-- `--nats-event-handler-url` The NATS server URL where the event bus resides.
-- `--zookeeper-connect-string` The ZooKeeper server connection string.
+```bash
+Usage: cirrina [options]
+  Options:
+    --delete-job, -d         Flag to delete the job after it is consumed 
+                             (default: true)
+    --event-handler, -e      Specifies the event handler type to use (default: 
+                             Nats) (values: [Nats])
+    --health-port, -z        Port number for the HTTP health check service 
+                             (default: 51966)
+    --help, -h               Show this help message
+    --manager, -m            Run the application in manager mode (default: 
+                             false) 
+    --nats-bucket            Bucket name used for storing the persistent 
+                             context (default: persistent)
+    --nats-context-url       NATS server connection string for managing 
+                             persistent context (default: 
+                             nats://localhost:4222/) 
+    --nats-event-url         NATS server connection string for event handling 
+                             (default: nats://localhost:4222/)
+    --persistent-context, -p Specifies the persistent context type to use 
+                             (default: Nats) (values: [Nats])
+    --zk-session-timeout     Session timeout for ZooKeeper, in milliseconds 
+                             (default: 3000)
+    --zk-timeout             Timeout for ZooKeeper connections, in milliseconds 
+                             (default: 3000)
+    --zk-url                 ZooKeeper connection string (default: 
+                             localhost:2181)
+```
 
 ## Documentation
 
