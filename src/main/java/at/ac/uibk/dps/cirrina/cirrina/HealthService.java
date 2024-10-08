@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cirrina.runtime;
+package at.ac.uibk.dps.cirrina.cirrina;
 
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
@@ -19,15 +19,14 @@ public class HealthService implements AutoCloseable {
    * <p>
    * Starts the service in a background thread.
    *
-   * @param port    Health service port.
-   * @param runtime Runtime.
+   * @param port Health service port.
    */
-  public HealthService(int port, Runtime runtime) {
+  public HealthService(int port) {
     try {
       httpServer = HttpServer.create(new InetSocketAddress(port), 0);
 
       httpServer.createContext("/", exchange -> {
-        final var out = "Number of state machines: %d\nOK".formatted(runtime.getNumStateMachines()).getBytes(StandardCharsets.UTF_8);
+        final var out = "OK".getBytes(StandardCharsets.UTF_8);
 
         // Response stateMachineInstanceStatus and length
         exchange.sendResponseHeaders(200, out.length);

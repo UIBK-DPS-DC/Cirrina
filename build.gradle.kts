@@ -13,7 +13,7 @@ group = "ac.at.uibk.dps.cirrina"
 version = rootProject.file("version.txt").readText().trim()
 
 application {
-    mainClass = "at.ac.uibk.dps.cirrina.main.Main"
+    mainClass = "at.ac.uibk.dps.cirrina.cirrina.Cirrina"
 }
 
 java {
@@ -63,6 +63,8 @@ protobuf {
 dependencies {
     implementation("com.beust:jcommander:1.82")
 
+    implementation("com.ecwid.consul:consul-api:1.4.5")
+
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.15.1")
     implementation("com.fasterxml.jackson.module:jackson-module-jsonSchema:2.15.1")
@@ -102,7 +104,7 @@ dependencies {
     implementation("org.hibernate:hibernate-validator-cdi:8.0.1.Final")
 
     implementation("org.jgrapht:jgrapht-core:1.5.2")
-    
+
     implementation("org.pkl-lang:pkl-config-java:0.26.2")
     implementation("org.pkl-lang:pkl-codegen-java:0.26.2")
 

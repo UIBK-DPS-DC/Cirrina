@@ -1,0 +1,18 @@
+---
+- name: Copy the join command to server location
+  copy: src=join-command dest=/tmp/join-command.sh mode=0777
+
+- name: Join the node to cluster
+  command: sh /tmp/join-command.sh
+
+- name: Change interface to flannel
+  ansible.posix.firewalld:
+    zone: trusted
+    interface: flannel.1
+    permanent: true
+    state: enabled
+
+- name: Reload firewall
+  ansible.builtin.service:
+    name: firewalld
+    state: reloaded

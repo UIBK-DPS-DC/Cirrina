@@ -1,0 +1,64 @@
+---
+- name: Install pip
+  become: yes
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+
+- name: Install ansible python package
+  ansible.builtin.pip:
+    name: ansible
+
+- name: Install kubernetes python package
+  ansible.builtin.pip:
+    name: kubernetes
+
+- name: Initialize Kubernetes cluster
+  become: yes
+  ansible.builtin.shell: "kubeadm init --apiserver-advertise-address={{ node_ip }} --pod-network-cidr={{ pod_network }}"
+
+- name: Create .kube directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0755'
+
+- name: Copy kubeconfig to user's home directory
+  become: yes
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    remote_src: yes
+
+- name: Change ownership of .kube/config to the current user
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube/config"
+    owner: "{{ ansible_env.USER }}"
+    group: "{{ ansible_env.USER }}"
+    mode: '0644'
+  become: true
+
+- name: Download Flannel network plugin
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    dest: /tmp/kube-flannel.yml
+    mode: '0644'
+    force: true
+
+- name: Change Pod Network to desired
+  ansible.builtin.replace:
+    path: "/tmp/kube-flannel.yml"
+    regexp: '"Network": "10.244.0.0\/16"'
+    replace: '"Network": "{{ pod_network }}"'
+
+- name: Apply Flannel network plugin
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/kube-flannel.yml
+
+- name: Get join command
+  shell: "kubeadm token create --print-join-command"
+  register: join_command
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
