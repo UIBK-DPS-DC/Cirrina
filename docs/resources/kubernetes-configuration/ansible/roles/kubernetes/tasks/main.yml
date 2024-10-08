@@ -1,0 +1,13 @@
+---
+- import_tasks: set_timezone.yml
+  become: yes
+
+- import_tasks: install_kubernetes.yml
+  become: yes
+
+- import_tasks: configure_master.yml
+  when: inventory_hostname == "master"
+
+- import_tasks: configure_node.yml
+  become: yes
+  when: inventory_hostname != "master"

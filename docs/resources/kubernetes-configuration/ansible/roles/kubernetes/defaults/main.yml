@@ -1,0 +1,14 @@
+---
+# NOTE: IMPORTANT: Keep these values in sync with `Vagrantfile`
+servers:
+  - "10.10.2.10"
+
+clients:
+  - "10.10.2.21"
+  - "10.10.2.22"
+
+# NOTE: Replace `Europe/Amsterdam` with your timezone
+local_time_zone: "Europe/Amsterdam"
+
+pod_network: 10.10.0.0/16
+local_network: 10.140.0.0/16
