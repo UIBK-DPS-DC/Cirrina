@@ -1,6 +1,9 @@
 package at.ac.uibk.dps.cirrina.execution.object.statemachine;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_ACTION_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
+
 import at.ac.uibk.dps.cirrina.execution.aspect.logging.Logging;
 import at.ac.uibk.dps.cirrina.execution.aspect.traces.Tracing;
 import io.opentelemetry.api.trace.Span;
@@ -50,16 +53,14 @@ public final class TimeoutActionManager {
    * @param task       The task to execute.
    * @throws IllegalArgumentException If two timeout actions with the same name have been started without being stopped.
    */
-  public void start(String actionName, Number delayInMs, Runnable task, String stateMachineId, String stateMachineName, String parentStateMachineName, String parentStateMachineId, Span parentSpan) throws IllegalArgumentException {
+  public void start(String actionName, Number delayInMs, Runnable task, String stateMachineId, String stateMachineName, Span parentSpan) throws IllegalArgumentException {
     logging.logTimeout("start", actionName, stateMachineId, stateMachineName);
 
-    Span span = tracing.initializeSpan(
-        "TimeoutActionManager - Start Timeout Actions", tracer, parentSpan,
-        Map.of(ATTR_STATE_MACHINE_ID, stateMachineId,
-               ATTR_STATE_MACHINE_NAME, stateMachineName,
-               ATTR_ACTION_NAME, actionName,
-               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName,
-               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId));
+    Span span = tracing.initializeSpan("TimeoutActionManager - Start Timeout Actions", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName,
+        ATTR_ACTION_NAME, actionName),span);
 
 
       try(Scope scope = span.makeCurrent()) {
@@ -94,16 +95,14 @@ public final class TimeoutActionManager {
    * @param actionName Name of action to stop.
    * @throws IllegalArgumentException If not exactly one timeout action was found with the provided name.
    */
-  public void stop(String actionName, String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) throws IllegalArgumentException {
+  public void stop(String actionName, String stateMachineId, String stateMachineName, Span parentSpan) throws IllegalArgumentException {
     logging.logTimeout("stop", actionName, stateMachineId, stateMachineName);
 
-    Span span = tracing.initializeSpan(
-        "TimeoutActionManager - Stopping Timeout Action", tracer, parentSpan,
-        Map.of(ATTR_ACTION_NAME, actionName,
-               ATTR_STATE_MACHINE_ID, stateMachineId,
-               ATTR_STATE_MACHINE_NAME, stateMachineName,
-               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
-               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
+    Span span = tracing.initializeSpan("TimeoutActionManager - Stopping Timeout Action", tracer, parentSpan );
+    tracing.addAttributes(Map.of(
+        ATTR_ACTION_NAME, actionName,
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
 
 
     try(Scope scope = span.makeCurrent()) {
@@ -138,15 +137,13 @@ public final class TimeoutActionManager {
   /**
    * Stops all timeout actions.
    */
-  public void stopAll(String stateMachineId, String stateMachineName, String parentStateMachineName, String parentStateMachineId, Span parentSpan) {
+  public void stopAll(String stateMachineId, String stateMachineName, Span parentSpan) {
     logging.logTimeout("stopAll", null, stateMachineId, stateMachineName);
 
-    Span span = tracing.initializeSpan(
-        "TimeoutActionManager - Stopping All Timeout Actions", tracer, parentSpan,
-        Map.of(ATTR_STATE_MACHINE_ID, stateMachineId,
-               ATTR_STATE_MACHINE_NAME, stateMachineName,
-               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName,
-               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId));
+    Span span = tracing.initializeSpan("TimeoutActionManager - Stopping All Timeout Actions", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
 
 
     try (Scope scope = span.makeCurrent()) {

@@ -1,6 +1,9 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.GAUGE_ACTION_DATA_LATENCY;
+
 import at.ac.uibk.dps.cirrina.execution.object.action.AssignAction;
 import at.ac.uibk.dps.cirrina.execution.object.expression.Expression;
 import at.ac.uibk.dps.cirrina.utils.Time;
@@ -26,15 +29,12 @@ public final class ActionAssignCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan) throws UnsupportedOperationException {
+  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
     logging.logAction(assignAction.toString(), stateMachineId, stateMachineName);
-    Span span = tracing.initializeSpan(
-        "Assign Action", tracer, parentSpan,
-        Map.of(ATTR_STATE_MACHINE_ID, stateMachineId,
-               ATTR_STATE_MACHINE_NAME, stateMachineName,
-               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
-               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
-
+    Span span = tracing.initializeSpan("Assign Action", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
       final var start = Time.timeInMillisecondsSinceStart();
 

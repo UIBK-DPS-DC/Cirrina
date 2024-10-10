@@ -20,10 +20,7 @@ public class Logging {
 
   public void logAction(String actionName, String stateMachineId, String stateMachineName) {
     logger.info("State Machine {} ({}) executing action {}", stateMachineName, stateMachineId, actionName);
-  }
 
-  public void logActionCreation(String actionName) {
-    logger.info("Action " + actionName + "created!");
   }
 
   public void logTimeout(String type, String actionName, String stateMachineId, String stateMachineName) {
@@ -107,10 +104,6 @@ public class Logging {
 
   public void logEventSending(Event event, String stateMachineId, String stateMachineName){
     logger.info("State Machine {} ({}) sending event {} ({})", stateMachineName, stateMachineId, event.getName(), event.getId());
-  }
-
-  public void logServiceSelection(String stateMachineId, String stateMachineName){
-    logger.info("State Machine {} ({}) selecting Service", stateMachineName, stateMachineId);
   }
 
 

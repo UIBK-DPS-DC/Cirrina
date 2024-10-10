@@ -61,7 +61,7 @@ class ServiceImplementationSelectorTest {
     final var serviceSelector = new OptimalServiceImplementationSelector(services);
 
     assertDoesNotThrow(() -> {
-      var selected = serviceSelector.select("A", false, null, null, null, null, null);
+      var selected = serviceSelector.select("A", false);
 
       assertEquals(0.5f, selected.get().getCost(), 0.0001);
     });

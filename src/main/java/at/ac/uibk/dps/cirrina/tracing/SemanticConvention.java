@@ -50,5 +50,4 @@ public class SemanticConvention {
   public static final String ATTR_OLD_STATE = "cirrina.old.state";
   public static final String ATTR_RESPONSE = "cirrina.response";
   public static final String ATTR_INVOKED_BY = "cirrina.invoked_by";
-  public static final String ATTR_SERVICE_NAME = "cirrina.service_name";
 }

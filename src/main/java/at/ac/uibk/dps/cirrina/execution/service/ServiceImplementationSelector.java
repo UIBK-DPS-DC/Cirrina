@@ -2,7 +2,6 @@ package at.ac.uibk.dps.cirrina.execution.service;
 
 import com.google.common.collect.Multimap;
 import java.util.Optional;
-import io.opentelemetry.api.trace.Span;
 
 public abstract class ServiceImplementationSelector {
 
@@ -24,5 +23,5 @@ public abstract class ServiceImplementationSelector {
    * @param local Whether the local implementation is required to be a local service implementation.
    * @return Selected service implementation.
    */
-  public abstract Optional<ServiceImplementation> select(String name, boolean local, String stateMachineId, String stateMachineName, String parentStateMachineId, String parentStateMachineName, Span parentSpan);
+  public abstract Optional<ServiceImplementation> select(String name, boolean local);
 }

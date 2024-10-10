@@ -20,7 +20,6 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -100,17 +99,13 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
-  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, String stateMachineId, String stateMachineName,
-      String parentStateMachineId, String parentStateMachineName, Span parentSpan) {
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, String stateMachineId, String stateMachineName, Span parentSpan) {
     logging.logServiceResponseHandling("HTTP Service", response, stateMachineId, stateMachineName);
-    Span span = tracing.initializeSpan(
-        "HTTP Service - Handle Response", tracer, parentSpan,
-        Map.of(ATTR_RESPONSE, Arrays.toString(response.body()),
-               ATTR_STATE_MACHINE_ID, stateMachineId,
-               ATTR_STATE_MACHINE_NAME, stateMachineName,
-               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
-               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
-
+    Span span = tracing.initializeSpan("HTTP Service - Handle Response", tracer, parentSpan);
+    tracing.addAttributes(Map.of(
+        ATTR_RESPONSE, response.body().toString(),
+        ATTR_STATE_MACHINE_ID, stateMachineId,
+        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
     try(Scope scope = span.makeCurrent()) {
     // Require HTTP OK
     final var errorCode = response.statusCode();
@@ -162,16 +157,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
    */
 
   @Override
-  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, String stateMachineName, String stateMachineId, String parentStateMachineName, String parentStateMachineId, Span parentSpan) throws UnsupportedOperationException {
+  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
     logging.logServiceInvocation("HTTPS", id, stateMachineName);
-    Span span = tracing.initializeSpan(
-        "HTTP Service - Invoke Service", tracer, parentSpan,
-        Map.of(ATTR_INVOKED_BY, id,
-               ATTR_STATE_MACHINE_ID, stateMachineId,
-               ATTR_STATE_MACHINE_NAME, stateMachineName,
-               ATTR_PARENT_STATE_MACHINE_ID, parentStateMachineId,
-               ATTR_PARENT_STATE_MACHINE_NAME, parentStateMachineName));
-
+    Span span = tracing.initializeSpan("HTTP Service - Invoke Service", tracer, parentSpan);
+    tracing.addAttributes(Map.of(ATTR_INVOKED_BY, id, ATTR_STATE_MACHINE_ID, id, ATTR_STATE_MACHINE_NAME, stateMachineName),span);
     try(Scope scope = span.makeCurrent()) {
 
 
@@ -205,7 +194,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-          .thenApplyAsync(response -> handleResponse(response, id, stateMachineName, parentStateMachineId, parentStateMachineName, span), handleExecutor);
+          .thenApplyAsync(response -> handleResponse(response, id, stateMachineName, span), handleExecutor);
     } catch (URISyntaxException | UnsupportedOperationException e) {
       tracing.recordException(e, span);
       logging.logExeption(id, e, stateMachineName);

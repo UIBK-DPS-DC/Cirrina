@@ -37,7 +37,7 @@ public final class Transition {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(transitionClass.getActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null, "null", "null", "null", "null")));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
 
     return actionCommands;
   }

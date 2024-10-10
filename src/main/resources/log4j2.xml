@@ -13,7 +13,7 @@
 
       <ThresholdFilter level="ALL"/>
       <PatternLayout>
-        <Pattern>[%t] %d{MM-dd HH:mm:ss.SSS} %5p - %m%n%exception{full}</Pattern>
+        <Pattern>[%t] %d{MM-dd HH:mm:ss.SSS} %5p %c{1} - %m%n%exception{full}</Pattern>
       </PatternLayout>
 
       <Label name="server" value="127.0.0.1"/>
