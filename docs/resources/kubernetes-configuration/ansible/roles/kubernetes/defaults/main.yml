@@ -10,5 +10,4 @@ clients:
 # NOTE: Replace `Europe/Amsterdam` with your timezone
 local_time_zone: "Europe/Amsterdam"
 
-pod_network: 10.10.0.0/16
-local_network: 10.140.0.0/16
+local_network: 10.10.0.0/16
