@@ -7,6 +7,7 @@ Vagrant.configure("2") do |config|
         master.vm.box = LINUX_BASE_BOX
         master.vm.hostname = "master"
         master.vm.network "private_network", ip: ip
+        master.vm.network "forwarded_port", guest: 6443, host: 6443
 
         master.vm.provider "virtualbox" do |virtualbox|
             virtualbox.customize ["modifyvm", :id, "--cableconnected1", "on", "--audio", "none"]
