@@ -15,7 +15,7 @@
 
 - name: Initialize Kubernetes cluster
   become: yes
-  ansible.builtin.shell: "kubeadm init --apiserver-advertise-address={{ node_ip }}"
+  ansible.builtin.shell: "kubeadm init --apiserver-advertise-address={{ node_ip }} --pod-network-cidr=10.244.0.0/16"
 
 - name: Create .kube directory
   ansible.builtin.file:
@@ -40,7 +40,7 @@
 
 - name: Download Flannel network plugin
   ansible.builtin.get_url:
-    url: https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
+    url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
     dest: /tmp/kube-flannel.yml
     mode: '0644'
     force: true
