@@ -1,9 +1,7 @@
 package at.ac.uibk.dps.cirrina.execution.command;
 
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_ID;
-import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.ATTR_STATE_MACHINE_NAME;
-
 import at.ac.uibk.dps.cirrina.execution.object.action.MatchAction;
+import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
@@ -11,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
 
 public final class ActionMatchCommand extends ActionCommand {
 
@@ -25,12 +25,13 @@ public final class ActionMatchCommand extends ActionCommand {
   }
 
   @Override
-  public List<ActionCommand> execute(String stateMachineId, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logAction(matchAction.toString(), stateMachineId, stateMachineName);
-    Span span = tracing.initializeSpan("Match Action", tracer, parentSpan);
-    tracing.addAttributes(Map.of(
-        ATTR_STATE_MACHINE_ID, stateMachineId,
-        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
+  public List<ActionCommand> execute(TracingAttributes tracingAttributes, Span parentSpan) throws UnsupportedOperationException {
+    logging.logAction(matchAction.toString(), tracingAttributes.getStateMachineId(), tracingAttributes.getStateMachineName());
+    Span span = tracing.initializeSpan("Match Action", tracer, parentSpan,
+        Map.of( ATTR_STATE_MACHINE_ID, tracingAttributes.getStateMachineId(),
+                ATTR_STATE_MACHINE_NAME, tracingAttributes.getStateMachineName(),
+                ATTR_PARENT_STATE_MACHINE_ID, tracingAttributes.getParentStateMachineId(),
+                ATTR_PARENT_STATE_MACHINE_NAME, tracingAttributes.getParentStateMachineName()));
     final var commands = new ArrayList<ActionCommand>();
 
     try(Scope scope = span.makeCurrent()) {
@@ -46,13 +47,13 @@ public final class ActionMatchCommand extends ActionCommand {
 
         // In case the case condition matches, add the case action
         if (conditionValue == caseValue) {
-          final var command = commandFactory.createActionCommand(caseAction, span);
+          final var command = commandFactory.createActionCommand(caseAction, tracingAttributes, span);
 
           commands.add(command);
         }
       }
     } catch (UnsupportedOperationException e) {
-      logging.logExeption(stateMachineId, e, stateMachineName);
+      logging.logExeption(tracingAttributes.getStateMachineId(), e, tracingAttributes.getStateMachineName());
       tracing.recordException(e, span);
       logger.error("Could not execute match action: {}", e.getMessage());
     } finally {
