@@ -106,5 +106,8 @@ public class Logging {
     logger.info("State Machine {} ({}) sending event {} ({})", stateMachineName, stateMachineId, event.getName(), event.getId());
   }
 
+  public void logActionCreation(String actionName) {
+      logger.info("Action {} created!", actionName);
+  }
 
 }
