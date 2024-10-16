@@ -1,16 +1,17 @@
 package at.ac.uibk.dps.cirrina.execution.object.guard;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
-import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class GuardTest {
-
-  TracingAttributes attributes = new TracingAttributes("test","test","test","test");
 
   @Test
   void testGuard() throws Exception {
@@ -24,13 +25,13 @@ class GuardTest {
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        assertTrue(guard.evaluate(extent, attributes, null));
+        assertTrue(guard.evaluate(extent, "null", "some-name", null));
 
         guardClass = new GuardDescription("v==6");
 
         guard = GuardBuilder.from(guardClass).build();
 
-        assertFalse(guard.evaluate(extent, attributes,null));
+        assertFalse(guard.evaluate(extent, "null", "some-name",null));
       });
 
       assertThrows(IllegalArgumentException.class, () -> {
@@ -38,7 +39,7 @@ class GuardTest {
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        guard.evaluate(extent, attributes,null);
+        guard.evaluate(extent, "null", "some-name",null);
       });
     }
   }
