@@ -9,9 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import at.ac.uibk.dps.cirrina.csml.description.CollaborativeStateMachineDescription.GuardDescription;
 import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
+import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import org.junit.jupiter.api.Test;
 
 class GuardTest {
+  private final TracingAttributes attributes = new TracingAttributes("test","test","test","test");
+
 
   @Test
   void testGuard() throws Exception {
@@ -25,13 +28,13 @@ class GuardTest {
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        assertTrue(guard.evaluate(extent, "null", "some-name", null));
+        assertTrue(guard.evaluate(extent, attributes, null));
 
         guardClass = new GuardDescription("v==6");
 
         guard = GuardBuilder.from(guardClass).build();
 
-        assertFalse(guard.evaluate(extent, "null", "some-name",null));
+        assertFalse(guard.evaluate(extent, attributes,null));
       });
 
       assertThrows(IllegalArgumentException.class, () -> {
@@ -39,7 +42,7 @@ class GuardTest {
 
         var guard = GuardBuilder.from(guardClass).build();
 
-        guard.evaluate(extent, "null", "some-name",null);
+        guard.evaluate(extent, attributes, null);
       });
     }
   }
