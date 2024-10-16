@@ -11,6 +11,8 @@ import at.ac.uibk.dps.cirrina.execution.object.context.InMemoryContext;
 import at.ac.uibk.dps.cirrina.execution.object.statemachine.StateMachine;
 import java.util.ArrayList;
 import java.util.List;
+
+import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public final class State implements Scope {
@@ -40,29 +42,29 @@ public final class State implements Scope {
     return stateClassObject;
   }
 
-  public List<ActionCommand> getEntryActionCommands(CommandFactory commandFactory) {
+  public List<ActionCommand> getEntryActionCommands(TracingAttributes tracingAttributes, CommandFactory commandFactory) {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(stateClassObject.getEntryActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, tracingAttributes, null)));
 
     return actionCommands;
   }
 
-  public List<ActionCommand> getWhileActionCommands(CommandFactory commandFactory) {
+  public List<ActionCommand> getWhileActionCommands( TracingAttributes tracingAttributes, CommandFactory commandFactory) {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(stateClassObject.getWhileActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, tracingAttributes, null)));
 
     return actionCommands;
   }
 
-  public List<ActionCommand> getExitActionCommands(CommandFactory commandFactory) {
+  public List<ActionCommand> getExitActionCommands(TracingAttributes tracingAttributes, CommandFactory commandFactory) {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(stateClassObject.getExitActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, tracingAttributes, null)));
 
     return actionCommands;
   }

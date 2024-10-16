@@ -6,6 +6,8 @@ import at.ac.uibk.dps.cirrina.execution.command.CommandFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public final class Transition {
@@ -33,11 +35,11 @@ public final class Transition {
     return isElse ? transitionClass.getElse() : transitionClass.getTargetStateName();
   }
 
-  public List<ActionCommand> getActionCommands(CommandFactory commandFactory) {
+  public List<ActionCommand> getActionCommands(TracingAttributes tracingAttributes, CommandFactory commandFactory) {
     List<ActionCommand> actionCommands = new ArrayList<>();
 
     new TopologicalOrderIterator<>(transitionClass.getActionGraph()).forEachRemaining(
-        action -> actionCommands.add(commandFactory.createActionCommand(action, null)));
+        action -> actionCommands.add(commandFactory.createActionCommand(action, tracingAttributes, null)));
 
     return actionCommands;
   }
