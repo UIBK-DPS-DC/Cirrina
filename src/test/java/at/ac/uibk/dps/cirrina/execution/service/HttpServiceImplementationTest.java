@@ -12,6 +12,7 @@ import at.ac.uibk.dps.cirrina.execution.object.context.Extent;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import at.ac.uibk.dps.cirrina.execution.service.HttpServiceImplementation.Parameters;
+import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -28,6 +29,8 @@ import org.junit.jupiter.api.Test;
 public class HttpServiceImplementationTest {
 
   private static HttpServer httpServer;
+  private final TracingAttributes attributes = new TracingAttributes("test","test","test","test");
+
 
   @BeforeAll
   public static void setUp() throws IOException {
@@ -141,7 +144,7 @@ public class HttpServiceImplementationTest {
                 "/plus",
                 Method.POST));
 
-            final var output = service.invoke(variables, "some-id", "some-name", null).get();
+            final var output = service.invoke(variables, "some-id", attributes, null).get();
 
             assertEquals(1, output.size());
 
@@ -162,7 +165,7 @@ public class HttpServiceImplementationTest {
                 "/error",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", attributes,null).get();
           });
 
           // Invalid response type
@@ -177,7 +180,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response1",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", attributes,null).get();
           });
 
           // Invalid response type
@@ -192,7 +195,7 @@ public class HttpServiceImplementationTest {
                 "/broken-response2",
                 Method.POST));
 
-            service.invoke(new ArrayList<ContextVariable>(), "some-id", "some-name",null).get();
+            service.invoke(new ArrayList<ContextVariable>(), "some-id", attributes,null).get();
           });
         });
   }

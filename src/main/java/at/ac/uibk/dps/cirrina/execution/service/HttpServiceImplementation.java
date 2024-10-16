@@ -7,10 +7,13 @@ import at.ac.uibk.dps.cirrina.execution.object.context.ContextVariable;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableExchange;
 import at.ac.uibk.dps.cirrina.execution.object.exchange.ContextVariableProtos;
 import static at.ac.uibk.dps.cirrina.tracing.SemanticConvention.*;
+
+import at.ac.uibk.dps.cirrina.tracing.TracingAttributes;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -20,6 +23,7 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -99,13 +103,14 @@ public class HttpServiceImplementation extends ServiceImplementation {
    * @return Output variables.
    * @throws CompletionException In case of error.
    */
-  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, String stateMachineId, String stateMachineName, Span parentSpan) {
-    logging.logServiceResponseHandling("HTTP Service", response, stateMachineId, stateMachineName);
-    Span span = tracing.initializeSpan("HTTP Service - Handle Response", tracer, parentSpan);
-    tracing.addAttributes(Map.of(
-        ATTR_RESPONSE, response.body().toString(),
-        ATTR_STATE_MACHINE_ID, stateMachineId,
-        ATTR_STATE_MACHINE_NAME, stateMachineName), span);
+  private static List<ContextVariable> handleResponse(HttpResponse<byte[]> response, TracingAttributes tracingAttributes, Span parentSpan) {
+    logging.logServiceResponseHandling("HTTP Service", response, tracingAttributes.getStateMachineId(), tracingAttributes.getStateMachineName());
+    Span span = tracing.initializeSpan("HTTP Service - Handle Response", tracer, parentSpan,
+            Map.of( ATTR_RESPONSE, Arrays.toString(response.body()),
+                    ATTR_STATE_MACHINE_ID, tracingAttributes.getStateMachineId(),
+                    ATTR_STATE_MACHINE_NAME, tracingAttributes.getStateMachineName(),
+                    ATTR_PARENT_STATE_MACHINE_ID, tracingAttributes.getParentStateMachineId(),
+                    ATTR_PARENT_STATE_MACHINE_NAME, tracingAttributes.getParentStateMachineName()));
     try(Scope scope = span.makeCurrent()) {
     // Require HTTP OK
     final var errorCode = response.statusCode();
@@ -135,7 +140,7 @@ public class HttpServiceImplementation extends ServiceImplementation {
             .toList();
       } catch (InvalidProtocolBufferException e) {
         tracing.recordException(e, span);
-        logging.logExeption(stateMachineId, e, stateMachineName);
+        logging.logExeption(tracingAttributes.getStateMachineId(), e, tracingAttributes.getStateMachineName());
         throw new CompletionException(
             new IOException("Unexpected HTTP service invocation value type"));
       }
@@ -157,10 +162,14 @@ public class HttpServiceImplementation extends ServiceImplementation {
    */
 
   @Override
-  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, String stateMachineName, Span parentSpan) throws UnsupportedOperationException {
-    logging.logServiceInvocation("HTTPS", id, stateMachineName);
-    Span span = tracing.initializeSpan("HTTP Service - Invoke Service", tracer, parentSpan);
-    tracing.addAttributes(Map.of(ATTR_INVOKED_BY, id, ATTR_STATE_MACHINE_ID, id, ATTR_STATE_MACHINE_NAME, stateMachineName),span);
+  public CompletableFuture<List<ContextVariable>> invoke(List<ContextVariable> input, String id, TracingAttributes tracingAttributes, Span parentSpan) throws UnsupportedOperationException {
+    logging.logServiceInvocation("HTTPS", id, tracingAttributes != null ? tracingAttributes.getStateMachineName() : "null");
+    Span span = tracing.initializeSpan("HTTP Service - Invoke Service", tracer, parentSpan,
+            Map.of( ATTR_INVOKED_BY, id,
+                    ATTR_STATE_MACHINE_ID, id,
+                    ATTR_STATE_MACHINE_NAME, tracingAttributes != null ? tracingAttributes.getStateMachineName() : "null",
+                    ATTR_PARENT_STATE_MACHINE_ID, tracingAttributes != null ? tracingAttributes.getParentStateMachineId() : "null",
+                    ATTR_PARENT_STATE_MACHINE_NAME, tracingAttributes != null ? tracingAttributes.getParentStateMachineName() : "null"));
     try(Scope scope = span.makeCurrent()) {
 
 
@@ -194,10 +203,10 @@ public class HttpServiceImplementation extends ServiceImplementation {
           .build();
 
       return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-          .thenApplyAsync(response -> handleResponse(response, id, stateMachineName, span), handleExecutor);
+          .thenApplyAsync(response -> handleResponse(response, tracingAttributes, span), handleExecutor);
     } catch (URISyntaxException | UnsupportedOperationException e) {
       tracing.recordException(e, span);
-      logging.logExeption(id, e, stateMachineName);
+      logging.logExeption(id, e, tracingAttributes != null ? tracingAttributes.getStateMachineName() : "null");
       throw new UnsupportedOperationException("Failed to perform HTTP service invocation", e);
     } finally {
       span.end();
