@@ -1,83 +1,99 @@
 # Using Cirrina with Kubernetes
 
-This page will describe the usage of Cirrina with [Kubernetes](https://kubernetes.io/). Kubernetes is a powerful, open-source container
-orchestration platform designed to automate the deployment, scaling, and management of containerized applications. It supports diverse
-workloads, from microservices to batch processing jobs, and provides a unified approach for managing containers at scale.
-
-Kubernetes operates across cloud, on-premise, and hybrid infrastructures, offering a highly flexible and resilient architecture. It ensures
-high availability and fault tolerance with built-in features like automatic scaling, self-healing, and rolling updates. Kubernetes is
-designed to manage large, complex clusters of containers, making it ideal for environments where reliability and scalability are key.
-
-Kubernetes allows users to define workloads using declarative YAML manifests, where resources, deployments, and services are described in a
-structured and consistent manner. The platform also integrates seamlessly with a wide range of tools, such as [Helm](https://helm.sh/) for
-managing application packages and [Istio](https://istio.io/) for service mesh management. Kubernetes provides powerful networking
-capabilities and integrates easily with secrets management tools like [HashiCorp Vault](https://www.vaultproject.io/).
-
-While Kubernetes can handle large, complex deployments, its flexibility and broad ecosystem make it an ideal choice for orchestrating both
-containerized and microservice-based applications. Kubernetes excels in multi-cloud or hybrid environments, providing a robust, scalable
-solution for modern infrastructure automation.
-
-# With Vagrant
-
-Vagrant is an open-source tool that simplifies managing virtualized development environments. It allows developers to create and configure
-lightweight, reproducible, and portable virtual machines (VMs) using a simple configuration file. Vagrant works with various virtualization
-providers, like VirtualBox, enabling users to create consistent environments for development, testing, or deployment across different
-systems. It helps streamline workflows by ensuring all developers work in identical environments. It reduces the "it works on my machine"
-problem and supports automation by integrating configuration management tools like Ansible.
-
-All instructions in this section relate to the configuration found in `resources/kubernetes-configuration`.
+The following guide will help with setting up a local Kubernetes cluster using [Incus](https://linuxcontainers.org/incus/)
+and [Talos](https://www.talos.dev/). Incus is a versatile tool for managing containers with LXC and virtual machines (VMs) using QEMU. It
+offers a fast and efficient way to create VMs. Forked from LXD, Incus provides a powerful alternative to traditional virtualization
+platforms like VirtualBox. Using KVM for hardware-accelerated virtualization via QEMU, Incus enables rapid VM deployment, which is ideal for
+scenarios requiring multiple instances. Talos is a Linux distribution centered around Kubernetes that allows for easy and lightweight
+Kubernetes deployment.
 
 ## Prerequisites
 
-Vagrant, VirtualBox and Python are assumed to be installed.
+- Incus: A container and VM management tool.
+- firewalld: The firewall management tool.
+- KVM: Ensure your system supports hardware-accelerated virtualization via KVM.
 
-Also, the [vagrant-docker-compose](https://github.com/leighmcculloch/vagrant-docker-compose) plugin must be installed:
+## Download the Talos image
 
-```bash
-vagrant plugin install vagrant-docker-compose
-```
-
-## Run VMs
-
-Use Vagrant to bring the configured VMs up as follows:
+Refer to the Talos [documentation](https://www.talos.dev/v1.8/talos-guides/install/bare-metal-platforms/iso/) for acquiring the Talos bare
+metal image. For example, the version 1.8 bare metal image can be acquired through:
 
 ```bash
-vagrant up --provision --parallel
+https://factory.talos.dev/image/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba/v1.8.0/metal-amd64.iso
 ```
 
-It may be necessary to adjust the allowed IP ranges in `/etc/vbox/networks.conf`:
+## Create a storage device for the Talos image
 
-```
-* 10.0.0.0/8 192.168.0.0/16
-* 2001::/64
-```
-
-The output should reflect that the VMs are put online and configured through Ansible. The status can be checked as follows:
+Create a storage device which represents a CD-ROM drive to boot the Talos image:
 
 ```bash
-vagrant status
-````
-
-Which should produce something along the lines of:
-
-```
-Current machine states:
-
-server                    running (virtualbox)
-client1                   running (virtualbox)
-client2                   running (virtualbox)
-
-This environment represents multiple VMs. The VMs are all listed
-above with their current state. For more information about a specific
-VM, run `vagrant status NAME`.
+incus storage volume import default metal-amd64.iso talos-iso --type=iso
+incus config device add talos-1 talos-iso disk pool=default source=talos-iso boot.priority=10
 ```
 
-Kubernetes should now be running.
+This assumes that a pool called _default_ exists.
 
-To destroy the VMs, you can use:
+## Start multiple VMs
+
+Using the _start.sh_ script provided in the _resources/kubernetes-configuration_ directory, start multiple VMs:
 
 ```bash
-vagrant hosts list | cut -f 2 -d ' ' | xargs -L 1 vagrant destroy -f --no-tty
+./start 5
 ```
 
-**Note:** This will destroy all hosts!
+Note that the above command will start 5 VMs each with 100 GB of disk space and 4 GB of memory. Make sure that you host machine is capable
+of providing these resources.
+
+## Install the control plane
+
+Generate the configuration as follows:
+
+```bash
+$ export CONTROL_PLANE_ID="10.68.37.60"
+$ talosctl gen config cluster https://CONTROL_PLANE_IP:6443 --install-disk /dev/sda
+```
+
+Make sure to provide the correct _CONTROL_PLANE_ID_.
+
+Apply the generated config as follows:
+
+```bash
+talosctl -n $CONTROL_PLANE_IP apply-config --insecure --file controlplane.yaml
+```
+
+Next, configure the control plane endpoint:
+
+```bash
+export TALOSCONFIG=$(realpath ./talosconfig)
+talosctl config endpoint $CONTROL_PLANE_IP
+```
+
+And bootstrap:
+
+```bash
+talosctl -n $CONTROL_PLANE_IP bootstrap
+```
+
+## Join worker nodes
+
+Worker nodes can be added as follows:
+
+```bash
+talosctl -n $NODE_IP apply-config --insecure --file worker.yaml
+```
+
+## Managing using kubectl
+
+Once the cluster is set up, download the kubeconfig file and start interacting with Kubernetes using kubectl:
+
+```bash
+talosctl -n $CONTROL_PLANE_IP kubeconfig ./kubeconfig
+kubectl --kubeconfig ./kubeconfig get node -owide
+```
+
+## Documentation
+
+For more detailed documentation, refer to:
+
+- [https://linuxcontainers.org/incus/docs/main/](https://linuxcontainers.org/incus/docs/main/)
+- [https://www.talos.dev/v1.8/](https://www.talos.dev/v1.8/)
