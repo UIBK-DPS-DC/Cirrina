@@ -1,6 +1,0 @@
-# Playbook to provision local Nomad cluster
-- hosts: all
-  become: yes         # NOTE: Use `sudo` to install software
-  gather_facts: yes   # NOTE: We'll use to some of them later
-  roles:
-    - nomad
